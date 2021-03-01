@@ -290,6 +290,7 @@ export class CheckIn extends Component {
     handleChange = (event) => {
         localStorage.setItem(event.target.name, event.target.checked);
         this.setState({ [event.target.name]: event.target.checked });
+        this.focus();
     };
 
     updateOptions = (options, key) => {
@@ -308,7 +309,7 @@ export class CheckIn extends Component {
             body: JSON.stringify({
                 securityCode: this.state.securityCode,
                 selectedLocationIds: selectedLocationIds,
-                isFastCheckInOut: this.state.fastCheckInOut,
+                isFastCheckInOut: this.state.fastCheckInOut ?? false,
                 checkType: this.state.checkType.value,
                 checkInIds: [],
             }),
@@ -384,7 +385,7 @@ export class CheckIn extends Component {
 
     getStateFromLocalStorage(boolean) {
         let s = localStorage.getItem(boolean);
-        return s === undefined ? true : JSON.parse(s);
+        return s === undefined ? false : JSON.parse(s);
     }
 
     getSelectedOptionsFromStorage(key, fallback) {
