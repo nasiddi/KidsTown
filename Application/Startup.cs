@@ -5,7 +5,6 @@ using CheckInsExtension.PlanningCenterAPIClient;
 using ChekInsExtension.Database;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.AspNetCore.SpaServices.ReactDevelopmentServer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -40,7 +39,7 @@ namespace Application
             services.AddSingleton<IUpdateRepository, UpdateRepository>();
 
             services.AddDbContext<CheckInExtensionContext>(o 
-                => o.UseSqlServer("Server=127.0.0.1,1401;Database=CheckInExtension;User Id=sa;Password=Sherlock69"));
+                => o.UseSqlServer(Configuration.GetConnectionString("Database")));
 
             services.AddScoped<ICheckInOutService, CheckInOutService>();
             services.AddScoped<ICheckInOutRepository, CheckInOutRepository>();

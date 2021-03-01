@@ -1,6 +1,5 @@
-﻿using System;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Metadata;
+﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 
 #nullable disable
 
@@ -8,13 +7,16 @@ namespace ChekInsExtension.Database
 {
     public partial class CheckInExtensionContext : DbContext
     {
+        private readonly IConfiguration _configuration;
+
         public CheckInExtensionContext()
         {
         }
 
-        public CheckInExtensionContext(DbContextOptions<CheckInExtensionContext> options)
+        public CheckInExtensionContext(DbContextOptions<CheckInExtensionContext> options, IConfiguration configuration)
             : base(options)
         {
+            _configuration = configuration;
         }
 
         public virtual DbSet<Attendance> Attendances { get; set; }
@@ -26,8 +28,7 @@ namespace ChekInsExtension.Database
         {
             if (!optionsBuilder.IsConfigured)
             {
-#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see http://go.microsoft.com/fwlink/?LinkId=723263.
-                optionsBuilder.UseSqlServer("Server=127.0.0.1,1401;Database=CheckInExtension;User Id=sa;Password=Sherlock69");
+                optionsBuilder.UseSqlServer(_configuration.GetConnectionString("Database"));
             }
         }
 
