@@ -5,17 +5,16 @@ using System.Collections.Generic;
 
 namespace ChekInsExtension.Database
 {
-    public partial class Location
+    public partial class AttendanceType
     {
-        public Location()
+        public AttendanceType()
         {
-            CheckIns = new HashSet<CheckIn>();
+            Attendances = new HashSet<Attendance>();
         }
 
         public int Id { get; set; }
         public string Name { get; set; }
-        public bool IsEnabled { get; set; }
 
-        public virtual ICollection<CheckIn> CheckIns { get; set; }
+        public virtual ICollection<Attendance> Attendances { get; set; }
     }
 }

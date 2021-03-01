@@ -24,7 +24,7 @@ namespace ChekInsExtension.Database
         {
             await using (var db = _serviceScopeFactory.CreateScope().ServiceProvider.GetRequiredService<CheckInExtensionContext>())
             {
-                var existingCheckInIds = await db.CheckIns.Where(i => checkinIds.Contains(i.CheckInId))
+                var existingCheckInIds = await db.Attendances.Where(i => checkinIds.Contains(i.CheckInId))
                     .Select(i => i.CheckInId)
                     .ToListAsync();
 
@@ -37,7 +37,7 @@ namespace ChekInsExtension.Database
             //todo fix date filter
             await using (var db = _serviceScopeFactory.CreateScope().ServiceProvider.GetRequiredService<CheckInExtensionContext>())
             {
-                var peopleIds = await db.CheckIns
+                var peopleIds = await db.Attendances
                     .Where(i => i.InsertDate > new DateTime(2021, 2, 17) && i.Person.PeopleId.HasValue)
                     .Select(i => i.Person.PeopleId!.Value)
                     .Distinct()
@@ -78,7 +78,7 @@ namespace ChekInsExtension.Database
                 var insertedPersons = await InsertPersons(db, personInserts);
 
                 var checkIns = preCheckIns
-                    .Select(c => MapToCheckIn(c, existingPersons.Union(insertedPersons).ToImmutableList()))
+                    .Select(c => MapToAttendance(c, existingPersons.Union(insertedPersons).ToImmutableList()))
                     .ToImmutableList();
                 await db.AddRangeAsync(checkIns);
                 await db.SaveChangesAsync();
@@ -140,18 +140,18 @@ namespace ChekInsExtension.Database
             return people;
         } 
 
-        private static CheckIn MapToCheckIn(CheckInUpdate checkInUpdate, ImmutableList<Person> persons)
+        private static Attendance MapToAttendance(CheckInUpdate checkInUpdate, ImmutableList<Person> persons)
         {
             var person = persons.SingleOrDefault(p => p.PeopleId == checkInUpdate.PeopleId);
             
-            return new CheckIn
+            return new Attendance
             {
                 CheckInId = checkInUpdate.CheckInId,
                 LocationId = (int) MapLocationId(checkInUpdate.Location),
                 SecurityCode = checkInUpdate.SecurityCode,
                 InsertDate = checkInUpdate.CreationDate,
                 Person = person,
-                AttendeeTypeId = MapAttendeeType(checkInUpdate.AttendeeType)
+                AttendanceTypeId = MapAttendeeType(checkInUpdate.AttendeeType)
             };
         }
 

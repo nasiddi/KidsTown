@@ -25,14 +25,14 @@ namespace ChekInsExtension.Database
         {
             await using (var db = _serviceScopeFactory.CreateScope().ServiceProvider.GetRequiredService<CheckInExtensionContext>())
             {
-                var people = await (from c in db.CheckIns
+                var people = await (from a in db.Attendances
                     join p in db.People
-                        on c.PersonId equals p.Id
+                        on a.PersonId equals p.Id
                     join l in db.Locations
-                        on c.LocationId equals l.Id
-                    where c.SecurityCode == peopleSearchParameters.SecurityCode 
-                          && peopleSearchParameters.Locations.Contains(c.Location.Id)
-                    select MapPerson(c, p, l))
+                        on a.LocationId equals l.Id
+                    where a.SecurityCode == peopleSearchParameters.SecurityCode 
+                          && peopleSearchParameters.Locations.Contains(a.Location.Id)
+                    select MapPerson(a, p, l))
                     .ToListAsync();
 
                 return people.ToImmutableList();
@@ -70,40 +70,40 @@ namespace ChekInsExtension.Database
             }
         }
 
-        private static async Task<List<CheckIn>> GetCheckIns(
+        private static async Task<List<Attendance>> GetCheckIns(
             IImmutableList<int> checkinIds,
             CheckInExtensionContext db)
         {
-            var checkIns = await db.CheckIns.Where(c => 
-                checkinIds.Contains(c.Id)).ToListAsync();
+            var checkIns = await db.Attendances.Where(a => 
+                checkinIds.Contains(a.Id)).ToListAsync();
             return checkIns;
         }
 
-        private static CheckInsExtension.CheckInUpdateJobs.Models.Person MapPerson(CheckIn checkIn, Person person,
+        private static CheckInsExtension.CheckInUpdateJobs.Models.Person MapPerson(Attendance attendance, Person person,
             Location location)
         {
             var checkState = CheckState.PreCheckedIn;
 
-            if (checkIn.CheckInDate.HasValue)
+            if (attendance.CheckInDate.HasValue)
             {
                 checkState = CheckState.CheckedIn;
             }
 
-            if (checkIn.CheckOutDate.HasValue)
+            if (attendance.CheckOutDate.HasValue)
             {
                 checkState = CheckState.CheckedOut;
             }
             
             
-            return new()
+            return new CheckInsExtension.CheckInUpdateJobs.Models.Person
             {
-                CheckInId = checkIn.Id,
-                SecurityCode = checkIn.SecurityCode,
+                CheckInId = attendance.Id,
+                SecurityCode = attendance.SecurityCode,
                 Location = location.Name,
                 FirstName = person.FistName,
                 LastName = person.LastName,
-                CheckInTime = checkIn.CheckInDate,
-                CheckOutTime = checkIn.CheckOutDate,
+                CheckInTime = attendance.CheckInDate,
+                CheckOutTime = attendance.CheckOutDate,
                 MayLeaveAlone = person.MayLeaveAlone ?? true,
                 HasPeopleWithoutPickupPermission = person.HasPeopleWithoutPickupPermission ?? false,
                 CheckState = checkState

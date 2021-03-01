@@ -17,10 +17,9 @@ namespace ChekInsExtension.Database
         {
         }
 
-        public virtual DbSet<AttendeeType> AttendeeTypes { get; set; }
-        public virtual DbSet<CheckIn> CheckIns { get; set; }
+        public virtual DbSet<Attendance> Attendances { get; set; }
+        public virtual DbSet<AttendanceType> AttendanceTypes { get; set; }
         public virtual DbSet<Location> Locations { get; set; }
-        public virtual DbSet<NoPickupPermission> NoPickupPermissions { get; set; }
         public virtual DbSet<Person> People { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
@@ -36,42 +35,42 @@ namespace ChekInsExtension.Database
         {
             modelBuilder.HasAnnotation("Relational:Collation", "SQL_Latin1_General_CP1_CI_AS");
 
-            modelBuilder.Entity<AttendeeType>(entity =>
+            modelBuilder.Entity<Attendance>(entity =>
             {
-                entity.ToTable("AttendeeType", "cie");
-
-                entity.Property(e => e.Name)
-                    .IsRequired()
-                    .HasMaxLength(50)
-                    .IsUnicode(false);
-            });
-
-            modelBuilder.Entity<CheckIn>(entity =>
-            {
-                entity.ToTable("CheckInUpdateJobs", "cie");
+                entity.ToTable("Attendance", "cie");
 
                 entity.Property(e => e.SecurityCode)
                     .IsRequired()
                     .HasMaxLength(10)
                     .IsUnicode(false);
 
-                entity.HasOne(d => d.AttendeeType)
-                    .WithMany(p => p.CheckIns)
-                    .HasForeignKey(d => d.AttendeeTypeId)
+                entity.HasOne(d => d.AttendanceType)
+                    .WithMany(p => p.Attendances)
+                    .HasForeignKey(d => d.AttendanceTypeId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("FK_CheckIn_AttendeeTypeId");
+                    .HasConstraintName("FK_Attendance_AttendanceTypeId");
 
                 entity.HasOne(d => d.Location)
-                    .WithMany(p => p.CheckIns)
+                    .WithMany(p => p.Attendances)
                     .HasForeignKey(d => d.LocationId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("FK_CheckIn_LocationId");
+                    .HasConstraintName("FK_Attendance_LocationId");
 
                 entity.HasOne(d => d.Person)
-                    .WithMany(p => p.CheckIns)
+                    .WithMany(p => p.Attendances)
                     .HasForeignKey(d => d.PersonId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("FK_Checkin_PersonId");
+                    .HasConstraintName("FK_Attendance_PersonId");
+            });
+
+            modelBuilder.Entity<AttendanceType>(entity =>
+            {
+                entity.ToTable("AttendanceType", "cie");
+
+                entity.Property(e => e.Name)
+                    .IsRequired()
+                    .HasMaxLength(50)
+                    .IsUnicode(false);
             });
 
             modelBuilder.Entity<Location>(entity =>
@@ -82,22 +81,6 @@ namespace ChekInsExtension.Database
                     .IsRequired()
                     .HasMaxLength(50)
                     .IsUnicode(false);
-            });
-
-            modelBuilder.Entity<NoPickupPermission>(entity =>
-            {
-                entity.ToTable("NoPickupPermission", "cie");
-
-                entity.Property(e => e.Name)
-                    .IsRequired()
-                    .HasMaxLength(50)
-                    .IsUnicode(false);
-
-                entity.HasOne(d => d.Person)
-                    .WithMany(p => p.NoPickupPermissions)
-                    .HasForeignKey(d => d.PersonId)
-                    .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("FK_NoPickupPermission_PersonId");
             });
 
             modelBuilder.Entity<Person>(entity =>

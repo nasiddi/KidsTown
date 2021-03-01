@@ -1,12 +1,12 @@
-IF OBJECT_ID('[cie].[CheckIn]') IS NULL
+IF OBJECT_ID('[cie].[Attendance]') IS NULL
     BEGIN
-        CREATE TABLE [cie].[CheckIn](
+        CREATE TABLE [cie].[Attendance](
                                         [Id] [int] IDENTITY(1, 1) NOT NULL,
                                         [CheckInId] [bigint] NOT NULL,
                                         [PersonId] [int] NOT NULL,
                                         [LocationId] [int] NOT NULL,
                                         [SecurityCode] varchar(10) NOT NULL,
-                                        [AttendeeTypeId] [int] NOT NULL,
+                                        [AttendanceTypeId] [int] NOT NULL,
                                         [InsertDate] DATETIME2 NOT NULL,
                                         [CheckInDate] DATETIME2 NULL,
                                         [CheckOutDate] DATETIME2 NULL
@@ -25,9 +25,9 @@ IF OBJECT_ID('[cie].[Person]') IS NULL
         )
     END;
 
-IF OBJECT_ID('[cie].[AttendeeType]') IS NULL
+IF OBJECT_ID('[cie].[AttendanceType]') IS NULL
     BEGIN
-        CREATE TABLE [cie].[AttendeeType](
+        CREATE TABLE [cie].[AttendanceType](
                                              [Id] [int] IDENTITY(1, 1) NOT NULL,
                                              [Name] varchar(50) NOT NULL,
         )
@@ -44,9 +44,9 @@ IF OBJECT_ID('[cie].[Location]') IS NULL
 
 
 
-IF OBJECT_ID('cie.[PK_Checkin]', 'PK') IS NULL
+IF OBJECT_ID('cie.[PK_Attendance]', 'PK') IS NULL
     BEGIN
-        ALTER TABLE [cie].[CheckIn] ADD CONSTRAINT [PK_Checkin] PRIMARY KEY CLUSTERED ( [Id] ASC )
+        ALTER TABLE [cie].[Attendance] ADD CONSTRAINT [PK_Attendance] PRIMARY KEY CLUSTERED ( [Id] ASC )
             WITH (DATA_COMPRESSION=ROW)
     END;
 
@@ -56,9 +56,9 @@ IF OBJECT_ID('cie.[PK_Person]', 'PK') IS NULL
             WITH (DATA_COMPRESSION=ROW)
     END;
 
-IF OBJECT_ID('cie.[PK_AttendeeType]', 'PK') IS NULL
+IF OBJECT_ID('cie.[PK_AttendanceType]', 'PK') IS NULL
     BEGIN
-        ALTER TABLE [cie].[AttendeeType] ADD CONSTRAINT [PK_AttendeeType] PRIMARY KEY CLUSTERED ( [Id] ASC )
+        ALTER TABLE [cie].[AttendanceType] ADD CONSTRAINT [PK_AttendanceType] PRIMARY KEY CLUSTERED ( [Id] ASC )
             WITH (DATA_COMPRESSION=ROW)
     END;
 
@@ -68,23 +68,23 @@ IF OBJECT_ID('cie.[PK_Location]', 'PK') IS NULL
             WITH (DATA_COMPRESSION=ROW)
     END;
 
-IF OBJECT_ID('[cie].[FK_Checkin_PersonId]', 'F') IS NULL
+IF OBJECT_ID('[cie].[FK_Attendance_PersonId]', 'F') IS NULL
     BEGIN
-        ALTER TABLE [cie].[CheckIn] ADD CONSTRAINT [FK_Checkin_PersonId]
+        ALTER TABLE [cie].[Attendance] ADD CONSTRAINT [FK_Attendance_PersonId]
             FOREIGN KEY ([PersonId])
                 REFERENCES [cie].[Person] ([Id])
     END;
 
-IF OBJECT_ID('[cie].[FK_CheckIn_AttendeeTypeId]', 'F') IS NULL
+IF OBJECT_ID('[cie].[FK_Attendance_AttendanceTypeId]', 'F') IS NULL
     BEGIN
-        ALTER TABLE [cie].[CheckIn] ADD CONSTRAINT [FK_CheckIn_AttendeeTypeId]
-            FOREIGN KEY ([AttendeeTypeId])
-                REFERENCES [cie].[AttendeeType] ([Id])
+        ALTER TABLE [cie].[Attendance] ADD CONSTRAINT [FK_Attendance_AttendanceTypeId]
+            FOREIGN KEY ([AttendanceTypeId])
+                REFERENCES [cie].[AttendanceType] ([Id])
     END;
 
-IF OBJECT_ID('[cie].[FK_CheckIn_LocationId]', 'F') IS NULL
+IF OBJECT_ID('[cie].[FK_Attendance_LocationId]', 'F') IS NULL
     BEGIN
-        ALTER TABLE [cie].[CheckIn] ADD CONSTRAINT [FK_CheckIn_LocationId]
+        ALTER TABLE [cie].[Attendance] ADD CONSTRAINT [FK_Attendance_LocationId]
             FOREIGN KEY ([LocationId])
                 REFERENCES [cie].[Location] ([Id])
     END;
@@ -99,30 +99,30 @@ IF NOT EXISTS( SELECT 1 FROM [cie].[Location] WHERE Name In (N'Häsli', N'Schöf
         ('KidsChurch', 1)
     END;
 
-SET IDENTITY_INSERT cie.AttendeeType ON
+SET IDENTITY_INSERT cie.AttendanceType ON
 
-IF NOT EXISTS( SELECT 1 FROM [cie].[AttendeeType] WHERE Id = 1)
+IF NOT EXISTS( SELECT 1 FROM [cie].[AttendanceType] WHERE Id = 1)
     BEGIN
-        INSERT INTO [cie].[AttendeeType] (Id, Name)
+        INSERT INTO [cie].[AttendanceType] (Id, Name)
         VALUES
         (1, 'Regular')
     END;
 
-IF NOT EXISTS( SELECT 1 FROM [cie].[AttendeeType] WHERE Id = 2)
+IF NOT EXISTS( SELECT 1 FROM [cie].[AttendanceType] WHERE Id = 2)
     BEGIN
-        INSERT INTO [cie].[AttendeeType] (Id, Name)
+        INSERT INTO [cie].[AttendanceType] (Id, Name)
         VALUES
         (2, 'Guest')
     END;
 
-IF NOT EXISTS( SELECT 1 FROM [cie].[AttendeeType] WHERE Id = 3)
+IF NOT EXISTS( SELECT 1 FROM [cie].[AttendanceType] WHERE Id = 3)
     BEGIN
-        INSERT INTO [cie].[AttendeeType] (Id, Name)
+        INSERT INTO [cie].[AttendanceType] (Id, Name)
         VALUES
         (3, 'Volunteer')
     END;
 
-SET IDENTITY_INSERT cie.AttendeeType OFF
+SET IDENTITY_INSERT cie.AttendanceType OFF
 
 IF INDEXPROPERTY(OBJECT_ID('cie.Person'), 'UQ_Person_PeopleId', 'IndexId') IS NULL
     BEGIN

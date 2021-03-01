@@ -24,8 +24,6 @@
     <ItemGroup>
       <ProjectReference Include="..\CheckInUpdateJobs\CheckInUpdateJobs.csproj" />
       <ProjectReference Include="..\Database\Database.csproj" />
-      <ProjectReference Include="..\Host\Host.csproj" />
-      <ProjectReference Include="..\WebApi\WebApi.csproj" />
     </ItemGroup>
 
     <Target Name="DebugEnsureNodeEnv" BeforeTargets="Build" Condition=" '$(Configuration)' == 'Debug' And !Exists('$(SpaRoot)node_modules') ">
