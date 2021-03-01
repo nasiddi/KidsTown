@@ -1,0 +1,29 @@
+/* Provide sufficient contrast against white background */
+a {
+  color: #0366d6;
+}
+
+code {
+  color: #E01A76;
+}
+
+.nameButton {
+  padding-bottom: 0.5em;
+  padding-top: 0.5em;
+}
+
+.alertMessage {
+  padding-bottom: 0.5em;
+}
+
+.saveButton {
+  padding-bottom: 1em;
+  padding-top: 1em;
+}
+
+
+
+
+
+
+

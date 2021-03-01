@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net5.0</TargetFramework>
+    <RootNamespace>CheckInsExtension.CheckInUpdateJobs</RootNamespace>
+    <Nullable>enable</Nullable>
+    <AssemblyName>CheckInUpdateJobs</AssemblyName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Folder Include="Models\" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\PlanningCenterAPIClient\PlanningCenterAPIClient.csproj" />
+  </ItemGroup>
+</Project>
