@@ -1,3 +1,11 @@
+USE CheckInsExtension;
+
+IF NOT EXISTS ( SELECT  *
+                FROM    sys.schemas
+                WHERE   name = N'cie' )
+    EXEC('CREATE SCHEMA [cie]');
+GO
+
 IF OBJECT_ID('[cie].[Attendance]') IS NULL
     BEGIN
         CREATE TABLE [cie].[Attendance](
@@ -130,7 +138,7 @@ IF INDEXPROPERTY(OBJECT_ID('cie.Person'), 'UQ_Person_PeopleId', 'IndexId') IS NU
             (
              [PeopleId] ASC
                 )
-            WITH (DATA_COMPRESSION=ROW, SORT_IN_TEMPDB=ON, ONLINE=ON)
+            WITH (DATA_COMPRESSION=ROW, SORT_IN_TEMPDB=ON, ONLINE=OFF)
     END;
 
 
