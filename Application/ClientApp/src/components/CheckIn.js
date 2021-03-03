@@ -5,7 +5,7 @@ import FormControlLabel from '@material-ui/core/FormControlLabel';
 import Checkbox from '@material-ui/core/Checkbox';
 import Alert from '@material-ui/lab/Alert';
 import 'bootstrap/dist/css/bootstrap.css';
-import {Button, ButtonGroup} from '@material-ui/core';
+import {Button, ButtonGroup, Grid} from '@material-ui/core';
 import { withStyles } from '@material-ui/core/styles';
 
 import {green, red, indigo, amber} from '@material-ui/core/colors';
@@ -103,25 +103,27 @@ export class CheckIn extends Component {
         this.securityCodeInput.current.focus();
     }
 
-    renderOptions() {
+    renderOptionsAndInput() {
         return (
             <div className='option-div'>
-                <div className='row justify-content-start'>
-                    <div className='col-md pb-3'>
+                <Grid container spacing={3} justify="space-between" alignItems="center">
+                    <Grid item md={3} xs={12}>
                         <ButtonGroup size="medium" color="primary">
                             <Button
                                 variant={this.checkTypeIsActive('CheckIn')}
                                 onClick={() => this.selectCheckType('CheckIn')}
+                                disableElevation
                             >CheckIn
                             </Button>
                             <Button
                                 variant={this.checkTypeIsActive('CheckOut')}
                                 onClick={() => this.selectCheckType('CheckOut')}
+                                disableElevation
                             >CheckOut
                             </Button>
                         </ButtonGroup>
-                    </div>
-                    <div className='col-sm'>
+                    </Grid>
+                    <Grid item md={3} xs={6}>
                         <FormControlLabel
                             control={
                                 <Checkbox
@@ -134,8 +136,8 @@ export class CheckIn extends Component {
                             label={`Fast ${this.state.checkType}`}
                             labelPlacement='end'
                         />
-                    </div>
-                    <div className='col-sm'>
+                    </Grid>
+                    <Grid item md={3} xs={6}>
                         <FormControlLabel
                             control={
                                 <Checkbox
@@ -148,8 +150,8 @@ export class CheckIn extends Component {
                             label={`Single ${this.state.checkType}`}
                             labelPlacement='end'
                         />
-                    </div>
-                    <div className='col-md pb-3'>
+                    </Grid>
+                    <Grid item md={3} xs={12}>
                         <Select
                             styles={selectStyles}
                             isMulti
@@ -162,17 +164,8 @@ export class CheckIn extends Component {
                             defaultValue={this.state.selectedLocations}
                             minWidth='100px'
                         />
-                    </div>
-                </div>
-            </div>
-        );
-    }
-
-    renderInputField() {
-        return (
-            <div>
-                <div className='row'>
-                    <div className='col py-4'>
+                    </Grid>
+                    <Grid item md={10} xs={12}>
                         <TextField
                             inputRef={this.securityCodeInput}
                             id='outlined-basic'
@@ -183,8 +176,21 @@ export class CheckIn extends Component {
                             fullWidth={true}
                             autoFocus
                         />
-                    </div>
-                </div>
+                    </Grid>
+                    <Grid item md={2} xs={12}>
+                        <Button
+                            size='large'
+                            variant='contained'
+                            color={this.state.checkInOutCandidates.length > 0 ? 'default' : 'primary'}
+                            fullWidth={true}
+                            disableElevation
+                            onClick={this.state.checkInOutCandidates.length > 0 ? 
+                                () => this.resetView() : () => this.submitSecurityCode()}
+                        >
+                            {this.state.checkInOutCandidates.length > 0 ? 'Clear' : 'Search'}
+                        </Button>
+                    </Grid>
+                </Grid>
             </div>
         );
     }
@@ -259,11 +265,9 @@ export class CheckIn extends Component {
                 <em>Loading...</em>
             </p>
         ) : (
-            this.renderOptions()
-        );
-
-        let inputField = this.state.loading ? <div /> : this.renderInputField();
-
+            this.renderOptionsAndInput()
+            );
+        
         let alert = this.state.alert.text.length > 0 ? this.renderAlert() : <div />;
 
         let candidates = <div />;
@@ -277,7 +281,6 @@ export class CheckIn extends Component {
             <div>
                 <h1 id='title'>{this.state.checkType}</h1>
                 {options}
-                {inputField}
                 {alert}
                 {candidates}
             </div>
@@ -319,7 +322,7 @@ export class CheckIn extends Component {
             .then((j) => {
                 this.setState({ alert: { level: j['alertLevel'], text: j['text'] } });
                 if (j['successfulFastCheckout'] === true) {
-                    this.resetView();
+                    this.resetView(false);
                 } else {
                     let candidates = j['checkInOutCandidates'].map(function (el) {
                         let o = Object.assign({}, el);
@@ -346,7 +349,7 @@ export class CheckIn extends Component {
             .then((r) => r.json())
             .then((j) => {
                 this.setState({ alert: { level: j['alertLevel'], text: j['text'] } });
-                this.resetView();
+                this.resetView(false);
             });
     }
 
@@ -365,7 +368,7 @@ export class CheckIn extends Component {
             .then((r) => r.json())
             .then((j) => {
                 this.setState({ alert: { level: j['alertLevel'], text: j['text'] } });
-                this.resetView();
+                this.resetView(false);
             });
     }
 
@@ -375,9 +378,13 @@ export class CheckIn extends Component {
         this.setState({ locations: data, loading: false });
     }
 
-    resetView() {
+    resetView(resetAlert = true) {
         this.focus();
-        this.setState({ checkInOutCandidates: [], securityCode: '',  alert: { text: '', level: 1 }});
+        this.setState({ checkInOutCandidates: [], securityCode: ''});
+        
+        if (resetAlert){
+            this.setState({ alert: { text: '', level: 1 }});
+        }
     }
 
     getStateFromLocalStorage(boolean) {

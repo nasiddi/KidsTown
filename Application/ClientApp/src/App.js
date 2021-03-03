@@ -12,7 +12,8 @@ class RootApp extends Component {
   render () {
     return (
       <Layout>
-        <Route path='/' component={CheckIn} />
+        <Route exact path='/' component={CheckIn} />
+        <Route path='/overview' component={Layout} />
       </Layout>
     );
   }
