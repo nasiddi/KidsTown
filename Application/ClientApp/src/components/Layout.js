@@ -1,9 +1,9 @@
 import React, { Component } from 'react';
 import { Container } from 'reactstrap';
 import { NavMenu } from './NavMenu';
-
-export class Layout extends Component {
-  static displayName = Layout.name;
+ 
+export class CheckInLayout extends Component {
+  static displayName = CheckInLayout.name;
 
   render () {
     return (
@@ -16,3 +16,18 @@ export class Layout extends Component {
     );
   }
 }
+
+export class OverviewLayout extends Component {
+    static displayName = CheckInLayout.name;
+
+    render () {
+        return (
+            <div>
+                <Container className="themed-container" fluid={true}>
+                    {this.props.children}
+                </Container>
+            </div>
+        );
+    }
+}
+

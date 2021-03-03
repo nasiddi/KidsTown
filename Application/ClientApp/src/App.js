@@ -1,7 +1,8 @@
 import React, { Component } from 'react';
 import { Route } from 'react-router';
-import { Layout } from './components/Layout';
+import { CheckInLayout, OverviewLayout } from './components/Layout';
 import { CheckIn } from './components/CheckIn';
+import { Overview } from "./components/Overview";
 
 import './custom.css'
 import {withAuth} from "./auth/MsalAuthProvider";
@@ -10,12 +11,16 @@ class RootApp extends Component {
   static displayName = 'Kidstown';
 
   render () {
-    return (
-      <Layout>
-        <Route exact path='/' component={CheckIn} />
-        <Route path='/overview' component={Layout} />
-      </Layout>
-    );
+      return (
+          <div>
+              <CheckInLayout>
+                  <Route exact path='/' component={CheckIn} />
+              </CheckInLayout>
+              <OverviewLayout>
+                  <Route path='/overview' component={Overview} />
+              </OverviewLayout>
+          </div>
+      );
   }
 }
 

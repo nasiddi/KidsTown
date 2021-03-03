@@ -1,4 +1,5 @@
 using System.Collections.Immutable;
+using System.Linq;
 using System.Threading.Tasks;
 using CheckInsExtension.CheckInUpdateJobs.Models;
 
@@ -31,6 +32,11 @@ namespace CheckInsExtension.CheckInUpdateJobs.People
         public async Task<ImmutableList<Location>> GetActiveLocations()
         {
             return await _checkInOutRepository.GetActiveLocations();
+        }
+
+        public async Task<ImmutableList<Attendee>> GetActiveAttendees(IImmutableList<int> selectedLocations)
+        {
+            return await _checkInOutRepository.GetActiveAttendees(selectedLocations);
         }
     }
 }

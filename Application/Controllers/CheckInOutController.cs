@@ -34,6 +34,16 @@ namespace Application.Controllers
         }
         
         [HttpPost]
+        [Route("attendees/active")]
+        [Produces("application/json")]
+        public async Task<ImmutableList<Attendee>> GetActiveAttendees([FromBody] IImmutableList<int> selectedLocations)
+        {
+            return await _checkInOutService.GetActiveAttendees(selectedLocations);
+        }
+        
+        
+        
+        [HttpPost]
         [Route("manual")]
         [Produces("application/json")]
         public async Task<IActionResult> ManualCheckIn([FromBody] CheckInOutRequest request)
@@ -52,14 +62,14 @@ namespace Application.Controllers
             {
                 return Ok(new CheckInOutResult
                 {
-                    Text = $"{request.CheckType.ToString()} for {string.Join(", ", names)} has been successful.",
+                    Text = $"{request.CheckType.ToString()} für {string.Join(", ", names)} war erfolgreich.",
                     AlertLevel = AlertLevel.Success,
                 });
             }
 
             return Ok(new CheckInOutResult
             {
-                Text = $"{request.CheckType.ToString()} for {string.Join(", ", names)} failed",
+                Text = $"{request.CheckType.ToString()} für {string.Join(", ", names)} ist fehlgeschlagen",
                 AlertLevel = AlertLevel.Error,
             });
         }
@@ -81,7 +91,7 @@ namespace Application.Controllers
             {
                 return Ok(new CheckInOutResult
                 {
-                    Text = $"No one found for the given security code: {request.SecurityCode}",
+                    Text = $"Es wurde niemand mit SecurityCode {request.SecurityCode} gefunden.",
                     AlertLevel = AlertLevel.Error
                 });
             }
@@ -92,7 +102,7 @@ namespace Application.Controllers
             {
                 return Ok(new CheckInOutResult
                 {
-                    Text = $"No one found ready for {request.CheckType.ToString()} with security code {request.SecurityCode}.",
+                    Text = $"Für {request.CheckType.ToString()} wurde niemand mit SecurityCode {request.SecurityCode} gefunden. Locations und CheckIn/CheckOut überprüfen",
                     AlertLevel = AlertLevel.Error
                 });
             }
@@ -104,7 +114,7 @@ namespace Application.Controllers
                 {
                     return Ok(new CheckInOutResult
                     {
-                        Text = $"{request.CheckType.ToString()} for {person.FirstName} {person.LastName} has been successful.",
+                        Text = $"{request.CheckType.ToString()} für {person.FirstName} {person.LastName} war erfolgreich.",
                         AlertLevel = AlertLevel.Success,
                         SuccessfulFastCheckout = true,
                     });

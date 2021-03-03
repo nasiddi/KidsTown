@@ -9,13 +9,9 @@ import {Button, ButtonGroup, Grid} from '@material-ui/core';
 import { withStyles } from '@material-ui/core/styles';
 
 import {green, red, indigo, amber} from '@material-ui/core/colors';
+import {fetchLocations, getSelectedOptionsFromStorage, selectStyles} from "./Common";
 
-const selectStyles = {
-    menu: (base) => ({
-        ...base,
-        zIndex: 100,
-    }),
-};
+
 
 const styledBy = (property, mapping) => (props) => mapping[props[property]];
 
@@ -73,7 +69,7 @@ export class CheckIn extends Component {
         this.state = {
             locations: [],
             checkInOutCandidates: [],
-            selectedLocations: this.getSelectedOptionsFromStorage(
+            selectedLocations: getSelectedOptionsFromStorage(
                 'selectedLocations',
                 []
             ),
@@ -86,8 +82,9 @@ export class CheckIn extends Component {
         };
     }
 
-    componentDidMount() {
-        this.fetchData().then();
+    async componentDidMount() {
+        const locations = await fetchLocations();
+        this.setState({locations: locations, loading: false})
     }
 
     componentDidUpdate(prevProps, prevState, snapshot) {
@@ -372,12 +369,6 @@ export class CheckIn extends Component {
             });
     }
 
-    async fetchData() {
-        const response = await fetch('checkinout/location');
-        const data = await response.json();
-        this.setState({ locations: data, loading: false });
-    }
-
     resetView(resetAlert = true) {
         this.focus();
         this.setState({ checkInOutCandidates: [], securityCode: ''});
@@ -390,11 +381,6 @@ export class CheckIn extends Component {
     getStateFromLocalStorage(boolean) {
         let s = localStorage.getItem(boolean);
         return s === undefined ? false : JSON.parse(s);
-    }
-
-    getSelectedOptionsFromStorage(key, fallback) {
-        let s = localStorage.getItem(key);
-        return s === null ? fallback : JSON.parse(s);
     }
 
     invertSelectCandidate(candidate) {

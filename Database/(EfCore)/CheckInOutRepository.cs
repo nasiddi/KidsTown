@@ -69,6 +69,44 @@ namespace ChekInsExtension.Database
                     .ToImmutableList();
             }
         }
+        
+        public async Task<ImmutableList<Attendee>> GetActiveAttendees(IImmutableList<int> selectedLocations)
+        {
+            await using (var db = _serviceScopeFactory.CreateScope().ServiceProvider.GetRequiredService<CheckInExtensionContext>())
+            {
+                var people = await (from a in db.Attendances
+                        join p in db.People
+                            on a.PersonId equals p.Id
+                        join l in db.Locations
+                            on a.LocationId equals l.Id
+                        join at in db.AttendanceTypes
+                            on a.AttendanceTypeId equals at.Id
+                        where a.CheckInDate != null 
+                              && a.CheckOutDate == null
+                              && selectedLocations.Contains(l.Id)
+                        select MapAttendee(a, p, l, at))
+                    .ToListAsync();
+
+                return people.ToImmutableList();
+            }
+        }
+
+        private static Attendee MapAttendee(
+            Attendance attendance, 
+            Person person, 
+            Location location,
+            AttendanceType attendanceType)
+        {
+            var checkState = GetCheckState(attendance);
+
+            return new Attendee
+            {
+                Name = $"{person.FistName} {person.LastName}",
+                AttendanceType = attendanceType.Name,
+                LocationId = location.Id,
+                CheckState = checkState
+            };
+        }
 
         private static async Task<List<Attendance>> GetCheckIns(
             IImmutableList<int> checkinIds,
@@ -82,19 +120,8 @@ namespace ChekInsExtension.Database
         private static CheckInsExtension.CheckInUpdateJobs.Models.Person MapPerson(Attendance attendance, Person person,
             Location location)
         {
-            var checkState = CheckState.PreCheckedIn;
+            var checkState = GetCheckState(attendance);
 
-            if (attendance.CheckInDate.HasValue)
-            {
-                checkState = CheckState.CheckedIn;
-            }
-
-            if (attendance.CheckOutDate.HasValue)
-            {
-                checkState = CheckState.CheckedOut;
-            }
-            
-            
             return new CheckInsExtension.CheckInUpdateJobs.Models.Person
             {
                 CheckInId = attendance.Id,
@@ -108,6 +135,23 @@ namespace ChekInsExtension.Database
                 HasPeopleWithoutPickupPermission = person.HasPeopleWithoutPickupPermission ?? false,
                 CheckState = checkState
             };
+        }
+
+        private static CheckState GetCheckState(Attendance attendance)
+        {
+            var checkState = CheckState.PreCheckedIn;
+
+            if (attendance.CheckInDate.HasValue)
+            {
+                checkState = CheckState.CheckedIn;
+            }
+
+            if (attendance.CheckOutDate.HasValue)
+            {
+                checkState = CheckState.CheckedOut;
+            }
+
+            return checkState;
         }
     }
 }
