@@ -5,7 +5,7 @@ import FormControlLabel from '@material-ui/core/FormControlLabel';
 import Checkbox from '@material-ui/core/Checkbox';
 import Alert from '@material-ui/lab/Alert';
 import 'bootstrap/dist/css/bootstrap.css';
-import {Button} from '@material-ui/core';
+import {Button, ButtonGroup} from '@material-ui/core';
 import { withStyles } from '@material-ui/core/styles';
 
 import {green, red, indigo, amber} from '@material-ui/core/colors';
@@ -81,10 +81,7 @@ export class CheckIn extends Component {
             fastCheckInOut: this.getStateFromLocalStorage('fastCheckInOut'),
             singleCheckInOut: this.getStateFromLocalStorage('singleCheckInOut'),
             alert: { text: '', level: 1 },
-            checkType: this.getSelectedOptionsFromStorage('checkType', {
-                value: 'CheckIn',
-                label: 'CheckIn',
-            }),
+            checkType: localStorage.getItem('checkType') ?? 'CheckIn',
             loading: true,
         };
     }
@@ -108,8 +105,22 @@ export class CheckIn extends Component {
 
     renderOptions() {
         return (
-            <div>
+            <div className='option-div'>
                 <div className='row justify-content-start'>
+                    <div className='col-md pb-3'>
+                        <ButtonGroup size="medium" color="primary">
+                            <Button
+                                variant={this.checkTypeIsActive('CheckIn')}
+                                onClick={() => this.selectCheckType('CheckIn')}
+                            >CheckIn
+                            </Button>
+                            <Button
+                                variant={this.checkTypeIsActive('CheckOut')}
+                                onClick={() => this.selectCheckType('CheckOut')}
+                            >CheckOut
+                            </Button>
+                        </ButtonGroup>
+                    </div>
                     <div className='col-sm'>
                         <FormControlLabel
                             control={
@@ -120,7 +131,7 @@ export class CheckIn extends Component {
                                     onChange={this.handleChange}
                                 />
                             }
-                            label={`Fast ${this.state.checkType.value}`}
+                            label={`Fast ${this.state.checkType}`}
                             labelPlacement='end'
                         />
                     </div>
@@ -134,7 +145,7 @@ export class CheckIn extends Component {
                                     onChange={this.handleChange}
                                 />
                             }
-                            label={`Single ${this.state.checkType.value}`}
+                            label={`Single ${this.state.checkType}`}
                             labelPlacement='end'
                         />
                     </div>
@@ -149,21 +160,6 @@ export class CheckIn extends Component {
                             classNamePrefix='select'
                             onChange={(o) => this.updateOptions(o, 'selectedLocations')}
                             defaultValue={this.state.selectedLocations}
-                            minWidth='100px'
-                        />
-                    </div>
-                    <div className='col-md pb-3'>
-                        <Select
-                            styles={selectStyles}
-                            name='checkTypes'
-                            options={[
-                                { value: 'CheckIn', label: 'CheckIn' },
-                                { value: 'CheckOut', label: 'CheckOut' },
-                            ]}
-                            className='select'
-                            classNamePrefix='select'
-                            onChange={(o) => this.updateOptions(o, 'checkType')}
-                            defaultValue={this.state.checkType}
                             minWidth='100px'
                         />
                     </div>
@@ -250,7 +246,7 @@ export class CheckIn extends Component {
                         size='large'
                         fullWidth={true}
                     >
-                        {this.state.checkType.value}
+                        {this.state.checkType}
                     </StyledButton>
                 </div>
             </div>
@@ -279,7 +275,7 @@ export class CheckIn extends Component {
 
         return (
             <div>
-                <h1 id='title'>{this.state.checkType.value}</h1>
+                <h1 id='title'>{this.state.checkType}</h1>
                 {options}
                 {inputField}
                 {alert}
@@ -311,7 +307,7 @@ export class CheckIn extends Component {
                 securityCode: this.state.securityCode,
                 selectedLocationIds: selectedLocationIds,
                 isFastCheckInOut: this.state.fastCheckInOut ?? false,
-                checkType: this.state.checkType.value,
+                checkType: this.state.checkType,
                 checkInIds: [],
             }),
             method: 'POST',
@@ -339,7 +335,7 @@ export class CheckIn extends Component {
     async checkInOutSingle(checkInOutCandidate) {
         await fetch('checkinout/manual', {
             body: JSON.stringify({
-                checkType: this.state.checkType.value,
+                checkType: this.state.checkType,
                 checkInOutCandidates: [checkInOutCandidate],
             }),
             method: 'POST',
@@ -358,7 +354,7 @@ export class CheckIn extends Component {
         let candidates = this.state.checkInOutCandidates.filter((c) => c.isSelected);
         await fetch('checkinout/manual', {
             body: JSON.stringify({
-                checkType: this.state.checkType.value,
+                checkType: this.state.checkType,
                 checkInOutCandidates: candidates,
             }),
             method: 'POST',
@@ -446,5 +442,21 @@ export class CheckIn extends Component {
         }
 
         return 'blue';
+    }
+
+    checkTypeIsActive(checkType) {
+        if (this.state.checkType === checkType){
+            return 'contained';
+        }
+        
+        return 'outlined';
+    }
+
+    selectCheckType(checkType) {
+        if (this.state.checkType !== checkType){
+            this.setState({ 'checkType': checkType})
+            localStorage.setItem('checkType', checkType);
+            this.resetView();
+        }
     }
 }

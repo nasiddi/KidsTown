@@ -7,6 +7,10 @@ code {
   color: #E01A76;
 }
 
+.option-div {
+  padding-top: 1em;
+}
+
 .nameButton {
   padding-bottom: 0.5em;
   padding-top: 0.5em;
