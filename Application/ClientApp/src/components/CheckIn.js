@@ -142,6 +142,7 @@ export class CheckIn extends Component {
                         <Select
                             styles={selectStyles}
                             isMulti
+                            placeholder='Select locations'
                             name='locations'
                             options={this.state.locations}
                             className='basic-multi-select'
