@@ -4,9 +4,10 @@ import { Layout } from './components/Layout';
 import { CheckIn } from './components/CheckIn';
 
 import './custom.css'
+import {withAuth} from "./auth/MsalAuthProvider";
 
-export default class App extends Component {
-  static displayName = App.name;
+class RootApp extends Component {
+  static displayName = 'Kidstown';
 
   render () {
     return (
@@ -16,3 +17,6 @@ export default class App extends Component {
     );
   }
 }
+
+export const App = withAuth(RootApp);
+
