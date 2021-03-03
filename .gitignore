@@ -125,6 +125,9 @@ project.lock.json
 project.fragment.lock.json
 artifacts/
 
+# js
+*package-lock.json
+
 # StyleCop
 StyleCopReport.xml
 
