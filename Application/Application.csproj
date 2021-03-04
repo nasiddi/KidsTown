@@ -51,4 +51,18 @@
         </ItemGroup>
     </Target>
 
+    <Choose>
+        <When Condition="'$(Configuration)' == 'Debug'">
+            <ItemGroup>
+                <None Include="appsettings.json" CopyToOutputDirectory="Always" CopyToPublishDirectory="Always" />
+            </ItemGroup>
+        </When>
+        <When Condition="'$(Configuration)' == 'Release'">
+            <ItemGroup>
+                <None Include="appsettings.json" CopyToOutputDirectory="Always" CopyToPublishDirectory="Always" />
+                <None Include="appsettings.Developement.json" CopyToOutputDirectory="Never" CopyToPublishDirectory="Never" />
+            </ItemGroup>
+        </When>
+    </Choose>
+
 </Project>
