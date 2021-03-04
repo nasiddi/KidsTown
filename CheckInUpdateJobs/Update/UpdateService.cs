@@ -4,8 +4,8 @@ using System.Threading.Tasks;
 using CheckInsExtension.PlanningCenterAPIClient;
 using CheckInsExtension.PlanningCenterAPIClient.Models.CheckInResult;
 using CheckInsExtension.PlanningCenterAPIClient.Models.PeopleResult;
+using Microsoft.Extensions.Configuration;
 using Peoples = CheckInsExtension.PlanningCenterAPIClient.Models.PeopleResult.People;
-using CheckInIncludedType = CheckInsExtension.PlanningCenterAPIClient.Models.CheckInResult.TypeEnum;
 using Included = CheckInsExtension.PlanningCenterAPIClient.Models.PeopleResult.Included;
 
 namespace CheckInsExtension.CheckInUpdateJobs.Update
@@ -14,20 +14,27 @@ namespace CheckInsExtension.CheckInUpdateJobs.Update
     {
         private readonly IPlanningCenterClient _planningCenterClient;
         private readonly IUpdateRepository _updateRepository;
+        private readonly IConfiguration _configuration;
 
         private const long MayLeaveAloneFieldId = 438360;
-        private const long HasPeopleWithoutPickupPermissionFieldId = 440611;
+        private const long HasPeopleWithoutPickupPermissionFieldId = 441655;
 
-        public UpdateService(IPlanningCenterClient planningCenterClient, IUpdateRepository updateRepository)
+        private const int DaysLookBack = 30;
+
+        public UpdateService(IPlanningCenterClient planningCenterClient, IUpdateRepository updateRepository, IConfiguration configuration)
         {
             _planningCenterClient = planningCenterClient;
             _updateRepository = updateRepository;
+            _configuration = configuration;
         }
 
         public async Task FetchDataFromPlanningCenter()
         {
-            var checkIns = await _planningCenterClient.GetCheckedInPeople();
-            var preCheckIns = MapToPreCheckIns(checkIns);
+            var checkIns = await _planningCenterClient.GetCheckedInPeople(DaysLookBack);
+            
+            var eventIds = _configuration.GetSection("EventIds").Get<long[]>();
+
+            var preCheckIns = FilterAndMapToPreCheckIns(checkIns, eventIds.ToImmutableList());
 
             var existingCheckInIds = await _updateRepository.GetExistingCheckInIds(
                     preCheckIns.Select(i => i.CheckInId).ToImmutableList());
@@ -36,7 +43,7 @@ namespace CheckInsExtension.CheckInUpdateJobs.Update
 
             await _updateRepository.InsertPreCheckIns(newCheckins);
 
-            var peopleIdsPreCheckedInToday = await _updateRepository.GetPeopleIdsPreCheckedInToday();
+            var peopleIdsPreCheckedInToday = await _updateRepository.GetPeopleIdsPreCheckedIns(DaysLookBack);
 
             if (peopleIdsPreCheckedInToday.Count == 0)
             {
@@ -65,36 +72,31 @@ namespace CheckInsExtension.CheckInUpdateJobs.Update
                     peopleId: people.Id,
                     firstName: people.Attributes.FirstName,
                     lastName: people.Attributes.LastName,
-                    mayLeaveAlone: ParseMayLeaveAlone(mayLeaveAloneField),
-                    hasPeopleWithoutPickupPermission: ParseHasPeopleWithoutPickupPermission(hasPeopleWithoutPickupPermissionField));
+                    mayLeaveAlone: ParseCustomBooleanField(mayLeaveAloneField, true),
+                    hasPeopleWithoutPickupPermission: ParseCustomBooleanField(hasPeopleWithoutPickupPermissionField, false));
             }
         }
 
-        private static bool ParseHasPeopleWithoutPickupPermission(Included? field)
-        {
-            return field?.Attributes.Value switch
-            {
-                "!" => true,
-                _ => false
-            };
-        }
-        
-        private static bool? ParseMayLeaveAlone(Included? field)
+        private static bool ParseCustomBooleanField(Included? field, bool defaultValue)
         {
             return field?.Attributes.Value switch
             {
                 "true" => true,
                 "false" => false,
-                _ => null
+                _ => defaultValue
             };
         }
 
-        private static IImmutableList<CheckInUpdate> MapToPreCheckIns(CheckIns checkIns)
+        private static IImmutableList<CheckInUpdate> FilterAndMapToPreCheckIns(CheckIns checkIns, ImmutableList<long> eventIds)
         {
-            var locations = checkIns.Included.Where(i => i.Type == CheckInIncludedType.Location).ToImmutableList();
+            var locations = checkIns.Included.Where(i => i.Type == IncludeType.Location).ToImmutableList();
             var locationsByIds = locations.ToImmutableDictionary(k => k.Id, v => v.Attributes.Name);
-            
-            var attendees = checkIns.Attendees.Select(MapPreCheckIn).ToImmutableList();
+
+            // Todo this can be removed once no more invalid data is pulled
+            var checkInsWithLocation = checkIns.Attendees.Where(a => a.Relationships.Locations.Data.Count == 1).ToImmutableList();
+
+            var checkInsFilteredByEvents = checkInsWithLocation.Where(c => eventIds.Contains(c.Relationships.Event.Data.Id)).ToImmutableList();
+            var attendees = checkInsFilteredByEvents.Select(MapPreCheckIn).ToImmutableList();
 
             return attendees;
             
@@ -103,15 +105,17 @@ namespace CheckInsExtension.CheckInUpdateJobs.Update
                 var attributes = attendee.Attributes;
                 var locationId = attendee.Relationships.Locations.Data.Single().Id;
                 var peopleId = attendee.Relationships.Person.Data?.Id;
+                var eventId = attendee.Relationships.Event.Data.Id;
 
                 var people = new PeopleUpdate(
                     peopleId: peopleId,
                     firstName: attributes.FirstName,
                     lastName: attributes.LastName);
-                
+
                 return new CheckInUpdate(
                     checkInId: attendee.Id,
                     peopleId: peopleId,
+                    eventId: eventId,
                     attendeeType: attributes.Kind,
                     securityCode: attributes.SecurityCode,
                     location: locationsByIds[locationId],

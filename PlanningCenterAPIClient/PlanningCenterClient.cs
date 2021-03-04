@@ -4,7 +4,6 @@ using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 using CheckInsExtension.PlanningCenterAPIClient.Models.CheckInResult;
-using CheckInsExtension.PlanningCenterAPIClient.Models.FieldDefinitionResult;
 using CheckInsExtension.PlanningCenterAPIClient.Models.PeopleResult;
 using Newtonsoft.Json;
 
@@ -18,12 +17,10 @@ namespace CheckInsExtension.PlanningCenterAPIClient
 
         private HttpClient Client => ClientBackingField ?? InitClient();
         
-        public async Task<CheckIns> GetCheckedInPeople()
+        public async Task<CheckIns> GetCheckedInPeople(int daysLookBack)
         {
-            //todo fix date filter
-            //var dateString = DateTime.UtcNow.ToString("yyyy-MM-ddT00:00:00Z");
-            const string dateString = "2021-02-17:00:00:00Z";
-            var response = await Client.GetStringAsync($"check-ins/v2/check_ins?include=locations,person&per_page=1000&where[created_at][gte]={dateString}");
+            var dateString = DateTime.Today.AddDays(-daysLookBack).ToString("yyyy-MM-ddT00:00:00Z");
+            var response = await Client.GetStringAsync($"check-ins/v2/check_ins?include=locations,person,event&per_page=1000&where[created_at][gte]={dateString}");
 
             var responseBody = JsonConvert.DeserializeObject<CheckIns>(response);
             return responseBody;

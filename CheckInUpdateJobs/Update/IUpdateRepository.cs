@@ -7,7 +7,7 @@ namespace CheckInsExtension.CheckInUpdateJobs.Update
     {
         Task InsertPreCheckIns(IImmutableList<CheckInUpdate> preCheckIns);
         Task<IImmutableList<long>> GetExistingCheckInIds(IImmutableList<long> checkinIds);
-        Task<ImmutableList<long>> GetPeopleIdsPreCheckedInToday();
+        Task<ImmutableList<long>> GetPeopleIdsPreCheckedIns(int daysLookBack);
         Task UpdatePersons(ImmutableList<PeopleUpdate> peoples);
     }
 }

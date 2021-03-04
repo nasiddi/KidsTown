@@ -7,7 +7,8 @@ namespace CheckInsExtension.CheckInUpdateJobs.Update
     {
         public readonly long CheckInId;
         public readonly long? PeopleId;
-        public readonly AttendeeTypeEnum AttendeeType;
+        public readonly long EventId;
+        public readonly AttendeeType AttendeeType;
         public readonly string SecurityCode;
         public readonly string Location;
         public readonly DateTime CreationDate;
@@ -16,11 +17,11 @@ namespace CheckInsExtension.CheckInUpdateJobs.Update
         public CheckInUpdate(
             long checkInId, 
             long? peopleId, 
-            AttendeeTypeEnum attendeeType,
+            AttendeeType attendeeType,
             string securityCode, 
             string location, 
             DateTime creationDate,
-            PeopleUpdate person)
+            PeopleUpdate person, long eventId)
         {
             CheckInId = checkInId;
             PeopleId = peopleId;
@@ -28,6 +29,7 @@ namespace CheckInsExtension.CheckInUpdateJobs.Update
             Location = location;
             CreationDate = creationDate;
             Person = person;
+            EventId = eventId;
             AttendeeType = attendeeType;
         }
     }

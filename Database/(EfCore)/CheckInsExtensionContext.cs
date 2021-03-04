@@ -1,19 +1,21 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using System;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.Extensions.Configuration;
 
 #nullable disable
 
 namespace ChekInsExtension.Database
 {
-    public partial class CheckInExtensionContext : DbContext
+    public partial class CheckInsExtensionContext : DbContext
     {
         private readonly IConfiguration _configuration;
 
-        public CheckInExtensionContext()
+        public CheckInsExtensionContext()
         {
         }
 
-        public CheckInExtensionContext(DbContextOptions<CheckInExtensionContext> options, IConfiguration configuration)
+        public CheckInsExtensionContext(DbContextOptions<CheckInsExtensionContext> options, IConfiguration configuration)
             : base(options)
         {
             _configuration = configuration;
@@ -89,7 +91,8 @@ namespace ChekInsExtension.Database
                 entity.ToTable("Person", "cie");
 
                 entity.HasIndex(e => e.PeopleId, "UQ_Person_PeopleId")
-                    .IsUnique();
+                    .IsUnique()
+                    .HasFilter("([PeopleId] IS NOT NULL)");
 
                 entity.Property(e => e.FistName)
                     .IsRequired()

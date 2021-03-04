@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 #nullable disable
 
@@ -15,8 +16,8 @@ namespace ChekInsExtension.Database
         public long? PeopleId { get; set; }
         public string FistName { get; set; }
         public string LastName { get; set; }
-        public bool? MayLeaveAlone { get; set; }
-        public bool? HasPeopleWithoutPickupPermission { get; set; }
+        public bool MayLeaveAlone { get; set; }
+        public bool HasPeopleWithoutPickupPermission { get; set; }
 
         public virtual ICollection<Attendance> Attendances { get; set; }
     }

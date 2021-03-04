@@ -12,7 +12,7 @@ namespace CheckInsExtension.CheckInUpdateJobs.Update
         private readonly ILogger<UpdateTask> _logger;
         private readonly IUpdateService _updateService;
 
-        public bool TaskIsActive { get; set; } = false;
+        public bool TaskIsActive { get; set; }
 
         public UpdateTask(ILogger<UpdateTask> logger, IUpdateService updateService)
         {

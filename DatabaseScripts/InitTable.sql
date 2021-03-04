@@ -11,6 +11,7 @@ IF OBJECT_ID('[cie].[Attendance]') IS NULL
         CREATE TABLE [cie].[Attendance](
                                         [Id] [int] IDENTITY(1, 1) NOT NULL,
                                         [CheckInId] [bigint] NOT NULL,
+                                        [EventId] [bigint] NOT NULL,
                                         [PersonId] [int] NOT NULL,
                                         [LocationId] [int] NOT NULL,
                                         [SecurityCode] varchar(10) NOT NULL,
@@ -28,8 +29,8 @@ IF OBJECT_ID('[cie].[Person]') IS NULL
                                        [PeopleId] [bigint] NULL,
                                        [FistName] varchar(50) NOT NULL,
                                        [LastName] varchar(50) NOT NULL,
-                                       [MayLeaveAlone] bit NULL,
-                                       [HasPeopleWithoutPickupPermission] bit NULL
+                                       [MayLeaveAlone] bit NOT NULL,
+                                       [HasPeopleWithoutPickupPermission] bit NOT NULL
         )
     END;
 
@@ -138,11 +139,12 @@ IF INDEXPROPERTY(OBJECT_ID('cie.Person'), 'UQ_Person_PeopleId', 'IndexId') IS NU
             (
              [PeopleId] ASC
                 )
+            WHERE PeopleId IS NOT NULL
             WITH (DATA_COMPRESSION=ROW, SORT_IN_TEMPDB=ON, ONLINE=OFF)
     END;
 
 
--- dotnet ef dbcontext scaffold "Server=127.0.0.1,1401;Database=CheckInExtension;User Id=sa;Password=Sherlock69" Microsoft.EntityFrameworkCore.SqlServer -f
+-- dotnet ef dbcontext scaffold "Server=127.0.0.1,1401;Database=CheckInsExtension;User Id=sa;Password=Sherlock69" Microsoft.EntityFrameworkCore.SqlServer -f
     
 
     

@@ -38,7 +38,7 @@ namespace Application
             services.AddSingleton<IUpdateService, UpdateService>();
             services.AddSingleton<IUpdateRepository, UpdateRepository>();
 
-            services.AddDbContext<CheckInExtensionContext>(o 
+            services.AddDbContext<CheckInsExtensionContext>(o 
                 => o.UseSqlServer(Configuration.GetConnectionString("Database")));
 
             services.AddScoped<ICheckInOutService, CheckInOutService>();

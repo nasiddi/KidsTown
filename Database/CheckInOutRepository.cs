@@ -19,19 +19,21 @@ namespace ChekInsExtension.Database
             _serviceScopeFactory = serviceScopeFactory;
         }
         
-        //Todo add date filter
         public async Task<ImmutableList<CheckInsExtension.CheckInUpdateJobs.Models.Person>> GetPeople(
-            PeopleSearchParameters peopleSearchParameters)
+            PeopleSearchParameters peopleSearchParameters, 
+            IImmutableList<long> eventIds)
         {
-            await using (var db = _serviceScopeFactory.CreateScope().ServiceProvider.GetRequiredService<CheckInExtensionContext>())
+            await using (var db = _serviceScopeFactory.CreateScope().ServiceProvider.GetRequiredService<CheckInsExtensionContext>())
             {
                 var people = await (from a in db.Attendances
                     join p in db.People
                         on a.PersonId equals p.Id
                     join l in db.Locations
                         on a.LocationId equals l.Id
-                    where a.SecurityCode == peopleSearchParameters.SecurityCode 
+                    where a.SecurityCode == peopleSearchParameters.SecurityCode
                           && peopleSearchParameters.Locations.Contains(a.Location.Id)
+                          && a.InsertDate >= DateTime.Today.AddDays(-30)
+                          && eventIds.Contains(a.EventId)
                     select MapPerson(a, p, l))
                     .ToListAsync();
 
@@ -41,7 +43,7 @@ namespace ChekInsExtension.Database
 
         public async Task<bool> CheckInPeople(IImmutableList<int> checkInIds)
         {
-            await using (var db = _serviceScopeFactory.CreateScope().ServiceProvider.GetRequiredService<CheckInExtensionContext>())
+            await using (var db = _serviceScopeFactory.CreateScope().ServiceProvider.GetRequiredService<CheckInsExtensionContext>())
             {
                 var checkIns = await GetCheckIns(checkInIds, db);
                 checkIns.ForEach(c => c.CheckInDate = DateTime.UtcNow);
@@ -51,7 +53,7 @@ namespace ChekInsExtension.Database
         
         public async Task<bool> CheckOutPeople(IImmutableList<int> checkInIds)
         {
-            await using (var db = _serviceScopeFactory.CreateScope().ServiceProvider.GetRequiredService<CheckInExtensionContext>())
+            await using (var db = _serviceScopeFactory.CreateScope().ServiceProvider.GetRequiredService<CheckInsExtensionContext>())
             {
                 var checkIns = await GetCheckIns(checkInIds, db);
                 checkIns.ForEach(c => c.CheckOutDate = DateTime.UtcNow);
@@ -62,7 +64,7 @@ namespace ChekInsExtension.Database
 
         public async Task<ImmutableList<CheckInsExtension.CheckInUpdateJobs.Models.Location>> GetActiveLocations()
         {
-            await using (var db = _serviceScopeFactory.CreateScope().ServiceProvider.GetRequiredService<CheckInExtensionContext>())
+            await using (var db = _serviceScopeFactory.CreateScope().ServiceProvider.GetRequiredService<CheckInsExtensionContext>())
             {
                 var locations = await db.Locations.Where(l => l.IsEnabled).ToListAsync();
                 return locations.Select(l => new CheckInsExtension.CheckInUpdateJobs.Models.Location(l.Id, l.Name))
@@ -70,9 +72,11 @@ namespace ChekInsExtension.Database
             }
         }
         
-        public async Task<ImmutableList<Attendee>> GetActiveAttendees(IImmutableList<int> selectedLocations)
+        public async Task<ImmutableList<Attendee>> GetActiveAttendees(
+            IImmutableList<int> selectedLocations,
+            IImmutableList<long> eventIds)
         {
-            await using (var db = _serviceScopeFactory.CreateScope().ServiceProvider.GetRequiredService<CheckInExtensionContext>())
+            await using (var db = _serviceScopeFactory.CreateScope().ServiceProvider.GetRequiredService<CheckInsExtensionContext>())
             {
                 var people = await (from a in db.Attendances
                         join p in db.People
@@ -84,6 +88,7 @@ namespace ChekInsExtension.Database
                         where a.CheckInDate != null 
                               && a.CheckOutDate == null
                               && selectedLocations.Contains(l.Id)
+                              && eventIds.Contains(a.EventId)
                         select MapAttendee(a, p, l, at))
                     .ToListAsync();
 
@@ -110,7 +115,7 @@ namespace ChekInsExtension.Database
 
         private static async Task<List<Attendance>> GetCheckIns(
             IImmutableList<int> checkinIds,
-            CheckInExtensionContext db)
+            CheckInsExtensionContext db)
         {
             var checkIns = await db.Attendances.Where(a => 
                 checkinIds.Contains(a.Id)).ToListAsync();
@@ -131,8 +136,8 @@ namespace ChekInsExtension.Database
                 LastName = person.LastName,
                 CheckInTime = attendance.CheckInDate,
                 CheckOutTime = attendance.CheckOutDate,
-                MayLeaveAlone = person.MayLeaveAlone ?? true,
-                HasPeopleWithoutPickupPermission = person.HasPeopleWithoutPickupPermission ?? false,
+                MayLeaveAlone = person.MayLeaveAlone,
+                HasPeopleWithoutPickupPermission = person.HasPeopleWithoutPickupPermission,
                 CheckState = checkState
             };
         }

@@ -28,8 +28,8 @@ namespace Application.Controllers
         [Produces("application/json")]
         public async Task<ImmutableList<Options>> GetLocations()
         {
+            _updateTask.TaskIsActive = true;
             var locations = await _checkInOutService.GetActiveLocations();
-
             return locations.Select(MapOptions).ToImmutableList();
         }
         
@@ -91,7 +91,7 @@ namespace Application.Controllers
             {
                 return Ok(new CheckInOutResult
                 {
-                    Text = $"Es wurde niemand mit SecurityCode {request.SecurityCode} gefunden.",
+                    Text = $"Es wurde niemand mit SecurityCode {request.SecurityCode} gefunden. Locations und CheckIn/CheckOut Einstellungen überprüfen.",
                     AlertLevel = AlertLevel.Error
                 });
             }
@@ -102,7 +102,7 @@ namespace Application.Controllers
             {
                 return Ok(new CheckInOutResult
                 {
-                    Text = $"Für {request.CheckType.ToString()} wurde niemand mit SecurityCode {request.SecurityCode} gefunden. Locations und CheckIn/CheckOut überprüfen",
+                    Text = $"Für {request.CheckType.ToString()} wurde niemand mit SecurityCode {request.SecurityCode} gefunden. Locations und CheckIn/CheckOut Einstellungen überprüfen.",
                     AlertLevel = AlertLevel.Error
                 });
             }
