@@ -1,7 +1,13 @@
 import React, { Component } from 'react';
 import Select from "react-select";
 import {Grid} from "@material-ui/core";
-import {fetchLocations, getFormattedDate, getSelectedOptionsFromStorage, selectStyles} from "./Common";
+import {
+    fetchLocations,
+    getFormattedDate,
+    getSelectedEventFromStorage,
+    getSelectedOptionsFromStorage,
+    selectStyles
+} from "./Common";
 import { Table } from 'reactstrap';
 
 export class Statistic extends Component {
@@ -112,7 +118,7 @@ export class Statistic extends Component {
     }
 
     async fetchData() {
-        await fetch('overview/attendees/history', {
+        await fetch(`overview/event/${await getSelectedEventFromStorage()}/attendees/history`, {
             body: JSON.stringify(this.state.statisticLocations.map(l => l.value)),
             method: 'POST',
             headers: {

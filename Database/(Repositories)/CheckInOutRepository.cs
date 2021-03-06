@@ -20,8 +20,7 @@ namespace ChekInsExtension.Database
         }
         
         public async Task<ImmutableList<CheckInsExtension.CheckInUpdateJobs.Models.Person>> GetPeople(
-            PeopleSearchParameters peopleSearchParameters, 
-            IImmutableList<long> eventIds)
+            PeopleSearchParameters peopleSearchParameters)
         {
             await using (var db = _serviceScopeFactory.CreateScope().ServiceProvider.GetRequiredService<CheckInsExtensionContext>())
             {
@@ -33,7 +32,7 @@ namespace ChekInsExtension.Database
                     where a.SecurityCode == peopleSearchParameters.SecurityCode
                           && peopleSearchParameters.Locations.Contains(a.Location.Id)
                           && a.InsertDate >= DateTime.Today.AddDays(-3)
-                          && eventIds.Contains(a.EventId)
+                          && a.EventId == peopleSearchParameters.EventId
                     select MapPerson(a, p, l))
                     .ToListAsync();
 

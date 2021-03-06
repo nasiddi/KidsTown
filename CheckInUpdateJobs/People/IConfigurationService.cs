@@ -7,6 +7,7 @@ namespace CheckInsExtension.CheckInUpdateJobs.People
     public interface IConfigurationService
     {
         Task<ImmutableList<Location>> GetActiveLocations();
-        IImmutableList<long> GetEventIds();
+        long GetDefaultEventId();
+        Task<ImmutableList<CheckInsEvent>> GetAvailableEvents();
     }
 }

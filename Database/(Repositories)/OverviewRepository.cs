@@ -22,42 +22,39 @@ namespace ChekInsExtension.Database
 
         public async Task<ImmutableList<Attendee>> GetActiveAttendees(
             IImmutableList<int> selectedLocations,
-            IImmutableList<long> eventIds)
+            long eventId)
         {
             await using (var db = _serviceScopeFactory.CreateScope().ServiceProvider.GetRequiredService<CheckInsExtensionContext>())
             {
                 var people = await (from a in db.Attendances
                         join p in db.People
                             on a.PersonId equals p.Id
-                        join l in db.Locations
-                            on a.LocationId equals l.Id
                         join at in db.AttendanceTypes
                             on a.AttendanceTypeId equals at.Id
                         where a.CheckInDate != null 
                               && a.CheckOutDate == null
-                              && selectedLocations.Contains(l.Id)
-                              && eventIds.Contains(a.EventId)
-                        select MapAttendee(a, p, l, at))
+                              && selectedLocations.Contains(a.LocationId)
+                              && a.EventId == eventId
+                        select MapAttendee(a, p, at))
                     .ToListAsync();
 
                 return people.ToImmutableList();
             }
         }
 
-        public async Task<ImmutableList<Attendee>> GetAttendanceHistory(IImmutableList<int> selectedLocations, IImmutableList<long> eventIds)
+        public async Task<ImmutableList<Attendee>> GetAttendanceHistory(IImmutableList<int> selectedLocations,
+            long eventId)
         {
             await using (var db = _serviceScopeFactory.CreateScope().ServiceProvider.GetRequiredService<CheckInsExtensionContext>())
             {
                 var attendees = await (from a in db.Attendances
                         join p in db.People
                             on a.PersonId equals p.Id
-                        join l in db.Locations
-                            on a.LocationId equals l.Id
                         join at in db.AttendanceTypes
                             on a.AttendanceTypeId equals at.Id
-                        where selectedLocations.Contains(l.Id)
-                              && eventIds.Contains(a.EventId)
-                        select MapAttendee(a, p, l, at))
+                        where selectedLocations.Contains(a.LocationId)
+                              && a.EventId == eventId
+                        select MapAttendee(a, p, at))
                     .ToListAsync();
 
                 return attendees.ToImmutableList();
@@ -67,7 +64,6 @@ namespace ChekInsExtension.Database
         private static Attendee MapAttendee(
             Attendance attendance, 
             Person person, 
-            Location location,
             AttendanceType attendanceType)
         {
             var checkState = MappingService.GetCheckState(attendance);
@@ -75,7 +71,7 @@ namespace ChekInsExtension.Database
             return new Attendee(
                 $"{person.FistName} {person.LastName}",
                 (AttendanceTypes) attendanceType.Id,
-                location.Id,
+                attendance.LocationId,
                 checkState,
                 attendance.InsertDate,
                 attendance.CheckInDate,

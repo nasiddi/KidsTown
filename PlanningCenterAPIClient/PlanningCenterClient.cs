@@ -4,6 +4,7 @@ using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 using CheckInsExtension.PlanningCenterAPIClient.Models.CheckInResult;
+using CheckInsExtension.PlanningCenterAPIClient.Models.EventResult;
 using CheckInsExtension.PlanningCenterAPIClient.Models.PeopleResult;
 using Newtonsoft.Json;
 
@@ -16,6 +17,13 @@ namespace CheckInsExtension.PlanningCenterAPIClient
 #pragma warning restore 649
 
         private HttpClient Client => ClientBackingField ?? InitClient();
+
+        public async Task<EventResult> GetActiveEvents()
+        {
+            var response = await Client.GetStringAsync("check-ins/v2/events?filter=not_archived");
+            var responseBody = JsonConvert.DeserializeObject<EventResult>(response);
+            return responseBody;
+        }
         
         public async Task<CheckIns> GetCheckedInPeople(int daysLookBack)
         {

@@ -3,16 +3,17 @@ import Select from 'react-select';
 import TextField from '@material-ui/core/TextField';
 import FormControlLabel from '@material-ui/core/FormControlLabel';
 import Checkbox from '@material-ui/core/Checkbox';
-import Alert from '@material-ui/lab/Alert';
 import 'bootstrap/dist/css/bootstrap.css';
-import {createMuiTheme, Grid, MuiThemeProvider} from '@material-ui/core';
-import {fetchLocations, getSelectedOptionsFromStorage, selectStyles} from "./Common";
-import {Button, ButtonGroup} from "reactstrap";
-
-const theme = createMuiTheme({
-    palette: {
-        primary: { main: '#047bff' }
-    }});
+import { Grid, MuiThemeProvider} from '@material-ui/core';
+import {
+    fetchLocations,
+    getSelectedEventFromStorage,
+    getSelectedOptionsFromStorage,
+    getStateFromLocalStorage,
+    selectStyles,
+    theme
+} from "./Common";
+import {Alert, Button, ButtonGroup} from "reactstrap";
 
 export class CheckIn extends Component {
     static displayName = CheckIn.name;
@@ -28,8 +29,8 @@ export class CheckIn extends Component {
                 []
             ),
             securityCode: '',
-            fastCheckInOut: this.getStateFromLocalStorage('fastCheckInOut'),
-            singleCheckInOut: this.getStateFromLocalStorage('singleCheckInOut'),
+            fastCheckInOut: getStateFromLocalStorage('fastCheckInOut'),
+            singleCheckInOut: getStateFromLocalStorage('singleCheckInOut'),
             alert: { text: '', level: 1 },
             checkType: localStorage.getItem('checkType') ?? 'CheckIn',
             loading: true,
@@ -74,6 +75,7 @@ export class CheckIn extends Component {
                             </Button>
                         </ButtonGroup>
                     </Grid>
+                    <MuiThemeProvider theme={theme}>
                     <Grid item md={3} xs={6}>
                         <FormControlLabel
                             control={
@@ -89,7 +91,6 @@ export class CheckIn extends Component {
                         />
                     </Grid>
                     <Grid item md={3} xs={6}>
-                        <MuiThemeProvider theme={theme}>
                         <FormControlLabel
                             control={
                                 <Checkbox
@@ -102,8 +103,8 @@ export class CheckIn extends Component {
                             label={`Single ${this.state.checkType}`}
                             labelPlacement='end'
                         />
-                        </MuiThemeProvider>
                     </Grid>
+                        </MuiThemeProvider>
                     <Grid item md={3} xs={12}>
                         <Select
                             styles={selectStyles}
@@ -150,7 +151,7 @@ export class CheckIn extends Component {
     renderAlert() {
         return (
             <div className='alertMessage'>
-            <Alert severity={this.state.alert.level.toLowerCase()}>
+            <Alert color={this.state.alert.level.toLowerCase()}>
                 {this.state.alert.text}
             </Alert>
             </div>
@@ -252,6 +253,7 @@ export class CheckIn extends Component {
         await fetch('checkinout/people', {
             body: JSON.stringify({
                 securityCode: this.state.securityCode,
+                eventId: await getSelectedEventFromStorage(),
                 selectedLocationIds: selectedLocationIds,
                 isFastCheckInOut: this.state.fastCheckInOut ?? false,
                 checkType: this.state.checkType,
@@ -325,11 +327,6 @@ export class CheckIn extends Component {
         }
     }
 
-    getStateFromLocalStorage(boolean) {
-        let s = localStorage.getItem(boolean);
-        return s === undefined ? false : JSON.parse(s);
-    }
-
     invertSelectCandidate(candidate) {
         candidate.isSelected = !candidate.isSelected;
         this.setState({ checkInOutCandidates: this.state.checkInOutCandidates });
@@ -352,6 +349,10 @@ export class CheckIn extends Component {
     }
 
     getNameButtonColor(candidate) {
+        if (this.state.checkType === 'CheckIn'){
+            return 'primary';
+        }
+        
         if (candidate['hasPeopleWithoutPickupPermission']) {
             return 'danger';
         }

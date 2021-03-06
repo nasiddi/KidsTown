@@ -65,6 +65,7 @@ namespace Application.Controllers
             var people = await _checkInOutService.SearchForPeople(
                 new PeopleSearchParameters(
                     request.SecurityCode, 
+                    request.EventId,
                     request.SelectedLocationIds));
 
             if (people.Count == 0)
@@ -87,7 +88,9 @@ namespace Application.Controllers
                 });
             }
             
-            if (request.IsFastCheckInOut && !peopleReadyForProcessing.Any(p => !p.MayLeaveAlone || p.HasPeopleWithoutPickupPermission))
+            if (request.IsFastCheckInOut 
+                && (!peopleReadyForProcessing.Any(p => !p.MayLeaveAlone || p.HasPeopleWithoutPickupPermission) 
+                    || request.CheckType == CheckType.CheckIn))
             {
                 var person = await TryFastCheckInOut(peopleReadyForProcessing, request.CheckType);
                 if (person != null)
@@ -109,20 +112,7 @@ namespace Application.Controllers
                 HasPeopleWithoutPickupPermission = p.HasPeopleWithoutPickupPermission
             }).ToImmutableList();
 
-            var text = "";
-            var level = AlertLevel.Info;
-
-            if (checkInOutCandidates.Any(c => !c.MayLeaveAlone))
-            {
-                text = "Kinder mit gelbem Hintergrund dürfen nicht alleine gehen";
-                level = AlertLevel.Warning;
-            }
-
-            if (checkInOutCandidates.Any(c => c.HasPeopleWithoutPickupPermission))
-            {
-                text = "Bei Kindern mit rotem Hintergrund gibt es Personen, die nicht abholberechtigt sind";
-                level = AlertLevel.Danger;
-            }
+            var text = GetCandidateAlert(request, checkInOutCandidates, out var level);
 
             return Ok(new CheckInOutResult
             {
@@ -130,6 +120,30 @@ namespace Application.Controllers
                 AlertLevel = level,
                 CheckInOutCandidates = checkInOutCandidates
             });
+        }
+
+        private static string GetCandidateAlert(CheckInOutRequest request, ImmutableList<CheckInOutCandidate> checkInOutCandidates,
+            out AlertLevel level)
+        {
+            var text = "";
+            level = AlertLevel.Info;
+
+            if (request.CheckType == CheckType.CheckOut)
+            {
+                if (checkInOutCandidates.Any(c => !c.MayLeaveAlone))
+                {
+                    text = "Kinder mit gelbem Hintergrund dürfen nicht alleine gehen";
+                    level = AlertLevel.Warning;
+                }
+
+                if (checkInOutCandidates.Any(c => c.HasPeopleWithoutPickupPermission))
+                {
+                    text = "Bei Kindern mit rotem Hintergrund gibt es Personen, die nicht abholberechtigt sind";
+                    level = AlertLevel.Danger;
+                }
+            }
+
+            return text;
         }
 
         private async Task<Person?> TryFastCheckInOut(IImmutableList<Person> people, CheckType checkType)

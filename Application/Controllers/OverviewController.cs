@@ -18,19 +18,23 @@ namespace Application.Controllers
         }
 
         [HttpPost]
-        [Route("attendees/active")]
+        [Route("event/{eventId}/attendees/active")]
         [Produces("application/json")]
-        public async Task<ImmutableList<Attendee>> GetActiveAttendees([FromBody] IImmutableList<int> selectedLocations)
+        public async Task<ImmutableList<Attendee>> GetActiveAttendees(
+            [FromRoute] long eventId, 
+            [FromBody] IImmutableList<int> selectedLocations)
         {
-            return await _overviewService.GetActiveAttendees(selectedLocations);
+            return await _overviewService.GetActiveAttendees(eventId, selectedLocations);
         }
         
         [HttpPost]
-        [Route("attendees/history")]
+        [Route("event/{eventId}/attendees/history")]
         [Produces("application/json")]
-        public async Task<ImmutableList<DailyStatistic>> GetAttendanceHistory([FromBody] IImmutableList<int> selectedLocations)
+        public async Task<ImmutableList<DailyStatistic>> GetAttendanceHistory(
+            [FromRoute] long eventId,
+            [FromBody] IImmutableList<int> selectedLocations)
         {
-            return await _overviewService.GetAttendanceHistory(selectedLocations);
+            return await _overviewService.GetAttendanceHistory(eventId, selectedLocations);
         }
     }
 }

@@ -18,14 +18,18 @@ namespace CheckInsExtension.CheckInUpdateJobs.People
             _configurationService = configurationService;
         }
 
-        public async Task<ImmutableList<Attendee>> GetActiveAttendees(IImmutableList<int> selectedLocations)
+        public async Task<ImmutableList<Attendee>> GetActiveAttendees(
+            long eventId,
+            IImmutableList<int> selectedLocations)
         {
-            return await _overviewRepository.GetActiveAttendees(selectedLocations, _configurationService.GetEventIds());
+            return await _overviewRepository.GetActiveAttendees(selectedLocations, eventId);
         }
 
-        public async Task<ImmutableList<DailyStatistic>> GetAttendanceHistory(IImmutableList<int> selectedLocations)
+        public async Task<ImmutableList<DailyStatistic>> GetAttendanceHistory(
+            long eventId,
+            IImmutableList<int> selectedLocations)
         {
-            var attendees = await _overviewRepository.GetAttendanceHistory(selectedLocations, _configurationService.GetEventIds());
+            var attendees = await _overviewRepository.GetAttendanceHistory(selectedLocations, eventId);
 
             return attendees.GroupBy(a => a.InsertDate.Date).Select(MapDailyStatistic).ToImmutableList();
         }

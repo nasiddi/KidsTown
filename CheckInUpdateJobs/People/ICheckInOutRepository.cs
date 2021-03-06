@@ -6,8 +6,7 @@ namespace CheckInsExtension.CheckInUpdateJobs.People
 {
     public interface ICheckInOutRepository
     {
-        Task<ImmutableList<Person>> GetPeople(PeopleSearchParameters peopleSearchParameters,
-            IImmutableList<long> eventIds);
+        Task<ImmutableList<Person>> GetPeople(PeopleSearchParameters peopleSearchParameters);
         Task<bool> CheckInPeople(IImmutableList<int> checkInIds);
         Task<bool> CheckOutPeople(IImmutableList<int> checkInIds);
     }

@@ -1,4 +1,5 @@
-﻿using System.Collections.Immutable;
+﻿using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 using System.Threading.Tasks;
 using Application.Models;
@@ -32,6 +33,25 @@ namespace Application.Controllers
             return locations.Select(MapOptions).ToImmutableList();
         }
 
+        [HttpGet]
+        [Route("events")]
+        [Produces("application/json")]
+        public async Task<ImmutableList<CheckInsEvent>> GetAvailableEvents()
+        {
+            return await _configurationService.GetAvailableEvents();
+        }
+
+        [HttpGet]
+        [Route("events/default")]
+        [Produces("application/json")]
+        public Dictionary<string, long> GetDefaultEvent()
+        {
+            return new()
+            {
+                {"eventId", _configurationService.GetDefaultEventId()}
+            };
+        }
+        
         private static Options MapOptions(Location location)
         {
             return new()
@@ -39,7 +59,6 @@ namespace Application.Controllers
                 Value = location.Id,
                 Label = location.Name
             };
-
         }
     }
 }

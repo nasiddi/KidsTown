@@ -7,6 +7,7 @@ import {Statistic} from "./components/Statistic";
 
 import './custom.css'
 import {withAuth} from "./auth/MsalAuthProvider";
+import {Settings} from "./components/Settings";
 
 class RootApp extends Component {
   static displayName = 'Kidstown';
@@ -18,6 +19,7 @@ class RootApp extends Component {
                   <Route exact path='/' component={CheckIn} />
                   <Route path='/overview' component={Overview} />
                   <Route path='/statistic' component={Statistic} />
+                  <Route path='/settings' component={Settings} />
               </CheckInLayout>
           </div>
       );

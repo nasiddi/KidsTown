@@ -17,7 +17,7 @@ namespace CheckInsExtension.CheckInUpdateJobs.People
         
         public async Task<IImmutableList<Person>> SearchForPeople(PeopleSearchParameters searchParameters)
         {
-            return await _checkInOutRepository.GetPeople(searchParameters, _configurationService.GetEventIds());
+            return await _checkInOutRepository.GetPeople(searchParameters);
         }
 
         public async Task<bool> CheckInPeople(IImmutableList<int> checkInIds)
