@@ -30,6 +30,7 @@ namespace ChekInsExtension.Database
         {
             if (!optionsBuilder.IsConfigured)
             {
+                optionsBuilder.LogTo(Console.WriteLine);
                 optionsBuilder.UseSqlServer(_configuration.GetConnectionString("Database"));
             }
         }

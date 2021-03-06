@@ -2,7 +2,7 @@ namespace Application.Models
 {
     public enum AlertLevel
     {
-        Error,
+        Danger,
         Warning,
         Info,
         Success

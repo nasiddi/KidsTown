@@ -1,11 +1,11 @@
 import React, { Component } from 'react';
 import Select from "react-select";
 import {Grid} from "@material-ui/core";
-import {fetchLocations, getSelectedOptionsFromStorage, selectStyles} from "./Common";
+import {fetchLocations, getFormattedDate, getSelectedOptionsFromStorage, selectStyles} from "./Common";
 import { Table } from 'reactstrap';
 
-export class Overview extends Component {
-    static displayName = Overview.name;
+export class Statistic extends Component {
+    static displayName = Statistic.name;
     
     repeat 
     
@@ -14,8 +14,8 @@ export class Overview extends Component {
 
         this.state = {
             locations: [],
-            overviewLocations: getSelectedOptionsFromStorage(
-                'overviewLocations',
+            statisticLocations: getSelectedOptionsFromStorage(
+                'statisticLocations',
                 []
             ),
             attendees: {},
@@ -42,12 +42,12 @@ export class Overview extends Component {
                         styles={selectStyles}
                         isMulti
                         placeholder='Select locations'
-                        name='overviewLocations'
+                        name='statisticLocations'
                         options={this.state.locations}
                         className='basic-multi-select'
                         classNamePrefix='select'
-                        onChange={(o) => this.updateOptions(o, 'overviewLocations')}
-                        defaultValue={this.state.overviewLocations}
+                        onChange={(o) => this.updateOptions(o, 'statisticLocations')}
+                        defaultValue={this.state.statisticLocations}
                         minWidth='100px'
                     />
                 </Grid>
@@ -62,38 +62,29 @@ export class Overview extends Component {
             );
         }
         
-        let volunteers = this.state.attendees.filter(a => a['attendanceType'] === 'Volunteer');
-        let kids = this.state.attendees.filter(a => a['attendanceType'] === 'Regular' || a['attendanceType'] === 'Guest');
-        
-        let totalCount = <tr/>;
-        if (this.state.overviewLocations.length !== 1){
-            totalCount = 
-                <tr key='Total'>
-                <th>Total</th>
-                <th align="right">{kids.length}</th>
-                <th align="right">{volunteers.length}</th>
-            </tr>
-        }
-        
-        
         return (
-            <Table>
+        <Table>
                 <thead>
                 <tr>
-                    <th>Location</th>
+                    <th>Datum</th>
                     <th>Kinder</th>
+                    <th>davon Gäste</th>
                     <th>Betreuer</th>
+                    <th>kein CheckIn</th>
+                    <th>kein CheckOut</th>
                 </tr>
                 </thead>
                 <tbody>
-                {this.state.overviewLocations.map((row) => (
-                    <tr key={row.value}>
-                        <td> {row.label}</td>
-                        <td>{kids.filter(k => k['locationId'] === row.value).length}</td>
-                        <td>{volunteers.filter(k => k['locationId'] === row.value).length}</td>
+                {this.state.attendees.sort((a, b) => (a['date'] > b['date']) ? -1 : 1).map((row) => (
+                    <tr key={row['date']}>
+                        <td>{getFormattedDate(row['date'])}</td>
+                        <td>{row['regularCount'] + row['guestCount']}</td>
+                        <td>{row['guestCount']}</td>
+                        <td>{row['volunteerCount']}</td>
+                        <td>{row['preCheckInOnlyCount']}</td>
+                        <td>{row['noCheckOutCount']}</td>
                     </tr>
                 ))}
-                {totalCount}
                 </tbody>
             </Table>
         );
@@ -121,8 +112,8 @@ export class Overview extends Component {
     }
 
     async fetchData() {
-        await fetch('overview/attendees/active', {
-            body: JSON.stringify(this.state.overviewLocations.map(l => l.value)),
+        await fetch('overview/attendees/history', {
+            body: JSON.stringify(this.state.statisticLocations.map(l => l.value)),
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -132,12 +123,11 @@ export class Overview extends Component {
             .then((j) => {
                 this.setState({ attendees: j });
             });
-        
-        this.repeat = setTimeout(this.fetchData.bind(this), 500);
     }
 
-    updateOptions = (options, key) => {
+    updateOptions = async (options, key) => {
         localStorage.setItem(key, JSON.stringify(options));
-        this.setState({ [key]: options });
+        this.setState({[key]: options});
+        await this.fetchData();
     };
 }

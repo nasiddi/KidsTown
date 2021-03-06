@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using System.Threading.Tasks;
+using CheckInsExtension.CheckInUpdateJobs.Models;
 using CheckInsExtension.CheckInUpdateJobs.Update;
 using CheckInsExtension.PlanningCenterAPIClient.Models.CheckInResult;
 using Microsoft.EntityFrameworkCore;
@@ -34,7 +35,7 @@ namespace ChekInsExtension.Database
             }
         }
 
-        public async Task<ImmutableList<long>> GetPeopleIdsPreCheckedIns(int daysLookBack)
+        public async Task<ImmutableList<long>> GetCurrentPeopleIds(int daysLookBack)
         {
             await using (var db = _serviceScopeFactory.CreateScope().ServiceProvider
                 .GetRequiredService<CheckInsExtensionContext>())
@@ -61,41 +62,76 @@ namespace ChekInsExtension.Database
             }
         }
 
+        public async Task AutoCheckInVolunteers()
+        {
+            await using (var db = _serviceScopeFactory.CreateScope().ServiceProvider
+                .GetRequiredService<CheckInsExtensionContext>())
+            {
+                var volunteers = await db.Attendances
+                    .Where(a => 
+                        a.AttendanceTypeId == (int) AttendanceTypes.Volunteer
+                        && a.CheckInDate == null)
+                    .ToListAsync();
+                
+                volunteers.ForEach(v => v.CheckInDate = DateTime.UtcNow);
+                await db.SaveChangesAsync();
+            }
+        }
+
+        public async Task AutoCheckoutEveryoneByEndOfDay()
+        {
+            await using (var db = _serviceScopeFactory.CreateScope().ServiceProvider
+                .GetRequiredService<CheckInsExtensionContext>())
+            {
+                var attendances = await db.Attendances
+                    .Where(a => 
+                        a.CheckInDate != null
+                        && a. CheckInDate < DateTime.Today)
+                    .ToListAsync();
+                
+                attendances.ForEach(v => v.CheckOutDate = v.CheckInDate!.Value.Date.AddDays(1).AddSeconds(-1));
+                await db.SaveChangesAsync();
+            }
+        }
+
         public async Task InsertPreCheckIns(IImmutableList<CheckInUpdate> preCheckIns)
         {
             await using (var db = _serviceScopeFactory.CreateScope().ServiceProvider
                 .GetRequiredService<CheckInsExtensionContext>())
             {
                 var guests = preCheckIns.Where(c => c.PeopleId == null).ToImmutableList();
-
                 await PreCheckInGuests(guests, db);
 
-                var persons = preCheckIns
-                    .Except(guests)
-                    .Select(c => c.Person)
-                    .GroupBy(p => p.PeopleId).Select(p => p.First())
-                    .ToImmutableList();
-
-                var existingPersons = await GetPersonsByPeopleIds(
-                    db,
-                    persons.Where(p => p.PeopleId.HasValue)
-                        .Select(p => p.PeopleId!.Value).ToImmutableList());
-
-                var personUpdates = persons.Where(p => existingPersons.Select(e => e.PeopleId).Contains(p.PeopleId))
-                    .ToImmutableList();
-                var personInserts = persons.Except(personUpdates).ToImmutableList();
-
-                await UpdatePersons(db, existingPersons, personUpdates);
-
-                var insertedPersons = await InsertPersons(db, personInserts);
-
-                var checkIns = preCheckIns
-                    .Except(guests)
-                    .Select(c => MapToAttendance(c, existingPersons.Union(insertedPersons).ToImmutableList()))
-                    .ToImmutableList();
-                await db.AddRangeAsync(checkIns);
-                await db.SaveChangesAsync();
+                var regularPreCheckIns = preCheckIns.Except(guests).ToImmutableList();
+                await PreCheckInRegulars(regularPreCheckIns, db);
             }
+        }
+
+        private static async Task PreCheckInRegulars(ImmutableList<CheckInUpdate> regularPreCheckIns, CheckInsExtensionContext db)
+        {
+            var persons = regularPreCheckIns
+                .Select(c => c.Person)
+                .GroupBy(p => p.PeopleId).Select(p => p.First())
+                .ToImmutableList();
+
+            var existingPersons = await GetPersonsByPeopleIds(
+                db,
+                persons.Where(p => p.PeopleId.HasValue)
+                    .Select(p => p.PeopleId!.Value).ToImmutableList());
+
+            var personUpdates = persons.Where(
+                    p => existingPersons.Select(e => e.PeopleId).Contains(p.PeopleId))
+                .ToImmutableList();
+            await UpdatePersons(db, existingPersons, personUpdates);
+            
+            var personInserts = persons.Except(personUpdates).ToImmutableList();
+            var insertedPersons = await InsertPersons(db, personInserts);
+
+            var checkIns = regularPreCheckIns
+                .Select(c => MapToAttendance(c, existingPersons.Union(insertedPersons).ToImmutableList()))
+                .ToImmutableList();
+            await db.AddRangeAsync(checkIns);
+            await db.SaveChangesAsync();
         }
 
         private async Task PreCheckInGuests(ImmutableList<CheckInUpdate> guests, CheckInsExtensionContext db)

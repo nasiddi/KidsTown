@@ -1,24 +1,23 @@
 using System.Collections.Immutable;
 using System.Threading.Tasks;
 using CheckInsExtension.CheckInUpdateJobs.Models;
-using Microsoft.Extensions.Configuration;
 
 namespace CheckInsExtension.CheckInUpdateJobs.People
 {
     public class CheckInOutService : ICheckInOutService
     {
         private readonly ICheckInOutRepository _checkInOutRepository;
-        private readonly IConfiguration _configuration;
+        private readonly IConfigurationService _configurationService;
 
-        public CheckInOutService(ICheckInOutRepository checkInOutRepository, IConfiguration configuration)
+        public CheckInOutService(ICheckInOutRepository checkInOutRepository, IConfigurationService configurationService)
         {
             _checkInOutRepository = checkInOutRepository;
-            _configuration = configuration;
+            _configurationService = configurationService;
         }
         
         public async Task<IImmutableList<Person>> SearchForPeople(PeopleSearchParameters searchParameters)
         {
-            return await _checkInOutRepository.GetPeople(searchParameters, GetEventIds());
+            return await _checkInOutRepository.GetPeople(searchParameters, _configurationService.GetEventIds());
         }
 
         public async Task<bool> CheckInPeople(IImmutableList<int> checkInIds)
@@ -29,21 +28,6 @@ namespace CheckInsExtension.CheckInUpdateJobs.People
         public async Task<bool> CheckOutPeople(IImmutableList<int> checkInIds)
         {
             return await _checkInOutRepository.CheckOutPeople(checkInIds);
-        }
-
-        public async Task<ImmutableList<Location>> GetActiveLocations()
-        {
-            return await _checkInOutRepository.GetActiveLocations();
-        }
-
-        public async Task<ImmutableList<Attendee>> GetActiveAttendees(IImmutableList<int> selectedLocations)
-        {
-            return await _checkInOutRepository.GetActiveAttendees(selectedLocations, GetEventIds());
-        }
-
-        private IImmutableList<long> GetEventIds()
-        {
-            return _configuration.GetSection("EventIds").Get<long[]>().ToImmutableList();
         }
     }
 }

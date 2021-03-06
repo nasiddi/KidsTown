@@ -32,7 +32,7 @@ namespace ChekInsExtension.Database
                         on a.LocationId equals l.Id
                     where a.SecurityCode == peopleSearchParameters.SecurityCode
                           && peopleSearchParameters.Locations.Contains(a.Location.Id)
-                          && a.InsertDate >= DateTime.Today.AddDays(-30)
+                          && a.InsertDate >= DateTime.Today.AddDays(-3)
                           && eventIds.Contains(a.EventId)
                     select MapPerson(a, p, l))
                     .ToListAsync();
@@ -62,57 +62,6 @@ namespace ChekInsExtension.Database
             }
         }
 
-        public async Task<ImmutableList<CheckInsExtension.CheckInUpdateJobs.Models.Location>> GetActiveLocations()
-        {
-            await using (var db = _serviceScopeFactory.CreateScope().ServiceProvider.GetRequiredService<CheckInsExtensionContext>())
-            {
-                var locations = await db.Locations.Where(l => l.IsEnabled).ToListAsync();
-                return locations.Select(l => new CheckInsExtension.CheckInUpdateJobs.Models.Location(l.Id, l.Name))
-                    .ToImmutableList();
-            }
-        }
-        
-        public async Task<ImmutableList<Attendee>> GetActiveAttendees(
-            IImmutableList<int> selectedLocations,
-            IImmutableList<long> eventIds)
-        {
-            await using (var db = _serviceScopeFactory.CreateScope().ServiceProvider.GetRequiredService<CheckInsExtensionContext>())
-            {
-                var people = await (from a in db.Attendances
-                        join p in db.People
-                            on a.PersonId equals p.Id
-                        join l in db.Locations
-                            on a.LocationId equals l.Id
-                        join at in db.AttendanceTypes
-                            on a.AttendanceTypeId equals at.Id
-                        where a.CheckInDate != null 
-                              && a.CheckOutDate == null
-                              && selectedLocations.Contains(l.Id)
-                              && eventIds.Contains(a.EventId)
-                        select MapAttendee(a, p, l, at))
-                    .ToListAsync();
-
-                return people.ToImmutableList();
-            }
-        }
-
-        private static Attendee MapAttendee(
-            Attendance attendance, 
-            Person person, 
-            Location location,
-            AttendanceType attendanceType)
-        {
-            var checkState = GetCheckState(attendance);
-
-            return new Attendee
-            {
-                Name = $"{person.FistName} {person.LastName}",
-                AttendanceType = attendanceType.Name,
-                LocationId = location.Id,
-                CheckState = checkState
-            };
-        }
-
         private static async Task<List<Attendance>> GetCheckIns(
             IImmutableList<int> checkinIds,
             CheckInsExtensionContext db)
@@ -125,7 +74,7 @@ namespace ChekInsExtension.Database
         private static CheckInsExtension.CheckInUpdateJobs.Models.Person MapPerson(Attendance attendance, Person person,
             Location location)
         {
-            var checkState = GetCheckState(attendance);
+            var checkState = MappingService.GetCheckState(attendance);
 
             return new CheckInsExtension.CheckInUpdateJobs.Models.Person
             {
@@ -140,23 +89,6 @@ namespace ChekInsExtension.Database
                 HasPeopleWithoutPickupPermission = person.HasPeopleWithoutPickupPermission,
                 CheckState = checkState
             };
-        }
-
-        private static CheckState GetCheckState(Attendance attendance)
-        {
-            var checkState = CheckState.PreCheckedIn;
-
-            if (attendance.CheckInDate.HasValue)
-            {
-                checkState = CheckState.CheckedIn;
-            }
-
-            if (attendance.CheckOutDate.HasValue)
-            {
-                checkState = CheckState.CheckedOut;
-            }
-
-            return checkState;
         }
     }
 }

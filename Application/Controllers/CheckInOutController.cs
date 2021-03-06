@@ -23,26 +23,6 @@ namespace Application.Controllers
             _updateTask = updateTask;
         }
 
-        [HttpGet]
-        [Route("location")]
-        [Produces("application/json")]
-        public async Task<ImmutableList<Options>> GetLocations()
-        {
-            _updateTask.TaskIsActive = true;
-            var locations = await _checkInOutService.GetActiveLocations();
-            return locations.Select(MapOptions).ToImmutableList();
-        }
-        
-        [HttpPost]
-        [Route("attendees/active")]
-        [Produces("application/json")]
-        public async Task<ImmutableList<Attendee>> GetActiveAttendees([FromBody] IImmutableList<int> selectedLocations)
-        {
-            return await _checkInOutService.GetActiveAttendees(selectedLocations);
-        }
-        
-        
-        
         [HttpPost]
         [Route("manual")]
         [Produces("application/json")]
@@ -70,7 +50,7 @@ namespace Application.Controllers
             return Ok(new CheckInOutResult
             {
                 Text = $"{request.CheckType.ToString()} für {string.Join(", ", names)} ist fehlgeschlagen",
-                AlertLevel = AlertLevel.Error,
+                AlertLevel = AlertLevel.Danger,
             });
         }
         
@@ -92,7 +72,7 @@ namespace Application.Controllers
                 return Ok(new CheckInOutResult
                 {
                     Text = $"Es wurde niemand mit SecurityCode {request.SecurityCode} gefunden. Locations und CheckIn/CheckOut Einstellungen überprüfen.",
-                    AlertLevel = AlertLevel.Error
+                    AlertLevel = AlertLevel.Danger
                 });
             }
             
@@ -103,11 +83,11 @@ namespace Application.Controllers
                 return Ok(new CheckInOutResult
                 {
                     Text = $"Für {request.CheckType.ToString()} wurde niemand mit SecurityCode {request.SecurityCode} gefunden. Locations und CheckIn/CheckOut Einstellungen überprüfen.",
-                    AlertLevel = AlertLevel.Error
+                    AlertLevel = AlertLevel.Danger
                 });
             }
             
-            if (request.IsFastCheckInOut)
+            if (request.IsFastCheckInOut && !peopleReadyForProcessing.Any(p => !p.MayLeaveAlone || p.HasPeopleWithoutPickupPermission))
             {
                 var person = await TryFastCheckInOut(peopleReadyForProcessing, request.CheckType);
                 if (person != null)
@@ -141,7 +121,7 @@ namespace Application.Controllers
             if (checkInOutCandidates.Any(c => c.HasPeopleWithoutPickupPermission))
             {
                 text = "Bei Kindern mit rotem Hintergrund gibt es Personen, die nicht abholberechtigt sind";
-                level = AlertLevel.Error;
+                level = AlertLevel.Danger;
             }
 
             return Ok(new CheckInOutResult
@@ -185,16 +165,6 @@ namespace Application.Controllers
                 CheckType.CheckOut => people.Where(p => p.CheckState == CheckState.CheckedIn).ToImmutableList(),
                 _ => throw new ArgumentOutOfRangeException(nameof(checkType), checkType, null)
             };
-        }
-
-        private static Options MapOptions(Location location)
-        {
-            return new()
-            {
-                Value = location.Id,
-                Label = location.Name
-            };
-
         }
     }
 }

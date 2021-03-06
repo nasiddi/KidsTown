@@ -1,4 +1,5 @@
-﻿#pragma warning disable 8618
+﻿#pragma warning disable 8603
+#pragma warning disable 8618
 namespace CheckInsExtension.PlanningCenterAPIClient.Models.CheckInResult
 {
     using System;

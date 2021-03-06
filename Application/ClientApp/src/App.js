@@ -3,6 +3,7 @@ import { Route } from 'react-router';
 import { CheckInLayout, OverviewLayout } from './components/Layout';
 import { CheckIn } from './components/CheckIn';
 import { Overview } from "./components/Overview";
+import {Statistic} from "./components/Statistic";
 
 import './custom.css'
 import {withAuth} from "./auth/MsalAuthProvider";
@@ -15,10 +16,9 @@ class RootApp extends Component {
           <div>
               <CheckInLayout>
                   <Route exact path='/' component={CheckIn} />
-              </CheckInLayout>
-              <OverviewLayout>
                   <Route path='/overview' component={Overview} />
-              </OverviewLayout>
+                  <Route path='/statistic' component={Statistic} />
+              </CheckInLayout>
           </div>
       );
   }

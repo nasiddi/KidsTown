@@ -10,7 +10,5 @@ namespace CheckInsExtension.CheckInUpdateJobs.People
         Task<IImmutableList<Person>> SearchForPeople(PeopleSearchParameters searchParameters);
         Task<bool> CheckInPeople(IImmutableList<int> checkInIds);
         Task<bool> CheckOutPeople(IImmutableList<int> checkInIds);
-        Task<ImmutableList<Location>> GetActiveLocations();
-        Task<ImmutableList<Attendee>> GetActiveAttendees(IImmutableList<int> selectedLocations);
     }
 }

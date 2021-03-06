@@ -5,60 +5,14 @@ import FormControlLabel from '@material-ui/core/FormControlLabel';
 import Checkbox from '@material-ui/core/Checkbox';
 import Alert from '@material-ui/lab/Alert';
 import 'bootstrap/dist/css/bootstrap.css';
-import {Button, ButtonGroup, Grid} from '@material-ui/core';
-import { withStyles } from '@material-ui/core/styles';
-
-import {green, red, indigo, amber} from '@material-ui/core/colors';
+import {createMuiTheme, Grid, MuiThemeProvider} from '@material-ui/core';
 import {fetchLocations, getSelectedOptionsFromStorage, selectStyles} from "./Common";
+import {Button, ButtonGroup} from "reactstrap";
 
-
-
-const styledBy = (property, mapping) => (props) => mapping[props[property]];
-
-const styles = {
-    root: {
-        background: styledBy('backgroundColor', {
-            blue: indigo[500],
-            red: red[500],
-            yellow: amber[500],
-            green: green[500],
-            white: 'white'
-        }),
-        "&:hover": {
-            backgroundColor: styledBy( 'backgroundColor', {
-                blue: indigo[700],
-                red: red[700],
-                yellow: amber[700],
-                green: green[700],
-                white: 'lightgray'
-            })
-        },
-        '&:disabled': {
-            backgroundColor: 'lightgray',
-            borderColor: 'lightgrey'
-        },
-        color: styledBy('fontColor', {
-            blue: indigo[500],
-            red: red[500],
-            yellow: amber[500],
-            green: green[500],
-            white: 'white'
-        }),
-        border: '2px solid',
-        borderColor: styledBy('borderColor', {
-            blue: indigo[500],
-            red: red[500],
-            yellow: amber[500],
-            green: green[500],
-            white: 'white'
-        })
-    },
-};
-
-const StyledButton = withStyles(styles)(({ classes, backgroundColor, fontColor, borderColor, ...other }) => (
-    <Button className={classes.root} {...other} />
-));
-
+const theme = createMuiTheme({
+    palette: {
+        primary: { main: '#047bff' }
+    }});
 
 export class CheckIn extends Component {
     static displayName = CheckIn.name;
@@ -107,15 +61,15 @@ export class CheckIn extends Component {
                     <Grid item md={3} xs={12}>
                         <ButtonGroup size="medium" color="primary">
                             <Button
-                                variant={this.checkTypeIsActive('CheckIn')}
                                 onClick={() => this.selectCheckType('CheckIn')}
-                                disableElevation
+                                color='primary'
+                                outline={this.checkTypeIsActive('CheckIn')}
                             >CheckIn
                             </Button>
                             <Button
-                                variant={this.checkTypeIsActive('CheckOut')}
                                 onClick={() => this.selectCheckType('CheckOut')}
-                                disableElevation
+                                color='primary'
+                                outline={this.checkTypeIsActive('CheckOut')}
                             >CheckOut
                             </Button>
                         </ButtonGroup>
@@ -135,6 +89,7 @@ export class CheckIn extends Component {
                         />
                     </Grid>
                     <Grid item md={3} xs={6}>
+                        <MuiThemeProvider theme={theme}>
                         <FormControlLabel
                             control={
                                 <Checkbox
@@ -147,6 +102,7 @@ export class CheckIn extends Component {
                             label={`Single ${this.state.checkType}`}
                             labelPlacement='end'
                         />
+                        </MuiThemeProvider>
                     </Grid>
                     <Grid item md={3} xs={12}>
                         <Select
@@ -163,6 +119,7 @@ export class CheckIn extends Component {
                         />
                     </Grid>
                     <Grid item md={10} xs={12}>
+                        <MuiThemeProvider theme={theme}>
                         <TextField
                             inputRef={this.securityCodeInput}
                             id='outlined-basic'
@@ -173,18 +130,16 @@ export class CheckIn extends Component {
                             fullWidth={true}
                             autoFocus
                         />
+                        </MuiThemeProvider>
                     </Grid>
                     <Grid item md={2} xs={12}>
                         <Button
-                            size='large'
-                            variant='contained'
-                            color={this.state.checkInOutCandidates.length > 0 ? 'default' : 'primary'}
-                            fullWidth={true}
-                            disableElevation
+                            size='lg'
+                            color={this.state.checkInOutCandidates.length > 0 ? 'secondary' : 'primary'}
+                            block
                             onClick={this.state.checkInOutCandidates.length > 0 ? 
                                 () => this.resetView() : () => this.submitSecurityCode()}
-                        >
-                            {this.state.checkInOutCandidates.length > 0 ? 'Clear' : 'Search'}
+                        >{this.state.checkInOutCandidates.length > 0 ? 'Clear' : 'Search'}
                         </Button>
                     </Grid>
                 </Grid>
@@ -205,16 +160,13 @@ export class CheckIn extends Component {
     renderSingleCheckout(checkInOutCandidates) {
         let candidates = checkInOutCandidates.map((c) => (
             <div className='nameButton' key={c['checkInId']}>
-                <StyledButton
-                    backgroundColor={this.getNameButtonBackgroundColor(c)}
-                    fontColor={this.getNameButtonFontColor(c)}
-                    borderColor={this.getNameButtonBorderColor(c)}                    
+                <Button
+                    block
+                    color={this.getNameButtonColor(c)}
+                    size="lg"
                     onClick={() => this.checkInOutSingle(c)}
-                    size='large'
-                    fullWidth={true}
-                >
-                    {c['name']}
-                </StyledButton>
+                >{c['name']}
+                </Button>
             </div>
         ));
         return <div>{candidates}</div>;
@@ -223,16 +175,14 @@ export class CheckIn extends Component {
     renderMultiCheckout(checkInOutCandidates) {
         let candidates = checkInOutCandidates.map((c) => (
             <div className='nameButton' key={c['checkInId']}>
-                <StyledButton
-                    backgroundColor={this.getNameButtonBackgroundColor(c)}
-                    fontColor={this.getNameButtonFontColor(c)}
-                    borderColor={this.getNameButtonBorderColor(c)}
+                <Button
+                    block
+                    color={this.getNameButtonColor(c)}
+                    size="lg"
+                    outline={!c.isSelected}
                     onClick={() => this.invertSelectCandidate(c)}
-                    size='large'
-                    fullWidth={true}
-                >
-                    {c['name']}
-                </StyledButton>
+                >{c['name']}
+                </Button>
             </div>
         ));
         
@@ -240,17 +190,14 @@ export class CheckIn extends Component {
             <div>
                 {candidates}
                 <div className='saveButton'>
-                    <StyledButton
-                        disabled={this.areAnyCandidatesSelected()}
-                        backgroundColor='green'
-                        fontColor='white'
-                        borderColor={'green'}
+                    <Button
+                        block
+                        color={this.areNoCandidatesSelected() ? 'secondary' : 'success'}
+                        size="lg"
                         onClick={() => this.checkInOutMultiple()}
-                        size='large'
-                        fullWidth={true}
-                    >
-                        {this.state.checkType}
-                    </StyledButton>
+                        disabled={this.areNoCandidatesSelected()}
+                    >{this.state.checkType}
+                    </Button>
                 </div>
             </div>
         );
@@ -388,61 +335,12 @@ export class CheckIn extends Component {
         this.setState({ checkInOutCandidates: this.state.checkInOutCandidates });
     }
 
-    areAnyCandidatesSelected() {
+    areNoCandidatesSelected() {
         return this.state.checkInOutCandidates.filter((c) => c.isSelected).length <= 0;
     }
     
-    getNameButtonBackgroundColor(candidate) {
-        if (!candidate.isSelected) {
-            return 'white'
-        }
-
-        if (candidate['hasPeopleWithoutPickupPermission']) {
-            return 'red';
-        }
-
-        if (!candidate['mayLeaveAlone']) {
-            return 'yellow';
-        }
-
-        return 'blue';
-        
-    }
-
-    getNameButtonFontColor(candidate) {
-        if (candidate.isSelected) {
-            return 'white'
-        }
-
-        if (candidate['hasPeopleWithoutPickupPermission']) {
-            return 'red';
-        }
-
-        if (!candidate['mayLeaveAlone']) {
-            return 'yellow';
-        }
-
-        return 'blue';
-    }
-
-    getNameButtonBorderColor(candidate) {
-        if (candidate['hasPeopleWithoutPickupPermission']) {
-            return 'red';
-        }
-
-        if (!candidate['mayLeaveAlone']) {
-            return 'yellow';
-        }
-
-        return 'blue';
-    }
-
     checkTypeIsActive(checkType) {
-        if (this.state.checkType === checkType){
-            return 'contained';
-        }
-        
-        return 'outlined';
+        return !(this.state.checkType === checkType);
     }
 
     selectCheckType(checkType) {
@@ -451,5 +349,17 @@ export class CheckIn extends Component {
             localStorage.setItem('checkType', checkType);
             this.resetView();
         }
+    }
+
+    getNameButtonColor(candidate) {
+        if (candidate['hasPeopleWithoutPickupPermission']) {
+            return 'danger';
+        }
+
+        if (!candidate['mayLeaveAlone']) {
+            return 'warning';
+        }
+
+        return 'primary';
     }
 }

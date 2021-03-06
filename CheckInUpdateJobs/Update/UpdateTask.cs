@@ -34,11 +34,18 @@ namespace CheckInsExtension.CheckInUpdateJobs.Update
                     activationTime = DateTime.UtcNow;
                 }
 
-                await _updateService.FetchDataFromPlanningCenter();
+                try
+                {
+                    await _updateService.FetchDataFromPlanningCenter();
+                }
+                catch (Exception e)
+                {
+                    _logger.LogError(e.Message, e);
+                }
 
                 await Delay(5000, cancellationToken);
 
-                if (DateTime.UtcNow - activationTime > TimeSpan.FromHours(12))
+                if (activationTime < DateTime.UtcNow.Date.AddHours(1))
                 {
                     TaskIsActive = false;
                 }
