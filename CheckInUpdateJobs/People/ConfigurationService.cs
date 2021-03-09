@@ -46,7 +46,6 @@ namespace CheckInsExtension.CheckInUpdateJobs.People
             {
                 EventId = data.Id,
                 Name = data.Attributes.Name,
-                Link = data.Links.Self
             };
         }
     }

@@ -17,6 +17,11 @@ export function getSelectedOptionsFromStorage(key, fallback) {
     return s === null ? fallback : JSON.parse(s);
 }
 
+export function getStringFromSession(key, fallback) {
+    let s = sessionStorage.getItem(key);
+    return s === null ? fallback : s;
+}
+
 export function getFormattedDate(dateString){
     let date = new Date(dateString);
     
@@ -43,4 +48,10 @@ export async function getSelectedEventFromStorage() {
     } else {
         return JSON.parse(s);
     }
+}
+
+export function getLastSunday() {
+    const t = new Date();
+    t.setDate(t.getDate() - t.getDay());
+    return t;
 }

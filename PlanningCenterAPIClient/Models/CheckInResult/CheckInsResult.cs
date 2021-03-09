@@ -103,7 +103,7 @@ namespace CheckInsExtension.PlanningCenterAPIClient.Models.CheckInResult
 //         public EventLinks Links { get; set; }
 //
          [JsonProperty("data")]
-         public ParentElement Data { get; set; }
+         public ParentElement? Data { get; set; }
      }
 //
      public class ParentElement

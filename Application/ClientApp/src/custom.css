@@ -35,6 +35,10 @@ button[class^="btn-outline"], button[class*=" btn-outline"]:hover {
   background-color: gray;
 }
 
+.MuiAccordionSummary-root {
+  background: #f5f5f5 !important;
+}
+
 
 
 

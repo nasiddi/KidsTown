@@ -7,12 +7,10 @@ namespace CheckInsExtension.CheckInUpdateJobs.People
     public class CheckInOutService : ICheckInOutService
     {
         private readonly ICheckInOutRepository _checkInOutRepository;
-        private readonly IConfigurationService _configurationService;
 
-        public CheckInOutService(ICheckInOutRepository checkInOutRepository, IConfigurationService configurationService)
+        public CheckInOutService(ICheckInOutRepository checkInOutRepository)
         {
             _checkInOutRepository = checkInOutRepository;
-            _configurationService = configurationService;
         }
         
         public async Task<IImmutableList<Person>> SearchForPeople(PeopleSearchParameters searchParameters)

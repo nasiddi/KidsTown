@@ -86,6 +86,7 @@ namespace ChekInsExtension.Database
                 var attendances = await db.Attendances
                     .Where(a => 
                         a.CheckInDate != null
+                        && a.CheckOutDate == null
                         && a. CheckInDate < DateTime.Today)
                     .ToListAsync();
                 

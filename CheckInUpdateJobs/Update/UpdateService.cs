@@ -109,7 +109,6 @@ namespace CheckInsExtension.CheckInUpdateJobs.Update
             var locations = checkIns.Included.Where(i => i.Type == IncludeType.Location).ToImmutableList();
             var locationsByIds = locations.ToImmutableDictionary(k => k.Id, v => v.Attributes.Name);
 
-            // Todo this can be removed once no more invalid data is pulled
             var checkInsWithLocation = checkIns.Attendees.Where(a => a.Relationships.Locations.Data.Count == 1).ToImmutableList();
 
             var attendees = checkInsWithLocation.Select(MapPreCheckIn).ToImmutableList();
@@ -121,7 +120,7 @@ namespace CheckInsExtension.CheckInUpdateJobs.Update
                 var attributes = attendee.Attributes;
                 var locationId = attendee.Relationships.Locations.Data.Single().Id;
                 var peopleId = attendee.Relationships.Person.Data?.Id;
-                var eventId = attendee.Relationships.Event.Data.Id;
+                var eventId = attendee.Relationships.Event.Data!.Id;
 
                 var people = new PeopleUpdate(
                     peopleId: peopleId,

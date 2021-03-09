@@ -1,4 +1,5 @@
-﻿using System.Collections.Immutable;
+﻿using System;
+using System.Collections.Immutable;
 using System.Threading.Tasks;
 using CheckInsExtension.CheckInUpdateJobs.Models;
 using CheckInsExtension.CheckInUpdateJobs.People;
@@ -18,23 +19,39 @@ namespace Application.Controllers
         }
 
         [HttpPost]
-        [Route("event/{eventId}/attendees/active")]
+        [Route("event/{eventId}/attendees")]
         [Produces("application/json")]
-        public async Task<ImmutableList<Attendee>> GetActiveAttendees(
+        public async Task<ImmutableList<AttendeesByLocation>> GetAttendees(
             [FromRoute] long eventId, 
+            [FromQuery] string date,
             [FromBody] IImmutableList<int> selectedLocations)
         {
-            return await _overviewService.GetActiveAttendees(eventId, selectedLocations);
+            var parsedDate = DateTime.Parse(date);
+            var attendeesByLocation = await _overviewService.GetActiveAttendees(eventId, selectedLocations, parsedDate);
+            return attendeesByLocation;
+        }
+        
+        [HttpPost]
+        [Route("event/{eventId}/attendees/headcounts")]
+        [Produces("application/json")]
+        public async Task<ImmutableList<HeadCounts>> GetAttendeeHeadCounts(
+            [FromRoute] long eventId, 
+            [FromQuery] string date,
+            [FromBody] IImmutableList<int> selectedLocations)
+        {
+            var parsedDate = DateTime.Parse(date);
+            var headCounts = await _overviewService.GetHeadCounts(eventId, selectedLocations, parsedDate, parsedDate);
+            return headCounts;
         }
         
         [HttpPost]
         [Route("event/{eventId}/attendees/history")]
         [Produces("application/json")]
-        public async Task<ImmutableList<DailyStatistic>> GetAttendanceHistory(
+        public async Task<ImmutableList<HeadCounts>> GetAttendanceHistory(
             [FromRoute] long eventId,
             [FromBody] IImmutableList<int> selectedLocations)
         {
-            return await _overviewService.GetAttendanceHistory(eventId, selectedLocations);
+            return await _overviewService.GetSummedUpHeadCounts(eventId, selectedLocations, new DateTime());
         }
     }
 }
