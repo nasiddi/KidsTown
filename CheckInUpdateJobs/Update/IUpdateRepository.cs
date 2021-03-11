@@ -11,5 +11,8 @@ namespace CheckInsExtension.CheckInUpdateJobs.Update
         Task UpdatePersons(ImmutableList<PeopleUpdate> peoples);
         Task AutoCheckInVolunteers();
         Task AutoCheckoutEveryoneByEndOfDay();
+        Task<ImmutableList<PersistedLocation>> GetPersistedLocations();
+        Task UpdateLocations(ImmutableList<LocationUpdate> locationUpdates);
+        Task EnableUnknownLocationGroup();
     }
 }

@@ -107,6 +107,53 @@ namespace ChekInsExtension.Database
                 await PreCheckInRegulars(regularPreCheckIns, db);
             }
         }
+        
+        public async Task<ImmutableList<PersistedLocation>> GetPersistedLocations()
+        {
+            await using (var db = _serviceScopeFactory.CreateScope().ServiceProvider
+                .GetRequiredService<CheckInsExtensionContext>())
+            {
+                var locations = await db.Locations.Where(l => l.CheckInsLocationId.HasValue).ToListAsync();
+                return locations.Select(l => new PersistedLocation(l.Id, l.CheckInsLocationId!.Value)).ToImmutableList();
+            }
+        }
+
+        public async Task UpdateLocations(ImmutableList<LocationUpdate> locationUpdates)
+        {
+            await using (var db = _serviceScopeFactory.CreateScope().ServiceProvider
+                .GetRequiredService<CheckInsExtensionContext>())
+            {
+                var locations = locationUpdates.Select(MapLocation);
+                await db.AddRangeAsync(locations);
+                await db.SaveChangesAsync();
+            }
+        }
+
+        public async Task EnableUnknownLocationGroup()
+        {
+            await using (var db = _serviceScopeFactory.CreateScope().ServiceProvider
+                .GetRequiredService<CheckInsExtensionContext>())
+            {
+                var locationGroups = await db.LocationGroups.Where(l => l.Id == (int) LocationGroups.Unknown)
+                    .ToListAsync();
+                
+                locationGroups.ForEach(l => l.IsEnabled = true);
+                await db.SaveChangesAsync();
+            }
+        }
+
+        private static Location MapLocation(LocationUpdate locationUpdate)
+        {
+            return new()
+            {
+                Name = locationUpdate.Name,
+                IsEnabled = true,
+                LocationGroupId = 5,
+                CheckInsLocationId = locationUpdate.CheckInsLocationId,
+                EventId = locationUpdate.EventId
+            };
+
+        }
 
         private static async Task PreCheckInRegulars(ImmutableList<CheckInUpdate> regularPreCheckIns, CheckInsExtensionContext db)
         {
@@ -215,28 +262,11 @@ namespace ChekInsExtension.Database
             {
                 CheckInId = checkInUpdate.CheckInId,
                 EventId = checkInUpdate.EventId,
-                LocationId = (int) MapLocationId(checkInUpdate.Location),
+                LocationId = checkInUpdate.LocationId,
                 SecurityCode = checkInUpdate.SecurityCode,
                 InsertDate = checkInUpdate.CreationDate,
                 Person = person,
                 AttendanceTypeId = MapAttendeeType(checkInUpdate.AttendeeType)
-            };
-        }
-
-        private static Locations MapLocationId(string location)
-        {
-            return location switch
-            {
-                "Häsli" => Locations.Haesli,
-                "Schöfli" => Locations.Schoefli,
-                "Füchsli" => Locations.Fuechsli,
-                "KidsChurch" => Locations.KidsChurch,
-                "Kidschurch 1. Klasse" => Locations.KidsChurch,
-                "Kidschurch 2. Klasse" => Locations.KidsChurch,
-                "Kidschurch 3. Klasse" => Locations.KidsChurch,
-                "Kidschurch 4. Klasse" => Locations.KidsChurch,
-                "Kidschurch 5. Klasse" => Locations.KidsChurch,
-                _ => throw new ArgumentOutOfRangeException(nameof(location), location, "Unknown location")
             };
         }
 

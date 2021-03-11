@@ -30,7 +30,7 @@ namespace ChekInsExtension.Database
                     join l in db.Locations
                         on a.LocationId equals l.Id
                     where a.SecurityCode == peopleSearchParameters.SecurityCode
-                          && peopleSearchParameters.Locations.Contains(a.Location.Id)
+                          && peopleSearchParameters.LocationGroups.Contains(l.LocationGroupId)
                           && a.InsertDate >= DateTime.Today.AddDays(-3)
                           && a.EventId == peopleSearchParameters.EventId
                     select MapPerson(a, p, l))

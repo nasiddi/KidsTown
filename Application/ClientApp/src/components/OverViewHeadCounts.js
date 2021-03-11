@@ -41,9 +41,11 @@ class OverViewHeadCounts extends Component {
             );
         }
         
+        let headCounts = this.state.headCounts;
+        
         
         let totalCount = <tr/>;
-        if (getSelectedOptionsFromStorage('overviewLocations', []).length !== 1){
+        if (headCounts.length !== 1){
             totalCount = 
                 <tr key='Total'>
                 <th>Total</th>
@@ -63,11 +65,11 @@ class OverViewHeadCounts extends Component {
                 </tr>
                 </thead>
                 <tbody>
-                {getSelectedOptionsFromStorage('overviewLocations', []).map((row) => (
-                    <tr key={row.value}>
-                        <td> {row.label}</td>
-                        <td>{this.GetCount(row.value, false)}</td>
-                        <td>{this.GetCount(row.value, true)}</td>
+                {headCounts.map((row) => (
+                    <tr key={row['location']}>
+                        <td> {row['location']}</td>
+                        <td>{this.GetCount(row, false)}</td>
+                        <td>{this.GetCount(row, true)}</td>
                     </tr>
                 ))}
                 {totalCount}
@@ -76,12 +78,7 @@ class OverViewHeadCounts extends Component {
         );
         }
         
-    GetCount(locationId, isVolunteer) {
-        let headCounts = this.state.headCounts.find(c => c['locationId'] === locationId);
-        if (headCounts === undefined){
-            return 0;
-        }
-
+    GetCount(headCounts, isVolunteer) {
         if (isVolunteer){
             return headCounts['volunteerCount']
         }

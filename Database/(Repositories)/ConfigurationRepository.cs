@@ -20,7 +20,7 @@ namespace ChekInsExtension.Database
         {
             await using (var db = _serviceScopeFactory.CreateScope().ServiceProvider.GetRequiredService<CheckInsExtensionContext>())
             {
-                var locations = await db.Locations.Where(l => l.IsEnabled).ToListAsync();
+                var locations = await db.LocationGroups.Where(l => l.IsEnabled).ToListAsync();
                 return locations.Select(l => new CheckInsExtension.CheckInUpdateJobs.Models.Location(l.Id, l.Name))
                     .ToImmutableList();
             }

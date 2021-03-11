@@ -7,17 +7,23 @@ namespace CheckInsExtension.CheckInUpdateJobs.People
 {
     public interface IOverviewService
     {
-        Task<ImmutableList<AttendeesByLocation>> GetActiveAttendees(long eventId, IImmutableList<int> selectedLocations,
+        Task<ImmutableList<AttendeesByLocation>> GetActiveAttendees(long eventId, IImmutableList<int> selectedLocationGroups,
             DateTime date);
 
         Task<ImmutableList<HeadCounts>> GetSummedUpHeadCounts(
             long eventId,
-            IImmutableList<int> selectedLocations,
+            IImmutableList<int> selectedLocationGroups,
             DateTime startDate);
         Task<ImmutableList<HeadCounts>> GetHeadCounts(
             long eventId, 
             IImmutableList<int> selectedLocations, 
             DateTime startDate, 
+            DateTime endDate);
+
+        Task<ImmutableList<HeadCounts>> GetHeadCountsByLocations(
+            long eventId,
+            IImmutableList<int> selectedLocations,
+            DateTime startDate,
             DateTime endDate);
     }
 }

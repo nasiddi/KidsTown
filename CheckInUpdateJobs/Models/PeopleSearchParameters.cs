@@ -6,12 +6,12 @@ namespace CheckInsExtension.CheckInUpdateJobs.Models
     {
         public readonly string SecurityCode;
         public readonly long EventId;
-        public readonly IImmutableList<int> Locations;
+        public readonly IImmutableList<int> LocationGroups;
 
-        public PeopleSearchParameters(string securityCode,  long eventId, IImmutableList<int> locations)
+        public PeopleSearchParameters(string securityCode,  long eventId, IImmutableList<int> locationGroups)
         {
             SecurityCode = securityCode;
-            Locations = locations;
+            LocationGroups = locationGroups;
             EventId = eventId;
         }
     }

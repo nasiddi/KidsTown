@@ -36,23 +36,23 @@ class Detail extends Component {
     renderDetails(){
         return (
             <Grid container spacing={3}>
-                {getSelectedOptionsFromStorage('overviewLocations', []).map((location) => (
-                    <Grid item xs={12} key={location.value}>
+                {this.state.attendees.map((attendees) => (
+                    <Grid item xs={12} key={attendees['location']}>
                         <Accordion className='overview-accordion'>
                             <AccordionSummary
                                 expandIcon={<ExpandMoreIcon />}
                                 aria-controls="panel1a-content"
                                 id="panel1a-header"
                             >
-                                <h3>{location.label}</h3>
+                                <h3>{attendees['location']}</h3>
                             </AccordionSummary>
                             <AccordionDetails>
                                 <Grid container spacing={1}>
                                     <Grid item xs={12} md={8} >
-                                        {this.renderKidsTable(location.value)}
+                                        {this.renderKidsTable(attendees['kids'])}
                                     </Grid>
                                     <Grid item xs={12} md={4}>
-                                        {this.renderVolunteerTable(location.value)}
+                                        {this.renderVolunteerTable(attendees['volunteers'])}
                                     </Grid>
                                 </Grid>
                             </AccordionDetails>
@@ -63,12 +63,7 @@ class Detail extends Component {
         );
     }
     
-    renderKidsTable(locationId){
-        let location = this.state.attendees.find(a => a['locationId'] === locationId);
-        if (location === undefined){
-            return <div/>;
-        }
-
+    renderKidsTable(kids){
         return (
             <div>
                 <h4>Kinder</h4>
@@ -82,7 +77,7 @@ class Detail extends Component {
                 </tr>
                 </thead>
                 <tbody>
-                {location['kids'].map((row) => (
+                {kids.map((row) => (
                     <tr key={row['checkInId']}>
                         <td>{row['firstName']}</td>
                         <td>{row['lastName']}</td>
@@ -96,12 +91,7 @@ class Detail extends Component {
         );
     }
 
-    renderVolunteerTable(locationId){
-        let location = this.state.attendees.find(a => a['locationId'] === locationId);
-        if (location === undefined){
-            return <div/>;
-        }
-
+    renderVolunteerTable(volunteers){
         return (
             <div>
                 <h4>Betreuer</h4>
@@ -113,7 +103,7 @@ class Detail extends Component {
                 </tr>
                 </thead>
                 <tbody>
-                {location['volunteers'].map((row) => (
+                {volunteers.map((row) => (
                     <tr key={row['checkInId']}>
                         <td>{row['firstName']}</td>
                         <td>{row['lastName']}</td>

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Immutable;
+using System.Linq;
 using System.Threading.Tasks;
 using CheckInsExtension.CheckInUpdateJobs.Models;
 using CheckInsExtension.CheckInUpdateJobs.People;
@@ -24,11 +25,11 @@ namespace Application.Controllers
         public async Task<ImmutableList<AttendeesByLocation>> GetAttendees(
             [FromRoute] long eventId, 
             [FromQuery] string date,
-            [FromBody] IImmutableList<int> selectedLocations)
+            [FromBody] IImmutableList<int> selectedLocationGroups)
         {
             var parsedDate = DateTime.Parse(date);
-            var attendeesByLocation = await _overviewService.GetActiveAttendees(eventId, selectedLocations, parsedDate);
-            return attendeesByLocation;
+            var attendeesByLocation = await _overviewService.GetActiveAttendees(eventId, selectedLocationGroups, parsedDate);
+            return attendeesByLocation.OrderBy(a => a.LocationGroupId).ThenBy(a => a.Location).ToImmutableList();
         }
         
         [HttpPost]
@@ -40,7 +41,7 @@ namespace Application.Controllers
             [FromBody] IImmutableList<int> selectedLocations)
         {
             var parsedDate = DateTime.Parse(date);
-            var headCounts = await _overviewService.GetHeadCounts(eventId, selectedLocations, parsedDate, parsedDate);
+            var headCounts = await _overviewService.GetHeadCountsByLocations(eventId, selectedLocations, parsedDate, parsedDate);
             return headCounts;
         }
         

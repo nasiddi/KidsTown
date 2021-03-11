@@ -1,4 +1,5 @@
-﻿using System.Collections.Immutable;
+﻿using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 using System.Threading.Tasks;
 using CheckInsExtension.PlanningCenterAPIClient;
@@ -28,8 +29,10 @@ namespace CheckInsExtension.CheckInUpdateJobs.Update
         public async Task FetchDataFromPlanningCenter()
         {
             var checkIns = await _planningCenterClient.GetCheckedInPeople(DaysLookBack);
+
+            await UpdateLocations(checkIns);
             
-            var preCheckIns = FilterAndMapToPreCheckIns(checkIns);
+            var preCheckIns = await FilterAndMapToPreCheckIns(checkIns);
 
             await InsertNewPreCheckIns(preCheckIns);
 
@@ -38,6 +41,21 @@ namespace CheckInsExtension.CheckInUpdateJobs.Update
             await AutoCheckInOutVolunteers();
 
             await _updateRepository.AutoCheckoutEveryoneByEndOfDay();
+        }
+
+        private async Task UpdateLocations(CheckIns checkIns)
+        {
+            var locations = checkIns.Included.Where(i => i.Type == IncludeType.Location).ToImmutableList();
+            var persistedLocations = await _updateRepository.GetPersistedLocations();
+            var newLocations = locations.Where(l => IsNewLocation(persistedLocations, l)).ToImmutableList();
+
+            if (newLocations.Count == 0)
+            {
+                return;
+            }
+            
+            await _updateRepository.UpdateLocations(newLocations.Select(l => MapLocationUpdate(l, checkIns.Attendees)).ToImmutableList());
+            await _updateRepository.EnableUnknownLocationGroup();
         }
 
         private async Task AutoCheckInOutVolunteers()
@@ -104,21 +122,20 @@ namespace CheckInsExtension.CheckInUpdateJobs.Update
             };
         }
 
-        private static IImmutableList<CheckInUpdate> FilterAndMapToPreCheckIns(CheckIns checkIns)
+        private async Task<IImmutableList<CheckInUpdate>> FilterAndMapToPreCheckIns(CheckIns checkIns)
         {
-            var locations = checkIns.Included.Where(i => i.Type == IncludeType.Location).ToImmutableList();
-            var locationsByIds = locations.ToImmutableDictionary(k => k.Id, v => v.Attributes.Name);
-
-            var checkInsWithLocation = checkIns.Attendees.Where(a => a.Relationships.Locations.Data.Count == 1).ToImmutableList();
-
-            var attendees = checkInsWithLocation.Select(MapPreCheckIn).ToImmutableList();
+            var persistedLocations = await _updateRepository.GetPersistedLocations();
+            var locationIdsByCheckInsLocationId =
+                persistedLocations.ToImmutableDictionary(k => k.CheckInsLocationId, v => v.LocationId);
+            
+            var attendees = checkIns.Attendees.Select(MapPreCheckIn).ToImmutableList();
 
             return attendees;
             
             CheckInUpdate MapPreCheckIn(Attendee attendee)
             {
                 var attributes = attendee.Attributes;
-                var locationId = attendee.Relationships.Locations.Data.Single().Id;
+                var checkInsLocationId = attendee.Relationships.Locations.Data?.SingleOrDefault()?.Id;
                 var peopleId = attendee.Relationships.Person.Data?.Id;
                 var eventId = attendee.Relationships.Event.Data!.Id;
 
@@ -133,10 +150,21 @@ namespace CheckInsExtension.CheckInUpdateJobs.Update
                     eventId: eventId,
                     attendeeType: attributes.Kind,
                     securityCode: attributes.SecurityCode,
-                    location: locationsByIds[locationId],
+                    locationId: checkInsLocationId.HasValue ? locationIdsByCheckInsLocationId[checkInsLocationId.Value] : 30,
                     creationDate: attributes.CreatedAt,
                     person: people);
             }
+        }
+
+        private static LocationUpdate MapLocationUpdate(PlanningCenterAPIClient.Models.CheckInResult.Included location, List<Attendee> attendees)
+        {
+            var attendee = attendees.First(a => a.Relationships.Locations.Data?.Single().Id == location.Id);
+            return new LocationUpdate(location.Id, location.Attributes.Name, attendee.Relationships.Event.Data!.Id);
+        }
+
+        private static bool IsNewLocation(ImmutableList<PersistedLocation> persistedLocations, PlanningCenterAPIClient.Models.CheckInResult.Included location)
+        {
+            return !persistedLocations.Select(p => p.CheckInsLocationId).Contains(location.Id);
         }
     }
 }

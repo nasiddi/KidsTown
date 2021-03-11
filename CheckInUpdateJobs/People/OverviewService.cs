@@ -18,21 +18,22 @@ namespace CheckInsExtension.CheckInUpdateJobs.People
 
         public async Task<ImmutableList<AttendeesByLocation>> GetActiveAttendees(
             long eventId,
-            IImmutableList<int> selectedLocations,
+            IImmutableList<int> selectedLocationGroups,
             DateTime date)
         {
-            var attendees = await _overviewRepository.GetActiveAttendees(selectedLocations, eventId, date);
-            return attendees.GroupBy(a => a.LocationId).Select(MapAttendeesByLocation).ToImmutableList();
+            var attendees = await _overviewRepository.GetActiveAttendees(selectedLocationGroups, eventId, date);
+            return attendees.GroupBy(a => a.Location).Select(MapAttendeesByLocation).ToImmutableList();
         }
 
-        private static AttendeesByLocation MapAttendeesByLocation(IGrouping<int, Attendee> attendees)
+        private static AttendeesByLocation MapAttendeesByLocation(IGrouping<string, Attendee> attendees)
         {
             var volunteers = attendees.Where(a => a.AttendanceType == AttendanceTypes.Volunteer).ToImmutableList();
             var kids = attendees.Where(a => a.AttendanceType != AttendanceTypes.Volunteer).ToImmutableList();
 
             return new AttendeesByLocation
             {
-                LocationId = attendees.Key,
+                Location = attendees.Key,
+                LocationGroupId = kids.FirstOrDefault()?.LocationGroupId ?? volunteers.First().LocationGroupId,
                 Kids = kids,
                 Volunteers = volunteers
             };
@@ -40,10 +41,10 @@ namespace CheckInsExtension.CheckInUpdateJobs.People
 
         public async Task<ImmutableList<HeadCounts>> GetSummedUpHeadCounts(
             long eventId,
-            IImmutableList<int> selectedLocations,
+            IImmutableList<int> selectedLocationGroups,
             DateTime startDate)
         {
-            var headCounts = await GetHeadCounts(eventId, selectedLocations, startDate, DateTime.Today);
+            var headCounts = await GetHeadCounts(eventId, selectedLocationGroups, startDate, DateTime.Today);
             return headCounts.GroupBy(h => h.Date).Select(SumUpDay).ToImmutableList();
         }
 
@@ -66,10 +67,22 @@ namespace CheckInsExtension.CheckInUpdateJobs.People
             DateTime endDate)
         {
             var attendees = await _overviewRepository.GetAttendanceHistory(selectedLocations, eventId, startDate, endDate);
-            return attendees.GroupBy(a => a.LocationId).SelectMany(MapHeadCounts).ToImmutableList();
+            return attendees.GroupBy(a => a.LocationGroupId).SelectMany(MapHeadCounts).ToImmutableList();
+        }
+        
+        public async Task<ImmutableList<HeadCounts>> GetHeadCountsByLocations(
+            long eventId,
+            IImmutableList<int> selectedLocations,
+            DateTime startDate,
+            DateTime endDate)
+        {
+            var attendees = await _overviewRepository.GetAttendanceHistory(selectedLocations, eventId, startDate, endDate);
+            return attendees.GroupBy(a => a.Location).SelectMany(MapHeadCounts)
+                .OrderBy(c => c.LocationId)
+                .ThenBy(c => c.Location).ToImmutableList();
         }
 
-        private static ImmutableList<HeadCounts> MapHeadCounts(IGrouping<int, Attendee> attendeesByLocation)
+        private static ImmutableList<HeadCounts> MapHeadCounts<T>(IGrouping<T, Attendee> attendeesByLocation)
         {
             return attendeesByLocation.GroupBy(a => a.InsertDate.Date).Select(MapDailyStatistic).ToImmutableList();
         }
@@ -83,7 +96,8 @@ namespace CheckInsExtension.CheckInUpdateJobs.People
             return new HeadCounts
             {
                 Date = attendees.Key.AddHours(12),
-                LocationId = attendees.First().LocationId,
+                LocationId = attendees.First().LocationGroupId,
+                Location = attendees.First().Location,
                 RegularCount = regularCounts.CheckedIn,
                 GuestCount = guestCounts.CheckedIn,
                 VolunteerCount = volunteerCounts.CheckedIn,
