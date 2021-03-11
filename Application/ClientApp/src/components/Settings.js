@@ -3,9 +3,10 @@ import {Grid} from "@material-ui/core";
 import Checkbox from "@material-ui/core/Checkbox";
 import FormControlLabel from "@material-ui/core/FormControlLabel";
 import {getSelectedEventFromStorage} from "./Common";
+import {withAuth} from "../auth/MsalAuthProvider";
 
-export class Settings extends Component {
-    static displayName = Settings.name;
+class Setting extends Component {
+    static displayName = Setting.name;
     
     repeat 
     
@@ -104,3 +105,5 @@ export class Settings extends Component {
         }
     }
 }
+
+export const Settings = withAuth(Setting);

@@ -11,6 +11,8 @@ autom4te.cache/
 tarballs/
 test-results/
 
+*.psd
+
 # Mac bundle stuff
 *.dmg
 *.app

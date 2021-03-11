@@ -9,8 +9,9 @@ import {
     selectStyles
 } from "./Common";
 import { Table } from 'reactstrap';
+import {withAuth} from "../auth/MsalAuthProvider";
 
-export class Statistic extends Component {
+class Statistic extends Component {
     static displayName = Statistic.name;
     
     repeat 
@@ -137,3 +138,5 @@ export class Statistic extends Component {
         await this.fetchData();
     };
 }
+
+export const Statistics = withAuth(Statistic);

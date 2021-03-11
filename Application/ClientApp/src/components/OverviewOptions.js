@@ -9,9 +9,10 @@ import {
     getLastSunday
 } from "./Common";
 import DatePicker from "reactstrap-date-picker";
+import {withAuth} from "../auth/MsalAuthProvider";
 
-export class OverviewOptions extends Component {
-    static displayName = OverviewOptions.name;
+class Options extends Component {
+    static displayName = Options.name;
     repeat;
 
 
@@ -98,3 +99,6 @@ export class OverviewOptions extends Component {
         this.setState({date: v})
     }
 }
+
+export const OverviewOptions = withAuth(Options);
+

@@ -14,8 +14,9 @@ import {
     theme
 } from "./Common";
 import {Alert, Button, ButtonGroup} from "reactstrap";
+import {withAuth} from "../auth/MsalAuthProvider";
 
-export class CheckIn extends Component {
+class CheckIn extends Component {
     static displayName = CheckIn.name;
     constructor(props) {
         super(props);
@@ -364,3 +365,5 @@ export class CheckIn extends Component {
         return 'primary';
     }
 }
+
+export const CheckInOut = withAuth(CheckIn);

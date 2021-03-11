@@ -8,9 +8,10 @@ import {
 } from "./Common";
 import { Table } from 'reactstrap';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
+import {withAuth} from "../auth/MsalAuthProvider";
 
-export class OverviewDetail extends Component {
-    static displayName = OverviewDetail.name;
+class Detail extends Component {
+    static displayName = Detail.name;
     repeat;
 
 
@@ -158,3 +159,5 @@ export class OverviewDetail extends Component {
         this.repeat = setTimeout(this.fetchData.bind(this), 500);
     }
 }
+
+export const OverviewDetail = withAuth(Detail);

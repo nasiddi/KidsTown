@@ -7,8 +7,9 @@ import {
     getSelectedOptionsFromStorage, getLastSunday,
 } from "./Common";
 import { Table } from 'reactstrap';
+import {withAuth} from "../auth/MsalAuthProvider";
 
-export class OverViewHeadCounts extends Component {
+class OverViewHeadCounts extends Component {
     static displayName = OverViewHeadCounts.name;
     repeat;
 
@@ -135,3 +136,5 @@ export class OverViewHeadCounts extends Component {
         return a + b;
     }
 }
+
+export const OverviewHeadCount = withAuth(OverViewHeadCounts);
