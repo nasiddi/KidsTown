@@ -15,17 +15,25 @@ namespace Application
 
         public static IHostBuilder CreateHostBuilder(string[] args)
         {
-            var config = new ConfigurationBuilder()
+            var preLoadedConfig = new ConfigurationBuilder()
                 .AddJsonFile("appsettings.json", optional: false)
-                .AddJsonFile("appsettings.Development.json", true)
+                .AddJsonFile("appsettings.Secrets.json", false)
+                .AddJsonFile("appsettings.DevelopementMachine.json", true)
                 .Build();
             
             return Host.CreateDefaultBuilder(args)
+                .ConfigureAppConfiguration((hostingContext, config) =>
+                {
+                    config.AddJsonFile("appsettings.Secrets.json", optional: false, reloadOnChange: true)
+                        .AddJsonFile("appsettings.DevelopementMachine.json", true, true);
+
+                    config.AddEnvironmentVariables();
+                })
                 .ConfigureWebHostDefaults(webBuilder =>
                 {
                     webBuilder
                         .UseStartup<Startup>()
-                        .UseUrls(config.GetValue<string>("Url"));
+                        .UseUrls(preLoadedConfig.GetValue<string>("Url"));
                 })
                 .ConfigureServices(services =>
                 {

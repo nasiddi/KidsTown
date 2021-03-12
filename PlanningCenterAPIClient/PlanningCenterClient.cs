@@ -6,17 +6,22 @@ using System.Threading.Tasks;
 using CheckInsExtension.PlanningCenterAPIClient.Models.CheckInResult;
 using CheckInsExtension.PlanningCenterAPIClient.Models.EventResult;
 using CheckInsExtension.PlanningCenterAPIClient.Models.PeopleResult;
+using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
 
 namespace CheckInsExtension.PlanningCenterAPIClient
 {
     public class PlanningCenterClient : IPlanningCenterClient
     {
-#pragma warning disable 649
-        private static readonly HttpClient? ClientBackingField;
-#pragma warning restore 649
+        private readonly IConfiguration _configuration;
+        private static HttpClient? _clientBackingField;
 
-        private HttpClient Client => ClientBackingField ?? InitClient();
+        public PlanningCenterClient(IConfiguration configuration)
+        {
+            _configuration = configuration;
+        }
+
+        private HttpClient Client => _clientBackingField ?? InitClient();
 
         public async Task<EventResult> GetActiveEvents()
         {
@@ -47,9 +52,10 @@ namespace CheckInsExtension.PlanningCenterAPIClient
                 BaseAddress = new Uri("https://api.planningcenteronline.com")
             };
 
-            var byteArray = Encoding.ASCII.GetBytes("3d62c557b13a539e987562c79349d5580d1df8af5502adc113bbf8ff53990700:9941749180381f27cf3a22a9dfd547a8cc2014a53f9d84d2d853b553a9b22040");
+            var authorization = _configuration.GetSection("PlanningCenterClient");
+            var byteArray = Encoding.ASCII.GetBytes($"{authorization["ApplicationId"]}:{authorization["Secret"]}");
             client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Basic", Convert.ToBase64String(byteArray));
-
+            _clientBackingField = client;
             return client;
         }
     }

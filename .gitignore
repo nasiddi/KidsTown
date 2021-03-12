@@ -13,6 +13,10 @@ test-results/
 
 *.psd
 
+# appsettings
+appsettings.DevelopementMachine.json
+appsettings.Secrets.json
+
 # Mac bundle stuff
 *.dmg
 *.app
