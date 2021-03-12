@@ -35,7 +35,7 @@ namespace ChekInsExtension.Database
                             on a.LocationId equals l.Id
                         where a.InsertDate.Date == date.Date 
                               && selectedLocationGroups.Contains(l.LocationGroupId)
-                              && a.EventId == eventId
+                              && l.EventId == eventId
                         select MapAttendee(a, p, at, l))
                     .ToListAsync();
 
@@ -58,7 +58,7 @@ namespace ChekInsExtension.Database
                         join l in db.Locations
                             on a.LocationId equals l.Id
                         where selectedLocationGroups.Contains(l.LocationGroupId)
-                              && a.EventId == eventId
+                              && l.EventId == eventId
                               && a.InsertDate >= startDate.Date
                               && a.InsertDate <= endDate.Date.AddDays(1)
                         select MapAttendee(a, p, at, l))

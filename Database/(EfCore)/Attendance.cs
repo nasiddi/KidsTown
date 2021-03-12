@@ -9,7 +9,6 @@ namespace ChekInsExtension.Database
     {
         public int Id { get; set; }
         public long CheckInId { get; set; }
-        public long EventId { get; set; }
         public int PersonId { get; set; }
         public int LocationId { get; set; }
         public string SecurityCode { get; set; }

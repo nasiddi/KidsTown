@@ -14,7 +14,6 @@ namespace ChekInsExtension.Database
 
         public int Id { get; set; }
         public string Name { get; set; }
-        public bool IsEnabled { get; set; }
         public int LocationGroupId { get; set; }
         public long? CheckInsLocationId { get; set; }
         public long EventId { get; set; }

@@ -32,7 +32,7 @@ namespace ChekInsExtension.Database
                     where a.SecurityCode == peopleSearchParameters.SecurityCode
                           && peopleSearchParameters.LocationGroups.Contains(l.LocationGroupId)
                           && a.InsertDate >= DateTime.Today.AddDays(-3)
-                          && a.EventId == peopleSearchParameters.EventId
+                          && l.EventId == peopleSearchParameters.EventId
                     select MapPerson(a, p, l))
                     .ToListAsync();
 

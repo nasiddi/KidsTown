@@ -147,7 +147,6 @@ namespace ChekInsExtension.Database
             return new()
             {
                 Name = locationUpdate.Name,
-                IsEnabled = true,
                 LocationGroupId = 5,
                 CheckInsLocationId = locationUpdate.CheckInsLocationId,
                 EventId = locationUpdate.EventId
@@ -261,7 +260,6 @@ namespace ChekInsExtension.Database
             return new Attendance
             {
                 CheckInId = checkInUpdate.CheckInId,
-                EventId = checkInUpdate.EventId,
                 LocationId = checkInUpdate.LocationId,
                 SecurityCode = checkInUpdate.SecurityCode,
                 InsertDate = checkInUpdate.CreationDate,
