@@ -29,7 +29,7 @@ namespace ChekInsExtension.Database
             {
                 var existingCheckInIds = await db.Attendances.Where(i => checkinIds.Contains(i.CheckInId))
                     .Select(i => i.CheckInId)
-                    .ToListAsync();
+                    .ToListAsync().ConfigureAwait(false);
 
                 return existingCheckInIds.ToImmutableList();
             }
@@ -44,7 +44,7 @@ namespace ChekInsExtension.Database
                     .Where(i => i.InsertDate >= DateTime.Today.AddDays(-daysLookBack) && i.Person.PeopleId.HasValue)
                     .Select(i => i.Person.PeopleId!.Value)
                     .Distinct()
-                    .ToListAsync();
+                    .ToListAsync().ConfigureAwait(false);
 
                 return peopleIds.ToImmutableList();
             }
@@ -56,9 +56,9 @@ namespace ChekInsExtension.Database
                 .GetRequiredService<CheckInsExtensionContext>())
             {
                 var existingPersons =
-                    await GetPersonsByPeopleIds(db, peoples.Select(p => p.PeopleId!.Value).ToImmutableList());
+                    await GetPersonsByPeopleIds(db, peoples.Select(p => p.PeopleId!.Value).ToImmutableList()).ConfigureAwait(false);
 
-                await UpdatePersons(db, existingPersons, peoples);
+                await UpdatePersons(db, existingPersons, peoples).ConfigureAwait(false);
             }
         }
 
@@ -71,10 +71,10 @@ namespace ChekInsExtension.Database
                     .Where(a => 
                         a.AttendanceTypeId == (int) AttendanceTypes.Volunteer
                         && a.CheckInDate == null)
-                    .ToListAsync();
+                    .ToListAsync().ConfigureAwait(false);
                 
                 volunteers.ForEach(v => v.CheckInDate = DateTime.UtcNow);
-                await db.SaveChangesAsync();
+                await db.SaveChangesAsync().ConfigureAwait(false);
             }
         }
 
@@ -88,10 +88,10 @@ namespace ChekInsExtension.Database
                         a.CheckInDate != null
                         && a.CheckOutDate == null
                         && a. CheckInDate < DateTime.Today)
-                    .ToListAsync();
+                    .ToListAsync().ConfigureAwait(false);
                 
                 attendances.ForEach(v => v.CheckOutDate = v.CheckInDate!.Value.Date.AddDays(1).AddSeconds(-1));
-                await db.SaveChangesAsync();
+                await db.SaveChangesAsync().ConfigureAwait(false);
             }
         }
 
@@ -101,10 +101,10 @@ namespace ChekInsExtension.Database
                 .GetRequiredService<CheckInsExtensionContext>())
             {
                 var guests = preCheckIns.Where(c => c.PeopleId == null).ToImmutableList();
-                await PreCheckInGuests(guests, db);
+                await PreCheckInGuests(guests, db).ConfigureAwait(false);
 
                 var regularPreCheckIns = preCheckIns.Except(guests).ToImmutableList();
-                await PreCheckInRegulars(regularPreCheckIns, db);
+                await PreCheckInRegulars(regularPreCheckIns, db).ConfigureAwait(false);
             }
         }
         
@@ -113,7 +113,8 @@ namespace ChekInsExtension.Database
             await using (var db = _serviceScopeFactory.CreateScope().ServiceProvider
                 .GetRequiredService<CheckInsExtensionContext>())
             {
-                var locations = await db.Locations.Where(l => l.CheckInsLocationId.HasValue).ToListAsync();
+                var locations = await db.Locations.Where(l => l.CheckInsLocationId.HasValue)
+                    .ToListAsync().ConfigureAwait(false);
                 return locations.Select(l => new PersistedLocation(l.Id, l.CheckInsLocationId!.Value)).ToImmutableList();
             }
         }
@@ -124,8 +125,8 @@ namespace ChekInsExtension.Database
                 .GetRequiredService<CheckInsExtensionContext>())
             {
                 var locations = locationUpdates.Select(MapLocation);
-                await db.AddRangeAsync(locations);
-                await db.SaveChangesAsync();
+                await db.AddRangeAsync(locations).ConfigureAwait(false);
+                await db.SaveChangesAsync().ConfigureAwait(false);
             }
         }
 
@@ -135,10 +136,10 @@ namespace ChekInsExtension.Database
                 .GetRequiredService<CheckInsExtensionContext>())
             {
                 var locationGroups = await db.LocationGroups.Where(l => l.Id == (int) LocationGroups.Unknown)
-                    .ToListAsync();
+                    .ToListAsync().ConfigureAwait(false);
                 
                 locationGroups.ForEach(l => l.IsEnabled = true);
-                await db.SaveChangesAsync();
+                await db.SaveChangesAsync().ConfigureAwait(false);
             }
         }
 
@@ -164,32 +165,33 @@ namespace ChekInsExtension.Database
             var existingPersons = await GetPersonsByPeopleIds(
                 db,
                 persons.Where(p => p.PeopleId.HasValue)
-                    .Select(p => p.PeopleId!.Value).ToImmutableList());
+                    .Select(p => p.PeopleId!.Value).ToImmutableList())
+                .ConfigureAwait(false);
 
             var personUpdates = persons.Where(
                     p => existingPersons.Select(e => e.PeopleId).Contains(p.PeopleId))
                 .ToImmutableList();
-            await UpdatePersons(db, existingPersons, personUpdates);
+            await UpdatePersons(db, existingPersons, personUpdates).ConfigureAwait(false);
             
             var personInserts = persons.Except(personUpdates).ToImmutableList();
-            var insertedPersons = await InsertPersons(db, personInserts);
+            var insertedPersons = await InsertPersons(db, personInserts).ConfigureAwait(false);
 
             var checkIns = regularPreCheckIns
                 .Select(c => MapToAttendance(c, existingPersons.Union(insertedPersons).ToImmutableList()))
                 .ToImmutableList();
-            await db.AddRangeAsync(checkIns);
-            await db.SaveChangesAsync();
+            await db.AddRangeAsync(checkIns).ConfigureAwait(false);
+            await db.SaveChangesAsync().ConfigureAwait(false);
         }
 
         private async Task PreCheckInGuests(ImmutableList<CheckInUpdate> guests, CheckInsExtensionContext db)
         {
-            var existingCheckInIds = await GetExistingCheckInIds(guests.Select(g => g.CheckInId).ToImmutableList());
+            var existingCheckInIds = await GetExistingCheckInIds(guests.Select(g => g.CheckInId).ToImmutableList()).ConfigureAwait(false);
             var newGuests = guests.Where(g => !existingCheckInIds.Contains(g.CheckInId)).ToImmutableList();
 
             var guestAttendances = newGuests.Select(MapGuestAttendance).ToImmutableList();
             
-            await db.AddRangeAsync(guestAttendances);
-            await db.SaveChangesAsync();
+            await db.AddRangeAsync(guestAttendances).ConfigureAwait(false);
+            await db.SaveChangesAsync().ConfigureAwait(false);
         }
 
         private static Attendance MapGuestAttendance(CheckInUpdate guest)
@@ -202,11 +204,11 @@ namespace ChekInsExtension.Database
             IImmutableList<PeopleUpdate> personToInsert)
         {
             var persons = personToInsert.Select(MapPerson).ToImmutableList();
-            await db.AddRangeAsync(persons);
-            await db.SaveChangesAsync();
+            await db.AddRangeAsync(persons).ConfigureAwait(false);
+            await db.SaveChangesAsync().ConfigureAwait(false);
 
             var insertedPeople = await db.People.Where(p => personToInsert.Select(i => i.PeopleId).Contains(p.PeopleId))
-                .ToListAsync();
+                .ToListAsync().ConfigureAwait(false);
 
             return insertedPeople;
         }
@@ -241,7 +243,7 @@ namespace ChekInsExtension.Database
                 p.HasPeopleWithoutPickupPermission = update.HasPeopleWithoutPickupPermission;
             });
 
-            await db.SaveChangesAsync();
+            await db.SaveChangesAsync().ConfigureAwait(false);
         }
 
         private static async Task<List<Person>> GetPersonsByPeopleIds(
@@ -249,7 +251,7 @@ namespace ChekInsExtension.Database
             IImmutableList<long> peopleIds)
         {
             var people = await db.People.Where(p => p.PeopleId.HasValue && peopleIds.Contains(p.PeopleId.Value))
-                .ToListAsync();
+                .ToListAsync().ConfigureAwait(false);
             return people;
         }
 

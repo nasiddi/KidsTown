@@ -37,7 +37,7 @@ namespace ChekInsExtension.Database
                               && selectedLocationGroups.Contains(l.LocationGroupId)
                               && l.EventId == eventId
                         select MapAttendee(a, p, at, l))
-                    .ToListAsync();
+                    .ToListAsync().ConfigureAwait(false);
 
                 return people.OrderBy(a => a.FirstName).ToImmutableList();
             }
@@ -62,7 +62,7 @@ namespace ChekInsExtension.Database
                               && a.InsertDate >= startDate.Date
                               && a.InsertDate <= endDate.Date.AddDays(1)
                         select MapAttendee(a, p, at, l))
-                    .ToListAsync();
+                    .ToListAsync().ConfigureAwait(false);
 
                 return attendees.ToImmutableList();
             }

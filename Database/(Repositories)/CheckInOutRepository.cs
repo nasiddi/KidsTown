@@ -34,7 +34,7 @@ namespace ChekInsExtension.Database
                           && a.InsertDate >= DateTime.Today.AddDays(-3)
                           && l.EventId == peopleSearchParameters.EventId
                     select MapPerson(a, p, l))
-                    .ToListAsync();
+                    .ToListAsync().ConfigureAwait(false);
 
                 return people.ToImmutableList();
             }
@@ -44,7 +44,7 @@ namespace ChekInsExtension.Database
         {
             await using (var db = _serviceScopeFactory.CreateScope().ServiceProvider.GetRequiredService<CheckInsExtensionContext>())
             {
-                var checkIns = await GetCheckIns(checkInIds, db);
+                var checkIns = await GetCheckIns(checkInIds, db).ConfigureAwait(false);
                 checkIns.ForEach(c => c.CheckInDate = DateTime.UtcNow);
                 var result = await db.SaveChangesAsync();
                 return result > 0;            }
@@ -54,7 +54,7 @@ namespace ChekInsExtension.Database
         {
             await using (var db = _serviceScopeFactory.CreateScope().ServiceProvider.GetRequiredService<CheckInsExtensionContext>())
             {
-                var checkIns = await GetCheckIns(checkInIds, db);
+                var checkIns = await GetCheckIns(checkInIds, db).ConfigureAwait(false);
                 checkIns.ForEach(c => c.CheckOutDate = DateTime.UtcNow);
                 var result = await db.SaveChangesAsync();
                 return result > 0;
@@ -66,7 +66,7 @@ namespace ChekInsExtension.Database
             CheckInsExtensionContext db)
         {
             var checkIns = await db.Attendances.Where(a => 
-                checkinIds.Contains(a.Id)).ToListAsync();
+                checkinIds.Contains(a.Id)).ToListAsync().ConfigureAwait(false);
             return checkIns;
         }
 
