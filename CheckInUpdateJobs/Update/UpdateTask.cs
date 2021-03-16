@@ -27,30 +27,46 @@ namespace CheckInsExtension.CheckInUpdateJobs.Update
             {
                 if (!TaskIsActive)
                 {
-                    while (!TaskIsActive)
-                    {
-                        await Delay(millisecondsDelay: 5000, cancellationToken: cancellationToken);
-                    }
-                    activationTime = DateTime.UtcNow;
+                    activationTime = await WaitForActivation(cancellationToken: cancellationToken);
                 }
 
-                try
-                {
-                    await _updateService.FetchDataFromPlanningCenter();
-                }
-                catch (Exception e)
-                {
-                    _logger.LogError(message: e.Message, e);
-                }
+                await RunTask();
 
-                await Delay(millisecondsDelay: 5000, cancellationToken: cancellationToken);
+                await Sleep(cancellationToken: cancellationToken);
 
                 if (activationTime < DateTime.UtcNow.Date.AddHours(value: 1))
                 {
                     TaskIsActive = false;
                 }
             }
-            
+        }
+
+        private async Task RunTask()
+        {
+            try
+            {
+                await _updateService.FetchDataFromPlanningCenter();
+            }
+            catch (Exception e)
+            {
+                _logger.LogError(message: e.Message, e);
+            }
+        }
+
+        private async Task<DateTime> WaitForActivation(CancellationToken cancellationToken)
+        {
+            while (!TaskIsActive)
+            {
+                await Sleep(cancellationToken: cancellationToken);
+            }
+
+            return DateTime.UtcNow;
+        }
+
+        private static async Task Sleep(CancellationToken cancellationToken)
+        {
+            await Delay(millisecondsDelay: 5000, cancellationToken: cancellationToken)
+                .ConfigureAwait(continueOnCapturedContext: false);
         }
 
         public Task StopAsync(CancellationToken cancellationToken)

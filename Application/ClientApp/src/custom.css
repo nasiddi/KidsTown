@@ -4,14 +4,16 @@ a {
 }
 
 code {
-  color: #E01A76;
+  color: #e01a76;
 }
 
-.btn:focus,.btn:active {
+.btn:focus,
+.btn:active {
   box-shadow: none;
 }
 
-button[class^="btn-outline"], button[class*=" btn-outline"]:hover {
+button[class^="btn-outline"], 
+button[class*=" btn-outline"]:hover {
   background-color: gray;
 }
 
@@ -19,15 +21,7 @@ button[class^="btn-outline"], button[class*=" btn-outline"]:hover {
   background: #f5f5f5 !important;
 }
 
-.wrap-icon
-{
+.wrap-icon {
   float: left;
-  margin: 12px 10px 0px 6px;
-}  
-
-
-
-
-
-
-
+  margin: 12px 10px 0 6px;
+}

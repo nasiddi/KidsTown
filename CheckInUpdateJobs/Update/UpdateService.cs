@@ -94,26 +94,28 @@ namespace CheckInsExtension.CheckInUpdateJobs.Update
 
         private static ImmutableList<PeopleUpdate> MapToPeoples(Peoples peopleUpdates)
         {
-            var fieldOptions = peopleUpdates.Included?.Where(predicate: i => i.PeopleIncludedType == PeopleIncludedType.FieldDatum).ToImmutableList() ?? ImmutableList<Included>.Empty;
-            return peopleUpdates.Data?.Select(selector: MapPeople).ToImmutableList() ?? ImmutableList<PeopleUpdate>.Empty;
+            var fieldOptions = peopleUpdates.Included?.Where(predicate: i => i.PeopleIncludedType == PeopleIncludedType.FieldDatum).ToImmutableList() 
+                               ?? ImmutableList<Included>.Empty;
+            return peopleUpdates.Data?.Select(selector: d => MapPeople(people: d, fieldOptions: fieldOptions)).ToImmutableList() 
+                   ?? ImmutableList<PeopleUpdate>.Empty;
+        }
+        
+        private static PeopleUpdate MapPeople(Datum people, ImmutableList<Included> fieldOptions)
+        {
+            var fieldDataIds = people.Relationships?.FieldData?.Data?.Select(selector: d => d.Id).ToImmutableList() ?? ImmutableList<long>.Empty;
+            var personalFieldOptions = fieldOptions.Where(predicate: o => fieldDataIds.Contains(value: o.Id)).ToImmutableList();
 
-            PeopleUpdate MapPeople(Datum people)
-            {
-                var fieldDataIds = people.Relationships?.FieldData?.Data?.Select(selector: d => d.Id).ToImmutableList() ?? ImmutableList<long>.Empty;
-                var personalFieldOptions = fieldOptions.Where(predicate: o => fieldDataIds.Contains(value: o.Id)).ToImmutableList();
+            var mayLeaveAloneField = personalFieldOptions.SingleOrDefault(
+                predicate: o => o.Relationships?.FieldDefinition?.Data?.Id == MayLeaveAloneFieldId);
+            var hasPeopleWithoutPickupPermissionField = personalFieldOptions.SingleOrDefault(
+                predicate: o => o.Relationships?.FieldDefinition?.Data?.Id == HasPeopleWithoutPickupPermissionFieldId);
 
-                var mayLeaveAloneField = personalFieldOptions.SingleOrDefault(
-                    predicate: o => o.Relationships?.FieldDefinition?.Data?.Id == MayLeaveAloneFieldId);
-                var hasPeopleWithoutPickupPermissionField = personalFieldOptions.SingleOrDefault(
-                    predicate: o => o.Relationships?.FieldDefinition?.Data?.Id == HasPeopleWithoutPickupPermissionFieldId);
-
-                return new PeopleUpdate(
-                    peopleId: people.Id,
-                    firstName: people.Attributes?.FirstName ?? string.Empty,
-                    lastName: people.Attributes?.LastName ?? string.Empty,
-                    mayLeaveAlone: !ParseCustomBooleanField(field: mayLeaveAloneField, defaultValue: false),
-                    hasPeopleWithoutPickupPermission: ParseCustomBooleanField(field: hasPeopleWithoutPickupPermissionField, defaultValue: false));
-            }
+            return MapPeopleUpdate(
+                peopleId: people.Id,
+                firstName: people.Attributes?.FirstName,
+                lastName: people.Attributes?.LastName,
+                mayLeaveAlone: !ParseCustomBooleanField(field: mayLeaveAloneField, defaultValue: false),
+                hasPeopleWithoutPickupPermission: ParseCustomBooleanField(field: hasPeopleWithoutPickupPermissionField, defaultValue: false));
         }
 
         private static bool ParseCustomBooleanField(Included? field, bool defaultValue)
@@ -132,34 +134,50 @@ namespace CheckInsExtension.CheckInUpdateJobs.Update
             var locationIdsByCheckInsLocationId =
                 persistedLocations.ToImmutableDictionary(keySelector: k => k.CheckInsLocationId, elementSelector: v => v.LocationId);
             
-            var attendees = checkIns.Attendees?.Select(selector: MapPreCheckIn).ToImmutableList() ?? ImmutableList<CheckInUpdate>.Empty;
+            var attendees = checkIns.Attendees?.Select(selector: a => MapPreCheckIn(a, locationIdsByCheckInsLocationId))
+                .ToImmutableList() ?? ImmutableList<CheckInUpdate>.Empty;
 
             return attendees;
-            
-            CheckInUpdate MapPreCheckIn(Attendee attendee)
-            {
-                var attributes = attendee.Attributes;
-                var checkInsLocationId = attendee.Relationships?.Locations?.Data?.SingleOrDefault()?.Id;
-                var peopleId = attendee.Relationships?.Person?.Data?.Id;
+        }
+        
+        private static CheckInUpdate MapPreCheckIn(Attendee attendee, ImmutableDictionary<long, int> locationIdsByCheckInsLocationId)
+        {
+            var attributes = attendee.Attributes;
+            var checkInsLocationId = attendee.Relationships?.Locations?.Data?.SingleOrDefault()?.Id;
+            var peopleId = attendee.Relationships?.Person?.Data?.Id;
 
-                var people = new PeopleUpdate(
-                    peopleId: peopleId,
-                    firstName: attributes?.FirstName ?? string.Empty,
-                    lastName: attributes?.LastName ?? string.Empty);
+            var people = MapPeopleUpdate(
+                peopleId: peopleId,
+                firstName: attributes?.FirstName,
+                lastName: attributes?.LastName);
 
-                var locationId = checkInsLocationId.HasValue && locationIdsByCheckInsLocationId.ContainsKey(key: checkInsLocationId.Value) 
-                    ? locationIdsByCheckInsLocationId[key: checkInsLocationId.Value] 
-                    : 30;
+            var locationId = checkInsLocationId.HasValue && locationIdsByCheckInsLocationId.ContainsKey(key: checkInsLocationId.Value) 
+                ? locationIdsByCheckInsLocationId[key: checkInsLocationId.Value] 
+                : 30;
                 
-                return new CheckInUpdate(
-                    checkInId: attendee.Id,
-                    peopleId: peopleId,
-                    attendeeType: attributes?.Kind ?? AttendeeType.Regular,
-                    securityCode: attributes?.SecurityCode ?? string.Empty,
-                    locationId: locationId,
-                    creationDate: attributes?.CreatedAt ?? DateTime.UtcNow,
-                    person: people);
-            }
+            return new CheckInUpdate(
+                checkInId: attendee.Id,
+                peopleId: peopleId,
+                attendeeType: attributes?.Kind ?? AttendeeType.Regular,
+                securityCode: attributes?.SecurityCode ?? string.Empty,
+                locationId: locationId,
+                creationDate: attributes?.CreatedAt ?? DateTime.UtcNow,
+                person: people);
+        }
+
+        private static PeopleUpdate MapPeopleUpdate(
+            long? peopleId, 
+            string? firstName,
+            string? lastName,
+            bool mayLeaveAlone = true,
+            bool hasPeopleWithoutPickupPermission = false)
+        {
+            return new(
+                peopleId: peopleId,
+                firstName: firstName ?? string.Empty,
+                lastName: lastName ?? string.Empty,
+                mayLeaveAlone: mayLeaveAlone,
+                hasPeopleWithoutPickupPermission: hasPeopleWithoutPickupPermission);
         }
 
         private static LocationUpdate MapLocationUpdate(PlanningCenterAPIClient.Models.CheckInResult.Included location, ImmutableList<Attendee> attendees)
