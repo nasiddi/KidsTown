@@ -1,104 +1,118 @@
-import React, { Component } from 'react';
-import Select from "react-select";
-import {Grid} from "@material-ui/core";
+import React, { Component } from 'react'
+import { Grid } from '@material-ui/core'
 import {
-    fetchLocations,
-    getStringFromSession,
-    getSelectedOptionsFromStorage,
-    selectStyles,
-    getLastSunday
-} from "./Common";
-import DatePicker from "reactstrap-date-picker";
-import {withAuth} from "../auth/MsalAuthProvider";
+	fetchLocations,
+	getStringFromSession,
+	getSelectedOptionsFromStorage,
+	getLastSunday,
+	MultiSelect,
+	DatePick,
+} from './Common'
+import { withAuth } from '../auth/MsalAuthProvider'
 
 class Options extends Component {
-    static displayName = Options.name;
-    repeat;
+	static displayName = Options.name
+	repeat
 
+	constructor(props) {
+		super(props)
 
-    constructor (props) {
-        super(props);
-        
-        this.state = {
-            locations: [],
-            overviewLocations: getSelectedOptionsFromStorage(
-                'overviewLocations',
-                []
-            ),
-            loading: true,
-            date: ''
-        };
-    }
+		this.updateOptions = this.updateOptions.bind(this)
+		this.updateDate = this.updateDate.bind(this)
+		this.resetDate = this.resetDate.bind(this)
 
-    async componentDidMount() {
-        const locations = await fetchLocations();
-        this.setState({date: getStringFromSession('overviewDate', getLastSunday().toISOString())})
-        this.setState({locations: locations})
-        this.setState({loading: false})
-    }
-    
-    renderOptions(){
-        return <div>
-            <Grid container spacing={3} justify="space-between" alignItems="center">
-                <Grid item xs={9}>
-                    <Select
-                        styles={selectStyles}
-                        isMulti
-                        placeholder='Select locations'
-                        name='overviewLocations'
-                        options={this.state.locations}
-                        className='basic-multi-select'
-                        classNamePrefix='select'
-                        onChange={(o) => this.updateOptions(o, 'overviewLocations')}
-                        defaultValue={this.state.overviewLocations}
-                        minWidth='100px'
-                    />
-                </Grid>
-            <Grid item xs={3}>
-                <DatePicker 
-                    id="datepicker"
-                    value={this.state.date}
-                    dateFormat='DD.MM.YYYY'
-                    onClear={() => {this.updateDate(getLastSunday().toISOString())}}
-                    showClearButton
-                    onChange= {(v) => this.updateDate(v)} />
-                </Grid>
-            </Grid>
-        </div>
-    }
-    render () {
-        if (this.state.loading){
-            return (
-                <div/>
-            );
-        }
+		this.state = {
+			locations: [],
+			overviewLocations: getSelectedOptionsFromStorage(
+				'overviewLocations',
+				[]
+			),
+			loading: true,
+			date: '',
+		}
+	}
 
-        return (
-            <div>
-                <Grid container spacing={3} justify="space-between" alignItems="flex-start">
-                    <Grid item xs={12}>
-                        {this.renderOptions()}
-                    </Grid>
-                </Grid>
-            </div>
-        )
-    }
+	async componentDidMount() {
+		const locations = await fetchLocations()
+		this.setState({
+			date: getStringFromSession(
+				'overviewDate',
+				getLastSunday().toISOString()
+			),
+		})
+		this.setState({ locations: locations })
+		this.setState({ loading: false })
+	}
 
-    updateOptions = (options, key) => {
-        localStorage.setItem(key, JSON.stringify(options));
-        this.setState({ [key]: options });
-    };
+	renderOptions() {
+		return (
+			<div>
+				<Grid
+					container
+					spacing={3}
+					justify="space-between"
+					alignItems="center"
+				>
+					<Grid item xs={9}>
+						<MultiSelect
+							name={'overviewLocations'}
+							onChange={this.updateOptions}
+							options={this.state.locations}
+							defaultOptions={this.state.overviewLocations}
+						/>
+					</Grid>
+					<Grid item xs={3}>
+						<DatePick
+							defaultValue={getLastSunday().toISOString()}
+							value={this.state.date}
+							onClear={this.resetDate}
+							onChange={this.updateDate}
+						/>
+					</Grid>
+				</Grid>
+			</div>
+		)
+	}
+	render() {
+		if (this.state.loading) {
+			return <div />
+		}
 
+		return (
+			<div>
+				<Grid
+					container
+					spacing={3}
+					justify="space-between"
+					alignItems="flex-start"
+				>
+					<Grid item xs={12}>
+						{this.renderOptions()}
+					</Grid>
+				</Grid>
+			</div>
+		)
+	}
 
-    updateDate(v) {
-        if (v === null){
-            return;
-        }
-        
-        sessionStorage.setItem('overviewDate', v)
-        this.setState({date: v})
-    }
+	updateOptions = (options, key) => {
+		localStorage.setItem(key.name, JSON.stringify(options))
+		this.setState({ [key.name]: options })
+	}
+
+	resetDate() {
+		const sunday = getLastSunday().toISOString()
+		this.updateDate(sunday)
+	}
+
+	updateDate(value) {
+		console.log(value)
+		if (value === null) {
+			return
+		}
+
+		sessionStorage.setItem('overviewDate', value)
+		this.setState({ date: value })
+	}
 }
 
-export const OverviewOptions = withAuth(Options);
-
+export const OverviewOptions = withAuth(Options)

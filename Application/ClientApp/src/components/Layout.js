@@ -1,33 +1,22 @@
-import React, { Component } from 'react';
-import { Container } from 'reactstrap';
-import { NavMenu } from './NavMenu';
- 
-export class CheckInLayout extends Component {
-  static displayName = CheckInLayout.name;
+import React from 'react'
+import { Container } from 'reactstrap'
+import { NavMenu } from './NavMenu'
 
-  render () {
-    return (
-      <div>
-        <NavMenu />
-        <Container>
-          {this.props.children}
-        </Container>
-      </div>
-    );
-  }
+export const CheckInLayout = (props) => {
+	return (
+		<div>
+			<NavMenu />
+			<Container>{props.children}</Container>
+		</div>
+	)
 }
 
-export class OverviewLayout extends Component {
-    static displayName = CheckInLayout.name;
-
-    render () {
-        return (
-            <div>
-                <Container className="themed-container" fluid={true}>
-                    {this.props.children}
-                </Container>
-            </div>
-        );
-    }
+export const OverviewLayout = (props) => {
+	return (
+		<div>
+			<Container className="themed-container" fluid={true}>
+				{props.children}
+			</Container>
+		</div>
+	)
 }
-

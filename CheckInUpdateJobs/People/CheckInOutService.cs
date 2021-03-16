@@ -15,17 +15,17 @@ namespace CheckInsExtension.CheckInUpdateJobs.People
         
         public async Task<IImmutableList<Person>> SearchForPeople(PeopleSearchParameters searchParameters)
         {
-            return await _checkInOutRepository.GetPeople(searchParameters);
+            return await _checkInOutRepository.GetPeople(peopleSearchParameters: searchParameters).ConfigureAwait(continueOnCapturedContext: false);
         }
 
         public async Task<bool> CheckInPeople(IImmutableList<int> checkInIds)
         {
-            return await _checkInOutRepository.CheckInPeople(checkInIds);
+            return await _checkInOutRepository.CheckInPeople(checkInIds: checkInIds).ConfigureAwait(continueOnCapturedContext: false);
         }
 
         public async Task<bool> CheckOutPeople(IImmutableList<int> checkInIds)
         {
-            return await _checkInOutRepository.CheckOutPeople(checkInIds);
+            return await _checkInOutRepository.CheckOutPeople(checkInIds: checkInIds).ConfigureAwait(continueOnCapturedContext: false);
         }
     }
 }

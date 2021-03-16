@@ -37,9 +37,9 @@ namespace ChekInsExtension.Database
                               && selectedLocationGroups.Contains(l.LocationGroupId)
                               && l.EventId == eventId
                         select MapAttendee(a, p, at, l))
-                    .ToListAsync().ConfigureAwait(false);
+                    .ToListAsync().ConfigureAwait(continueOnCapturedContext: false);
 
-                return people.OrderBy(a => a.FirstName).ToImmutableList();
+                return people.OrderBy(keySelector: a => a.FirstName).ToImmutableList();
             }
         }
 
@@ -62,7 +62,7 @@ namespace ChekInsExtension.Database
                               && a.InsertDate >= startDate.Date
                               && a.InsertDate <= endDate.Date.AddDays(1)
                         select MapAttendee(a, p, at, l))
-                    .ToListAsync().ConfigureAwait(false);
+                    .ToListAsync().ConfigureAwait(continueOnCapturedContext: false);
 
                 return attendees.ToImmutableList();
             }
@@ -74,7 +74,7 @@ namespace ChekInsExtension.Database
             AttendanceType attendanceType,
             Location location)
         {
-            var checkState = MappingService.GetCheckState(attendance);
+            var checkState = MappingService.GetCheckState(attendance: attendance);
 
             return new Attendee
             {

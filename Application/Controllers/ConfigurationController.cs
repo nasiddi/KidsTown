@@ -11,7 +11,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace Application.Controllers
 {
     [ApiController]
-    [Route("[controller]")]
+    [Route(template: "[controller]")]
     public class ConfigurationController : ControllerBase
     {
         private readonly IConfigurationService _configurationService;
@@ -24,26 +24,26 @@ namespace Application.Controllers
         }
 
         [HttpGet]
-        [Route("locations")]
-        [Produces("application/json")]
+        [Route(template: "locations")]
+        [Produces(contentType: "application/json")]
         public async Task<ImmutableList<Options>> GetLocations()
         {
             _updateTask.TaskIsActive = true;
-            var locations = await _configurationService.GetActiveLocations();
-            return locations.Select(MapOptions).ToImmutableList();
+            var locations = await _configurationService.GetActiveLocations().ConfigureAwait(continueOnCapturedContext: false);
+            return locations.Select(selector: MapOptions).ToImmutableList();
         }
 
         [HttpGet]
-        [Route("events")]
-        [Produces("application/json")]
+        [Route(template: "events")]
+        [Produces(contentType: "application/json")]
         public async Task<ImmutableList<CheckInsEvent>> GetAvailableEvents()
         {
-            return await _configurationService.GetAvailableEvents();
+            return await _configurationService.GetAvailableEvents().ConfigureAwait(continueOnCapturedContext: false);
         }
 
         [HttpGet]
-        [Route("events/default")]
-        [Produces("application/json")]
+        [Route(template: "events/default")]
+        [Produces(contentType: "application/json")]
         public Dictionary<string, long> GetDefaultEvent()
         {
             return new()

@@ -22,14 +22,14 @@ namespace CheckInsExtension.CheckInUpdateJobs.Update
         
         public async Task StartAsync(CancellationToken cancellationToken)
         {
-            DateTime activationTime = new DateTime();
+            var activationTime = new DateTime();
             while (!cancellationToken.IsCancellationRequested)
             {
                 if (!TaskIsActive)
                 {
                     while (!TaskIsActive)
                     {
-                        await Delay(5000, cancellationToken);
+                        await Delay(millisecondsDelay: 5000, cancellationToken: cancellationToken);
                     }
                     activationTime = DateTime.UtcNow;
                 }
@@ -40,12 +40,12 @@ namespace CheckInsExtension.CheckInUpdateJobs.Update
                 }
                 catch (Exception e)
                 {
-                    _logger.LogError(e.Message, e);
+                    _logger.LogError(message: e.Message, e);
                 }
 
-                await Delay(5000, cancellationToken);
+                await Delay(millisecondsDelay: 5000, cancellationToken: cancellationToken);
 
-                if (activationTime < DateTime.UtcNow.Date.AddHours(1))
+                if (activationTime < DateTime.UtcNow.Date.AddHours(value: 1))
                 {
                     TaskIsActive = false;
                 }
@@ -55,7 +55,7 @@ namespace CheckInsExtension.CheckInUpdateJobs.Update
 
         public Task StopAsync(CancellationToken cancellationToken)
         {
-            _logger.LogInformation("Timed Hosted Service is stopping.");
+            _logger.LogInformation(message: "Timed Hosted Service is stopping.");
             return CompletedTask;        
         }
     }

@@ -6,39 +6,39 @@ using Microsoft.Extensions.Hosting;
 
 namespace Application
 {
-    public class Program
+    public static class Program
     {
         public static void Main(string[] args)
         {
-            CreateHostBuilder(args).Build().Run();
+            CreateHostBuilder(args: args).Build().Run();
         }
 
-        public static IHostBuilder CreateHostBuilder(string[] args)
+        private static IHostBuilder CreateHostBuilder(string[] args)
         {
             var preLoadedConfig = new ConfigurationBuilder()
-                .AddJsonFile("appsettings.json", optional: false)
-                .AddJsonFile("appsettings.Secrets.json", false)
-                .AddJsonFile("appsettings.DevelopementMachine.json", true)
+                .AddJsonFile(path: "appsettings.json", optional: false)
+                .AddJsonFile(path: "appsettings.Secrets.json", optional:false)
+                .AddJsonFile(path: "appsettings.DevelopementMachine.json", optional: true)
                 .Build();
             
-            return Host.CreateDefaultBuilder(args)
-                .ConfigureAppConfiguration((hostingContext, config) =>
+            return Host.CreateDefaultBuilder(args: args)
+                .ConfigureAppConfiguration(configureDelegate: (_, config) =>
                 {
-                    config.AddJsonFile("appsettings.Secrets.json", optional: false, reloadOnChange: true)
-                        .AddJsonFile("appsettings.DevelopementMachine.json", true, true);
+                    config.AddJsonFile(path: "appsettings.Secrets.json", optional: false, reloadOnChange: true)
+                        .AddJsonFile(path: "appsettings.DevelopementMachine.json", optional: true, reloadOnChange:true);
 
                     config.AddEnvironmentVariables();
                 })
-                .ConfigureWebHostDefaults(webBuilder =>
+                .ConfigureWebHostDefaults(configure: webBuilder =>
                 {
                     webBuilder
                         .UseStartup<Startup>()
-                        .UseUrls(preLoadedConfig.GetValue<string>("Url"));
+                        .UseUrls(preLoadedConfig.GetValue<string>(key: "Url"));
                 })
-                .ConfigureServices(services =>
+                .ConfigureServices(configureDelegate: services =>
                 {
                     services.AddSingleton<UpdateTask>();
-                    services.AddHostedService(p => p.GetRequiredService<UpdateTask>());
+                    services.AddHostedService(implementationFactory: p => p.GetRequiredService<UpdateTask>());
                 });
         }
             

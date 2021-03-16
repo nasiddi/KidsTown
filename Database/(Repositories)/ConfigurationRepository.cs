@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using CheckInsExtension.CheckInUpdateJobs.People;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+// ReSharper disable ConvertToUsingDeclaration
 
 namespace ChekInsExtension.Database
 {
@@ -20,8 +21,8 @@ namespace ChekInsExtension.Database
         {
             await using (var db = _serviceScopeFactory.CreateScope().ServiceProvider.GetRequiredService<CheckInsExtensionContext>())
             {
-                var locations = await db.LocationGroups.Where(l => l.IsEnabled).ToListAsync().ConfigureAwait(false);
-                return locations.Select(l => new CheckInsExtension.CheckInUpdateJobs.Models.Location(l.Id, l.Name))
+                var locations = await db.LocationGroups.Where(predicate: l => l.IsEnabled).ToListAsync().ConfigureAwait(continueOnCapturedContext: false);
+                return locations.Select(selector: l => new CheckInsExtension.CheckInUpdateJobs.Models.Location(id: l.Id, name: l.Name))
                     .ToImmutableList();
             }
         }

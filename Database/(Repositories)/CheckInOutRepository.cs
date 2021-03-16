@@ -7,6 +7,7 @@ using CheckInsExtension.CheckInUpdateJobs.Models;
 using CheckInsExtension.CheckInUpdateJobs.People;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+// ReSharper disable ConvertToUsingDeclaration
 
 namespace ChekInsExtension.Database
 {
@@ -34,7 +35,7 @@ namespace ChekInsExtension.Database
                           && a.InsertDate >= DateTime.Today.AddDays(-3)
                           && l.EventId == peopleSearchParameters.EventId
                     select MapPerson(a, p, l))
-                    .ToListAsync().ConfigureAwait(false);
+                    .ToListAsync().ConfigureAwait(continueOnCapturedContext: false);
 
                 return people.ToImmutableList();
             }
@@ -44,8 +45,8 @@ namespace ChekInsExtension.Database
         {
             await using (var db = _serviceScopeFactory.CreateScope().ServiceProvider.GetRequiredService<CheckInsExtensionContext>())
             {
-                var checkIns = await GetCheckIns(checkInIds, db).ConfigureAwait(false);
-                checkIns.ForEach(c => c.CheckInDate = DateTime.UtcNow);
+                var checkIns = await GetCheckIns(checkinIds: checkInIds, db: db).ConfigureAwait(continueOnCapturedContext: false);
+                checkIns.ForEach(action: c => c.CheckInDate = DateTime.UtcNow);
                 var result = await db.SaveChangesAsync();
                 return result > 0;            }
         }
@@ -54,8 +55,8 @@ namespace ChekInsExtension.Database
         {
             await using (var db = _serviceScopeFactory.CreateScope().ServiceProvider.GetRequiredService<CheckInsExtensionContext>())
             {
-                var checkIns = await GetCheckIns(checkInIds, db).ConfigureAwait(false);
-                checkIns.ForEach(c => c.CheckOutDate = DateTime.UtcNow);
+                var checkIns = await GetCheckIns(checkinIds: checkInIds, db: db).ConfigureAwait(continueOnCapturedContext: false);
+                checkIns.ForEach(action: c => c.CheckOutDate = DateTime.UtcNow);
                 var result = await db.SaveChangesAsync();
                 return result > 0;
             }
@@ -65,15 +66,15 @@ namespace ChekInsExtension.Database
             IImmutableList<int> checkinIds,
             CheckInsExtensionContext db)
         {
-            var checkIns = await db.Attendances.Where(a => 
-                checkinIds.Contains(a.Id)).ToListAsync().ConfigureAwait(false);
+            var checkIns = await db.Attendances.Where(predicate: a => 
+                checkinIds.Contains(a.Id)).ToListAsync().ConfigureAwait(continueOnCapturedContext: false);
             return checkIns;
         }
 
         private static CheckInsExtension.CheckInUpdateJobs.Models.Person MapPerson(Attendance attendance, Person person,
             Location location)
         {
-            var checkState = MappingService.GetCheckState(attendance);
+            var checkState = MappingService.GetCheckState(attendance: attendance);
 
             return new CheckInsExtension.CheckInUpdateJobs.Models.Person
             {

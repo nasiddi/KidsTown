@@ -27,9 +27,9 @@ namespace ChekInsExtension.Database
             await using (var db = _serviceScopeFactory.CreateScope().ServiceProvider
                 .GetRequiredService<CheckInsExtensionContext>())
             {
-                var existingCheckInIds = await db.Attendances.Where(i => checkinIds.Contains(i.CheckInId))
-                    .Select(i => i.CheckInId)
-                    .ToListAsync().ConfigureAwait(false);
+                var existingCheckInIds = await db.Attendances.Where(predicate: i => checkinIds.Contains(i.CheckInId))
+                    .Select(selector: i => i.CheckInId)
+                    .ToListAsync().ConfigureAwait(continueOnCapturedContext: false);
 
                 return existingCheckInIds.ToImmutableList();
             }
@@ -41,10 +41,10 @@ namespace ChekInsExtension.Database
                 .GetRequiredService<CheckInsExtensionContext>())
             {
                 var peopleIds = await db.Attendances
-                    .Where(i => i.InsertDate >= DateTime.Today.AddDays(-daysLookBack) && i.Person.PeopleId.HasValue)
-                    .Select(i => i.Person.PeopleId!.Value)
+                    .Where(predicate: i => i.InsertDate >= DateTime.Today.AddDays(-daysLookBack) && i.Person.PeopleId.HasValue)
+                    .Select(selector: i => i.Person.PeopleId!.Value)
                     .Distinct()
-                    .ToListAsync().ConfigureAwait(false);
+                    .ToListAsync().ConfigureAwait(continueOnCapturedContext: false);
 
                 return peopleIds.ToImmutableList();
             }
@@ -56,9 +56,9 @@ namespace ChekInsExtension.Database
                 .GetRequiredService<CheckInsExtensionContext>())
             {
                 var existingPersons =
-                    await GetPersonsByPeopleIds(db, peoples.Select(p => p.PeopleId!.Value).ToImmutableList()).ConfigureAwait(false);
+                    await GetPersonsByPeopleIds(db: db, peopleIds: peoples.Select(selector: p => p.PeopleId!.Value).ToImmutableList()).ConfigureAwait(continueOnCapturedContext: false);
 
-                await UpdatePersons(db, existingPersons, peoples).ConfigureAwait(false);
+                await UpdatePersons(db: db, people: existingPersons, updates: peoples).ConfigureAwait(continueOnCapturedContext: false);
             }
         }
 
@@ -68,13 +68,13 @@ namespace ChekInsExtension.Database
                 .GetRequiredService<CheckInsExtensionContext>())
             {
                 var volunteers = await db.Attendances
-                    .Where(a => 
+                    .Where(predicate: a => 
                         a.AttendanceTypeId == (int) AttendanceTypes.Volunteer
                         && a.CheckInDate == null)
-                    .ToListAsync().ConfigureAwait(false);
+                    .ToListAsync().ConfigureAwait(continueOnCapturedContext: false);
                 
-                volunteers.ForEach(v => v.CheckInDate = DateTime.UtcNow);
-                await db.SaveChangesAsync().ConfigureAwait(false);
+                volunteers.ForEach(action: v => v.CheckInDate = DateTime.UtcNow);
+                await db.SaveChangesAsync().ConfigureAwait(continueOnCapturedContext: false);
             }
         }
 
@@ -84,14 +84,14 @@ namespace ChekInsExtension.Database
                 .GetRequiredService<CheckInsExtensionContext>())
             {
                 var attendances = await db.Attendances
-                    .Where(a => 
+                    .Where(predicate: a => 
                         a.CheckInDate != null
                         && a.CheckOutDate == null
                         && a. CheckInDate < DateTime.Today)
-                    .ToListAsync().ConfigureAwait(false);
+                    .ToListAsync().ConfigureAwait(continueOnCapturedContext: false);
                 
-                attendances.ForEach(v => v.CheckOutDate = v.CheckInDate!.Value.Date.AddDays(1).AddSeconds(-1));
-                await db.SaveChangesAsync().ConfigureAwait(false);
+                attendances.ForEach(action: v => v.CheckOutDate = v.CheckInDate!.Value.Date.AddDays(value: 1).AddSeconds(value: -1));
+                await db.SaveChangesAsync().ConfigureAwait(continueOnCapturedContext: false);
             }
         }
 
@@ -100,11 +100,11 @@ namespace ChekInsExtension.Database
             await using (var db = _serviceScopeFactory.CreateScope().ServiceProvider
                 .GetRequiredService<CheckInsExtensionContext>())
             {
-                var guests = preCheckIns.Where(c => c.PeopleId == null).ToImmutableList();
-                await PreCheckInGuests(guests, db).ConfigureAwait(false);
+                var guests = preCheckIns.Where(predicate: c => c.PeopleId == null).ToImmutableList();
+                await PreCheckInGuests(guests: guests, db: db).ConfigureAwait(continueOnCapturedContext: false);
 
-                var regularPreCheckIns = preCheckIns.Except(guests).ToImmutableList();
-                await PreCheckInRegulars(regularPreCheckIns, db).ConfigureAwait(false);
+                var regularPreCheckIns = preCheckIns.Except(second: guests).ToImmutableList();
+                await PreCheckInRegulars(regularPreCheckIns: regularPreCheckIns, db: db).ConfigureAwait(continueOnCapturedContext: false);
             }
         }
         
@@ -113,9 +113,9 @@ namespace ChekInsExtension.Database
             await using (var db = _serviceScopeFactory.CreateScope().ServiceProvider
                 .GetRequiredService<CheckInsExtensionContext>())
             {
-                var locations = await db.Locations.Where(l => l.CheckInsLocationId.HasValue)
-                    .ToListAsync().ConfigureAwait(false);
-                return locations.Select(l => new PersistedLocation(l.Id, l.CheckInsLocationId!.Value)).ToImmutableList();
+                var locations = await db.Locations.Where(predicate: l => l.CheckInsLocationId.HasValue)
+                    .ToListAsync().ConfigureAwait(continueOnCapturedContext: false);
+                return locations.Select(selector: l => new PersistedLocation(locationId: l.Id, checkInsLocationId: l.CheckInsLocationId!.Value)).ToImmutableList();
             }
         }
 
@@ -124,9 +124,9 @@ namespace ChekInsExtension.Database
             await using (var db = _serviceScopeFactory.CreateScope().ServiceProvider
                 .GetRequiredService<CheckInsExtensionContext>())
             {
-                var locations = locationUpdates.Select(MapLocation);
-                await db.AddRangeAsync(locations).ConfigureAwait(false);
-                await db.SaveChangesAsync().ConfigureAwait(false);
+                var locations = locationUpdates.Select(selector: MapLocation);
+                await db.AddRangeAsync(entities: locations).ConfigureAwait(continueOnCapturedContext: false);
+                await db.SaveChangesAsync().ConfigureAwait(continueOnCapturedContext: false);
             }
         }
 
@@ -135,11 +135,11 @@ namespace ChekInsExtension.Database
             await using (var db = _serviceScopeFactory.CreateScope().ServiceProvider
                 .GetRequiredService<CheckInsExtensionContext>())
             {
-                var locationGroups = await db.LocationGroups.Where(l => l.Id == (int) LocationGroups.Unknown)
-                    .ToListAsync().ConfigureAwait(false);
+                var locationGroups = await db.LocationGroups.Where(predicate: l => l.Id == (int) LocationGroups.Unknown)
+                    .ToListAsync().ConfigureAwait(continueOnCapturedContext: false);
                 
-                locationGroups.ForEach(l => l.IsEnabled = true);
-                await db.SaveChangesAsync().ConfigureAwait(false);
+                locationGroups.ForEach(action: l => l.IsEnabled = true);
+                await db.SaveChangesAsync().ConfigureAwait(continueOnCapturedContext: false);
             }
         }
 
@@ -158,57 +158,57 @@ namespace ChekInsExtension.Database
         private static async Task PreCheckInRegulars(ImmutableList<CheckInUpdate> regularPreCheckIns, CheckInsExtensionContext db)
         {
             var persons = regularPreCheckIns
-                .Select(c => c.Person)
-                .GroupBy(p => p.PeopleId).Select(p => p.First())
+                .Select(selector: c => c.Person)
+                .GroupBy(keySelector: p => p.PeopleId).Select(selector: p => p.First())
                 .ToImmutableList();
 
             var existingPersons = await GetPersonsByPeopleIds(
-                db,
-                persons.Where(p => p.PeopleId.HasValue)
-                    .Select(p => p.PeopleId!.Value).ToImmutableList())
-                .ConfigureAwait(false);
+                db: db,
+                peopleIds: persons.Where(predicate: p => p.PeopleId.HasValue)
+                    .Select(selector: p => p.PeopleId!.Value).ToImmutableList())
+                .ConfigureAwait(continueOnCapturedContext: false);
 
             var personUpdates = persons.Where(
-                    p => existingPersons.Select(e => e.PeopleId).Contains(p.PeopleId))
+                    predicate: p => existingPersons.Select(selector: e => e.PeopleId).Contains(value: p.PeopleId))
                 .ToImmutableList();
-            await UpdatePersons(db, existingPersons, personUpdates).ConfigureAwait(false);
+            await UpdatePersons(db: db, people: existingPersons, updates: personUpdates).ConfigureAwait(continueOnCapturedContext: false);
             
-            var personInserts = persons.Except(personUpdates).ToImmutableList();
-            var insertedPersons = await InsertPersons(db, personInserts).ConfigureAwait(false);
+            var personInserts = persons.Except(second: personUpdates).ToImmutableList();
+            var insertedPersons = await InsertPersons(db: db, personToInsert: personInserts).ConfigureAwait(continueOnCapturedContext: false);
 
             var checkIns = regularPreCheckIns
-                .Select(c => MapToAttendance(c, existingPersons.Union(insertedPersons).ToImmutableList()))
+                .Select(selector: c => MapToAttendance(checkInUpdate: c, persons: existingPersons.Union(second: insertedPersons).ToImmutableList()))
                 .ToImmutableList();
-            await db.AddRangeAsync(checkIns).ConfigureAwait(false);
-            await db.SaveChangesAsync().ConfigureAwait(false);
+            await db.AddRangeAsync(entities: checkIns).ConfigureAwait(continueOnCapturedContext: false);
+            await db.SaveChangesAsync().ConfigureAwait(continueOnCapturedContext: false);
         }
 
-        private async Task PreCheckInGuests(ImmutableList<CheckInUpdate> guests, CheckInsExtensionContext db)
+        private async Task PreCheckInGuests(ImmutableList<CheckInUpdate> guests, DbContext db)
         {
-            var existingCheckInIds = await GetExistingCheckInIds(guests.Select(g => g.CheckInId).ToImmutableList()).ConfigureAwait(false);
-            var newGuests = guests.Where(g => !existingCheckInIds.Contains(g.CheckInId)).ToImmutableList();
+            var existingCheckInIds = await GetExistingCheckInIds(checkinIds: guests.Select(selector: g => g.CheckInId).ToImmutableList()).ConfigureAwait(continueOnCapturedContext: false);
+            var newGuests = guests.Where(predicate: g => !existingCheckInIds.Contains(value: g.CheckInId)).ToImmutableList();
 
-            var guestAttendances = newGuests.Select(MapGuestAttendance).ToImmutableList();
+            var guestAttendances = newGuests.Select(selector: MapGuestAttendance).ToImmutableList();
             
-            await db.AddRangeAsync(guestAttendances).ConfigureAwait(false);
-            await db.SaveChangesAsync().ConfigureAwait(false);
+            await db.AddRangeAsync(entities: guestAttendances).ConfigureAwait(continueOnCapturedContext: false);
+            await db.SaveChangesAsync().ConfigureAwait(continueOnCapturedContext: false);
         }
 
         private static Attendance MapGuestAttendance(CheckInUpdate guest)
         {
-            var person = MapPerson(guest.Person);
-            return MapToAttendance(guest, ImmutableList.Create(person));
+            var person = MapPerson(peopleUpdate: guest.Person);
+            return MapToAttendance(checkInUpdate: guest, persons: ImmutableList.Create(item: person));
         }
 
         private static async Task<List<Person>> InsertPersons(CheckInsExtensionContext db,
             IImmutableList<PeopleUpdate> personToInsert)
         {
-            var persons = personToInsert.Select(MapPerson).ToImmutableList();
-            await db.AddRangeAsync(persons).ConfigureAwait(false);
-            await db.SaveChangesAsync().ConfigureAwait(false);
+            var persons = personToInsert.Select(selector: MapPerson).ToImmutableList();
+            await db.AddRangeAsync(entities: persons).ConfigureAwait(continueOnCapturedContext: false);
+            await db.SaveChangesAsync().ConfigureAwait(continueOnCapturedContext: false);
 
-            var insertedPeople = await db.People.Where(p => personToInsert.Select(i => i.PeopleId).Contains(p.PeopleId))
-                .ToListAsync().ConfigureAwait(false);
+            var insertedPeople = await db.People.Where(predicate: p => personToInsert.Select(i => i.PeopleId).Contains(p.PeopleId))
+                .ToListAsync().ConfigureAwait(continueOnCapturedContext: false);
 
             return insertedPeople;
         }
@@ -226,16 +226,16 @@ namespace ChekInsExtension.Database
         }
 
         private static async Task UpdatePersons(
-            CheckInsExtensionContext db,
+            DbContext db,
             List<Person> people,
             ImmutableList<PeopleUpdate> updates)
         {
-            var updatesByPeopleId = updates.Where(u => u.PeopleId.HasValue)
-                .ToImmutableDictionary(k => k.PeopleId!, v => v);
+            var updatesByPeopleId = updates.Where(predicate: u => u.PeopleId.HasValue)
+                .ToImmutableDictionary(keySelector: k => k.PeopleId!, elementSelector: v => v);
 
-            people.ForEach(p =>
+            people.ForEach(action: p =>
             {
-                var update = updatesByPeopleId[p.PeopleId!];
+                var update = updatesByPeopleId[key: p.PeopleId!];
 
                 p.FistName = update.FirstName;
                 p.LastName = update.LastName;
@@ -243,21 +243,21 @@ namespace ChekInsExtension.Database
                 p.HasPeopleWithoutPickupPermission = update.HasPeopleWithoutPickupPermission;
             });
 
-            await db.SaveChangesAsync().ConfigureAwait(false);
+            await db.SaveChangesAsync().ConfigureAwait(continueOnCapturedContext: false);
         }
 
         private static async Task<List<Person>> GetPersonsByPeopleIds(
             CheckInsExtensionContext db,
             IImmutableList<long> peopleIds)
         {
-            var people = await db.People.Where(p => p.PeopleId.HasValue && peopleIds.Contains(p.PeopleId.Value))
-                .ToListAsync().ConfigureAwait(false);
+            var people = await db.People.Where(predicate: p => p.PeopleId.HasValue && peopleIds.Contains(p.PeopleId.Value))
+                .ToListAsync().ConfigureAwait(continueOnCapturedContext: false);
             return people;
         }
 
         private static Attendance MapToAttendance(CheckInUpdate checkInUpdate, ImmutableList<Person> persons)
         {
-            var person = persons.SingleOrDefault(p => p.PeopleId == checkInUpdate.PeopleId);
+            var person = persons.SingleOrDefault(predicate: p => p.PeopleId == checkInUpdate.PeopleId);
 
             return new Attendance
             {
@@ -266,7 +266,7 @@ namespace ChekInsExtension.Database
                 SecurityCode = checkInUpdate.SecurityCode,
                 InsertDate = checkInUpdate.CreationDate,
                 Person = person,
-                AttendanceTypeId = MapAttendeeType(checkInUpdate.AttendeeType)
+                AttendanceTypeId = MapAttendeeType(attendeeType: checkInUpdate.AttendeeType)
             };
         }
 
@@ -277,7 +277,7 @@ namespace ChekInsExtension.Database
                 AttendeeType.Regular => 1,
                 AttendeeType.Guest => 2,
                 AttendeeType.Volunteer => 3,
-                _ => throw new ArgumentOutOfRangeException(nameof(attendeeType), attendeeType, null)
+                _ => throw new ArgumentOutOfRangeException(paramName: nameof(attendeeType), actualValue: attendeeType, message: null)
             };
         }
     }

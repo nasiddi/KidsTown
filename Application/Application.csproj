@@ -17,7 +17,14 @@
     <ItemGroup>
         <!-- Don't publish the SPA source files, but do show them in the project files list -->
         <Content Remove="$(SpaRoot)**" />
+        <Content Include="ClientApp\node_modules\eslint-plugin-prettier\CHANGELOG.md" />
+        <Content Include="ClientApp\node_modules\eslint-plugin-prettier\eslint-plugin-prettier.js" />
+        <Content Include="ClientApp\node_modules\eslint-plugin-prettier\LICENSE.md" />
+        <Content Include="ClientApp\node_modules\eslint-plugin-prettier\package.json" />
+        <Content Include="ClientApp\node_modules\eslint-plugin-prettier\README.md" />
         <None Include="$(SpaRoot)**" Exclude="$(SpaRoot)node_modules\**" />
+        <None Remove="ClientApp\node_modules\eslint-plugin-prettier\**" />
+        <Content Remove="ClientApp\node_modules\eslint-plugin-prettier\**" />
     </ItemGroup>
 
     <ItemGroup>
@@ -26,7 +33,11 @@
     </ItemGroup>
 
     <ItemGroup>
-      <Folder Include="ClientApp\src\data" />
+      <Compile Remove="ClientApp\node_modules\eslint-plugin-prettier\**" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <EmbeddedResource Remove="ClientApp\node_modules\eslint-plugin-prettier\**" />
     </ItemGroup>
 
     <Target Name="DebugEnsureNodeEnv" BeforeTargets="Build" Condition=" '$(Configuration)' == 'Debug' And !Exists('$(SpaRoot)node_modules') ">

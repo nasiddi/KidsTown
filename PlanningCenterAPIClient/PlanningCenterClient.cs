@@ -14,7 +14,7 @@ namespace CheckInsExtension.PlanningCenterAPIClient
     public class PlanningCenterClient : IPlanningCenterClient
     {
         private readonly IConfiguration _configuration;
-        private static HttpClient? _clientBackingField;
+        private HttpClient? _clientBackingField;
 
         public PlanningCenterClient(IConfiguration configuration)
         {
@@ -25,36 +25,36 @@ namespace CheckInsExtension.PlanningCenterAPIClient
 
         public async Task<EventResult> GetActiveEvents()
         {
-            var response = await Client.GetStringAsync("check-ins/v2/events?filter=not_archived");
-            var responseBody = JsonConvert.DeserializeObject<EventResult>(response);
+            var response = await Client.GetStringAsync(requestUri: "check-ins/v2/events?filter=not_archived");
+            var responseBody = JsonConvert.DeserializeObject<EventResult>(value: response);
             return responseBody;
         }
         
         public async Task<CheckIns> GetCheckedInPeople(int daysLookBack)
         {
-            var dateString = DateTime.Today.AddDays(-daysLookBack).ToString("yyyy-MM-ddT00:00:00Z");
-            var response = await Client.GetStringAsync($"check-ins/v2/check_ins?include=locations,person,event&per_page=1000&where[created_at][gte]={dateString}");
+            var dateString = DateTime.Today.AddDays(value: -daysLookBack).ToString(format: "yyyy-MM-ddT00:00:00Z");
+            var response = await Client.GetStringAsync(requestUri: $"check-ins/v2/check_ins?include=locations,person,event&per_page=1000&where[created_at][gte]={dateString}");
 
-            var responseBody = JsonConvert.DeserializeObject<CheckIns>(response);
+            var responseBody = JsonConvert.DeserializeObject<CheckIns>(value: response);
             return responseBody;
         }
 
         public async Task<People> GetPeopleUpdates(IImmutableList<long> peopleIds)
         {
-            var response = await Client.GetStringAsync($"people/v2/people?include=field_data&per_page=1000&where[id]={string.Join(',', peopleIds)}");
-            return JsonConvert.DeserializeObject<People>(response);
+            var response = await Client.GetStringAsync(requestUri: $"people/v2/people?include=field_data&per_page=1000&where[id]={string.Join(separator: ',', values: peopleIds)}");
+            return JsonConvert.DeserializeObject<People>(value: response);
         }
 
         private HttpClient InitClient()
         {
             var client = new HttpClient
             {
-                BaseAddress = new Uri("https://api.planningcenteronline.com")
+                BaseAddress = new Uri(uriString: "https://api.planningcenteronline.com")
             };
 
-            var authorization = _configuration.GetSection("PlanningCenterClient");
-            var byteArray = Encoding.ASCII.GetBytes($"{authorization["ApplicationId"]}:{authorization["Secret"]}");
-            client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Basic", Convert.ToBase64String(byteArray));
+            var authorization = _configuration.GetSection(key: "PlanningCenterClient");
+            var byteArray = Encoding.ASCII.GetBytes(s: $"{authorization[key: "ApplicationId"]}:{authorization[key: "Secret"]}");
+            client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue(scheme: "Basic", parameter: Convert.ToBase64String(inArray: byteArray));
             _clientBackingField = client;
             return client;
         }

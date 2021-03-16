@@ -2,9 +2,9 @@ namespace CheckInsExtension.CheckInUpdateJobs.Update
 {
     public class LocationUpdate
     {
-        public long CheckInsLocationId;
-        public string Name;
-        public long EventId;
+        public readonly long CheckInsLocationId;
+        public readonly string Name;
+        public readonly long EventId;
 
         public LocationUpdate(long checkInsLocationId, string name, long eventId)
         {

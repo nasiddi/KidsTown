@@ -7,27 +7,7 @@ code {
   color: #E01A76;
 }
 
-.option-div {
-  padding-top: 1em;
-  padding-bottom: 1em;
-}
-
-.nameButton {
-  padding-bottom: 0.5em;
-  padding-top: 0.5em;
-}
-
-.alertMessage {
-  padding-bottom: 0.5em;
-}
-
-.saveButton {
-  padding-bottom: 1em;
-  padding-top: 1em;
-}
-
 .btn:focus,.btn:active {
-  outline: none !important;
   box-shadow: none;
 }
 

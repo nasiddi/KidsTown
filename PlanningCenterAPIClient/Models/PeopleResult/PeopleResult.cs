@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Globalization;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
-#pragma warning disable 8618
 
 namespace CheckInsExtension.PlanningCenterAPIClient.Models.PeopleResult
 {
@@ -12,11 +11,11 @@ namespace CheckInsExtension.PlanningCenterAPIClient.Models.PeopleResult
 //         [JsonProperty("links")]
 //         public DatumLinks Links { get; set; }
 //
-         [JsonProperty("data")]
-         public List<Datum> Data { get; set; }
+         [JsonProperty(propertyName: "data")]
+         public List<Datum>? Data { get; set; }
 
-         [JsonProperty("included")]
-         public List<Included> Included { get; set; }
+         [JsonProperty(propertyName: "included")]
+         public List<Included>? Included { get; set; }
 //
 //         //[JsonProperty("meta")]
 //         //public Meta Meta { get; set; }
@@ -27,15 +26,15 @@ namespace CheckInsExtension.PlanningCenterAPIClient.Models.PeopleResult
 //         [JsonProperty("type")]
 //         public PeopleIncludedType PeopleIncludedType { get; set; }
 //
-         [JsonProperty("id")]
-         [JsonConverter(typeof(ParseStringConverter))]
+         [JsonProperty(propertyName: "id")]
+         [JsonConverter(converterType: typeof(ParseStringConverter))]
          public long Id { get; set; }
 //
-         [JsonProperty("attributes")]
-         public DatumAttributes Attributes { get; set; }
+         [JsonProperty(propertyName: "attributes")]
+         public DatumAttributes? Attributes { get; set; }
 //
-         [JsonProperty("relationships")]
-         public DatumRelationships Relationships { get; set; }
+         [JsonProperty(propertyName: "relationships")]
+         public DatumRelationships? Relationships { get; set; }
 //
 //         [JsonProperty("links")]
 //         public DatumLinks Links { get; set; }
@@ -67,8 +66,8 @@ namespace CheckInsExtension.PlanningCenterAPIClient.Models.PeopleResult
 //         [JsonProperty("directory_status")]
 //         public string DirectoryStatus { get; set; }
 //
-         [JsonProperty("first_name")]
-         public string FirstName { get; set; }
+         [JsonProperty(propertyName: "first_name")]
+         public string? FirstName { get; set; }
 //
 //         [JsonProperty("gender")]
 //         public string Gender { get; set; }
@@ -85,8 +84,8 @@ namespace CheckInsExtension.PlanningCenterAPIClient.Models.PeopleResult
 //         [JsonProperty("inactivated_at")]
 //         public object InactivatedAt { get; set; }
 //
-         [JsonProperty("last_name")]
-         public string LastName { get; set; }
+         [JsonProperty(propertyName: "last_name")]
+         public string? LastName { get; set; }
 //
 //         [JsonProperty("medical_notes")]
 //         public object MedicalNotes { get; set; }
@@ -136,8 +135,8 @@ namespace CheckInsExtension.PlanningCenterAPIClient.Models.PeopleResult
 //         [JsonProperty("primary_campus")]
 //         public PrimaryCampus PrimaryCampus { get; set; }
 //
-         [JsonProperty("field_data")]
-         public FieldData FieldData { get; set; }
+         [JsonProperty(propertyName: "field_data")]
+         public FieldData? FieldData { get; set; }
      }
 //
      public class FieldData
@@ -145,8 +144,8 @@ namespace CheckInsExtension.PlanningCenterAPIClient.Models.PeopleResult
 //         [JsonProperty("links")]
 //         public FieldDataLinks Links { get; set; }
 //
-         [JsonProperty("data")]
-         public List<Parent> Data { get; set; }
+         [JsonProperty(propertyName: "data")]
+         public List<Parent>? Data { get; set; }
      }
 //
      public class Parent
@@ -154,8 +153,8 @@ namespace CheckInsExtension.PlanningCenterAPIClient.Models.PeopleResult
 //         [JsonProperty("type")]
 //         public PeopleIncludedType PeopleIncludedType { get; set; }
 //
-         [JsonProperty("id")]
-         [JsonConverter(typeof(ParseStringConverter))]
+         [JsonProperty(propertyName: "id")]
+         [JsonConverter(converterType: typeof(ParseStringConverter))]
          public long Id { get; set; }
      }
 //
@@ -167,24 +166,24 @@ namespace CheckInsExtension.PlanningCenterAPIClient.Models.PeopleResult
 //
      public class PrimaryCampus
      {
-         [JsonProperty("data")]
-         public Parent Data { get; set; }
+         [JsonProperty(propertyName: "data")]
+         public Parent? Data { get; set; }
      }
 //
      public class Included
      {
-         [JsonProperty("type")]
+         [JsonProperty(propertyName: "type")]
          public PeopleIncludedType PeopleIncludedType { get; set; }
 //
-         [JsonProperty("id")]
-         [JsonConverter(typeof(ParseStringConverter))]
+         [JsonProperty(propertyName: "id")]
+         [JsonConverter(converterType: typeof(ParseStringConverter))]
          public long Id { get; set; }
 //
-         [JsonProperty("attributes")]
-         public IncludedAttributes Attributes { get; set; }
+         [JsonProperty(propertyName: "attributes")]
+         public IncludedAttributes? Attributes { get; set; }
 //
-         [JsonProperty("relationships")]
-         public IncludedRelationships Relationships { get; set; }
+         [JsonProperty(propertyName: "relationships")]
+         public IncludedRelationships? Relationships { get; set; }
 //
 //         [JsonProperty("links")]
 //         public DatumLinks Links { get; set; }
@@ -204,8 +203,8 @@ namespace CheckInsExtension.PlanningCenterAPIClient.Models.PeopleResult
 //         [JsonProperty("file_size")]
 //         public long? FileSize { get; set; }
 //
-         [JsonProperty("value")]
-         public string Value { get; set; }
+         [JsonProperty(propertyName: "value")]
+         public string? Value { get; set; }
      }
 //
 //     public class File
@@ -216,8 +215,8 @@ namespace CheckInsExtension.PlanningCenterAPIClient.Models.PeopleResult
 //
      public class IncludedRelationships
      {
-         [JsonProperty("field_definition")]
-         public PrimaryCampus FieldDefinition { get; set; }
+         [JsonProperty(propertyName: "field_definition")]
+         public PrimaryCampus? FieldDefinition { get; set; }
 //
 //         [JsonProperty("customizable")]
 //         public PrimaryCampus Customizable { get; set; }
@@ -247,11 +246,13 @@ namespace CheckInsExtension.PlanningCenterAPIClient.Models.PeopleResult
 //         public Parent Parent { get; set; }
 //     }
 //
-     public enum PeopleIncludedType { FieldDatum, FieldDefinition, Organization, Person, PrimaryCampus };
+     public enum PeopleIncludedType { FieldDatum, FieldDefinition, Organization, Person, PrimaryCampus }
 
+     // ReSharper disable once UnusedType.Global
      internal static class Converter
      {
-         public static readonly JsonSerializerSettings Settings = new JsonSerializerSettings
+         // ReSharper disable once UnusedMember.Global
+         public static readonly JsonSerializerSettings Settings = new()
          {
              MetadataPropertyHandling = MetadataPropertyHandling.Ignore,
              DateParseHandling = DateParseHandling.None,
@@ -259,7 +260,7 @@ namespace CheckInsExtension.PlanningCenterAPIClient.Models.PeopleResult
              {
                  TypeEnumConverter.Singleton,
                  new IsoDateTimeConverter { DateTimeStyles = DateTimeStyles.AssumeUniversal }
-             },
+             }
          };
      }
 
@@ -267,86 +268,81 @@ namespace CheckInsExtension.PlanningCenterAPIClient.Models.PeopleResult
      {
          public override bool CanConvert(Type t) => t == typeof(long) || t == typeof(long?);
 
-         public override object ReadJson(JsonReader reader, Type t, object existingValue, JsonSerializer serializer)
+         public override object? ReadJson(JsonReader reader, Type t, object? existingValue, JsonSerializer serializer)
          {
              if (reader.TokenType == JsonToken.Null) return null;
-             var value = serializer.Deserialize<string>(reader);
-             long l;
-             if (Int64.TryParse(value, out l))
+             var value = serializer.Deserialize<string>(reader: reader);
+             if (long.TryParse(s: value, result: out var l))
              {
                  return l;
              }
-             throw new Exception("Cannot unmarshal type long");
+             throw new Exception(message: "Cannot unmarshal type long");
          }
 
-         public override void WriteJson(JsonWriter writer, object untypedValue, JsonSerializer serializer)
+         public override void WriteJson(JsonWriter writer, object? untypedValue, JsonSerializer serializer)
          {
              if (untypedValue == null)
              {
-                 serializer.Serialize(writer, null);
+                 serializer.Serialize(jsonWriter: writer, value: null);
                  return;
              }
              var value = (long)untypedValue;
-             serializer.Serialize(writer, value.ToString());
-             return;
+             serializer.Serialize(jsonWriter: writer, value: value.ToString());
          }
 
-         public static readonly ParseStringConverter Singleton = new ParseStringConverter();
+         // ReSharper disable once UnusedMember.Global
+         public static readonly ParseStringConverter Singleton = new();
      }
 
     internal class TypeEnumConverter : JsonConverter
     {
         public override bool CanConvert(Type t) => t == typeof(PeopleIncludedType) || t == typeof(PeopleIncludedType?);
 
-        public override object ReadJson(JsonReader reader, Type t, object existingValue, JsonSerializer serializer)
+        public override object? ReadJson(JsonReader reader, Type t, object? existingValue, JsonSerializer serializer)
         {
             if (reader.TokenType == JsonToken.Null) return null;
-            var value = serializer.Deserialize<string>(reader);
-            switch (value)
+            var value = serializer.Deserialize<string>(reader: reader);
+            return value switch
             {
-                case "FieldDatum":
-                    return PeopleIncludedType.FieldDatum;
-                case "FieldDefinition":
-                    return PeopleIncludedType.FieldDefinition;
-                case "Organization":
-                    return PeopleIncludedType.Organization;
-                case "Person":
-                    return PeopleIncludedType.Person;
-                case "PrimaryCampus":
-                    return PeopleIncludedType.PrimaryCampus;
-            }
-            throw new Exception("Cannot unmarshal type TypeEnum");
+                "FieldDatum" => PeopleIncludedType.FieldDatum,
+                "FieldDefinition" => PeopleIncludedType.FieldDefinition,
+                "Organization" => PeopleIncludedType.Organization,
+                "Person" => PeopleIncludedType.Person,
+                "PrimaryCampus" => PeopleIncludedType.PrimaryCampus,
+                _ => throw new Exception(message: "Cannot unmarshal type TypeEnum")
+            };
         }
 
-        public override void WriteJson(JsonWriter writer, object untypedValue, JsonSerializer serializer)
+        public override void WriteJson(JsonWriter writer, object? untypedValue, JsonSerializer serializer)
         {
             if (untypedValue == null)
             {
-                serializer.Serialize(writer, null);
+                serializer.Serialize(jsonWriter: writer, value: null);
                 return;
             }
             var value = (PeopleIncludedType)untypedValue;
             switch (value)
             {
                 case PeopleIncludedType.FieldDatum:
-                    serializer.Serialize(writer, "FieldDatum");
+                    serializer.Serialize(jsonWriter: writer, value: "FieldDatum");
                     return;
                 case PeopleIncludedType.FieldDefinition:
-                    serializer.Serialize(writer, "FieldDefinition");
+                    serializer.Serialize(jsonWriter: writer, value: "FieldDefinition");
                     return;
                 case PeopleIncludedType.Organization:
-                    serializer.Serialize(writer, "Organization");
+                    serializer.Serialize(jsonWriter: writer, value: "Organization");
                     return;
                 case PeopleIncludedType.Person:
-                    serializer.Serialize(writer, "Person");
+                    serializer.Serialize(jsonWriter: writer, value: "Person");
                     return;
                 case PeopleIncludedType.PrimaryCampus:
-                    serializer.Serialize(writer, "PrimaryCampus");
+                    serializer.Serialize(jsonWriter: writer, value: "PrimaryCampus");
                     return;
+                default:
+                    throw new Exception(message: "Cannot marshal type TypeEnum");
             }
-            throw new Exception("Cannot marshal type TypeEnum");
         }
 
-        public static readonly TypeEnumConverter Singleton = new TypeEnumConverter();
+        public static readonly TypeEnumConverter Singleton = new();
      }
  }

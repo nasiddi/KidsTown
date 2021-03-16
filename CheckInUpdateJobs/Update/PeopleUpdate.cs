@@ -11,9 +11,21 @@
         public PeopleUpdate(
             long? peopleId, 
             string firstName, 
+            string lastName)
+        {
+            PeopleId = peopleId;
+            FirstName = firstName;
+            LastName = lastName;
+            MayLeaveAlone = true;
+            HasPeopleWithoutPickupPermission = false;
+        }
+        
+        public PeopleUpdate(
+            long? peopleId, 
+            string firstName, 
             string lastName, 
-            bool mayLeaveAlone = true,
-            bool hasPeopleWithoutPickupPermission = false)
+            bool mayLeaveAlone,
+            bool hasPeopleWithoutPickupPermission)
         {
             PeopleId = peopleId;
             FirstName = firstName;

@@ -1,6 +1,4 @@
-﻿#pragma warning disable 8603
-#pragma warning disable 8618
-namespace CheckInsExtension.PlanningCenterAPIClient.Models.CheckInResult
+﻿namespace CheckInsExtension.PlanningCenterAPIClient.Models.CheckInResult
 {
     using System;
     using System.Collections.Generic;
@@ -14,11 +12,11 @@ namespace CheckInsExtension.PlanningCenterAPIClient.Models.CheckInResult
 //         [JsonProperty("links")]
 //         public AttendeeLinks Links { get; set; }
 
-         [JsonProperty("data")]
-         public List<Attendee> Attendees { get; set; }
+         [JsonProperty(propertyName: "data")]
+         public List<Attendee>? Attendees { get; set; }
 
-         [JsonProperty("included")]
-         public List<Included> Included { get; set; }
+         [JsonProperty(propertyName: "included")]
+         public List<Included>? Included { get; set; }
 //
 //         [JsonProperty("meta")]
 //         public Meta Meta { get; set; }
@@ -29,18 +27,18 @@ namespace CheckInsExtension.PlanningCenterAPIClient.Models.CheckInResult
 //         [JsonProperty("type")]
 //         public string Type { get; set; }
 //
-         [JsonProperty("id")]
-         [JsonConverter(typeof(ParseStringConverter))]
+         [JsonProperty(propertyName: "id")]
+         [JsonConverter(converterType: typeof(ParseStringConverter))]
          public long Id { get; set; }
 //
-         [JsonProperty("attributes")]
-         public AttendeeAttributes Attributes { get; set; }
+         [JsonProperty(propertyName: "attributes")]
+         public AttendeeAttributes? Attributes { get; set; }
 //
 //         [JsonProperty("links")]
 //         public AttendeeLinks Links { get; set; }
 //
-         [JsonProperty("relationships")]
-         public AttendeeRelationships Relationships { get; set; }
+         [JsonProperty(propertyName: "relationships")]
+         public AttendeeRelationships? Relationships { get; set; }
      }
 //
      public class AttendeeAttributes
@@ -48,7 +46,7 @@ namespace CheckInsExtension.PlanningCenterAPIClient.Models.CheckInResult
 //         [JsonProperty("checked_out_at")]
 //         public DateTimeOffset? CheckedOutAt { get; set; }
 //
-         [JsonProperty("created_at")]
+         [JsonProperty(propertyName: "created_at")]
          public DateTime CreatedAt { get; set; }
 //
 //         [JsonProperty("emergency_contact_name")]
@@ -57,14 +55,14 @@ namespace CheckInsExtension.PlanningCenterAPIClient.Models.CheckInResult
 //         [JsonProperty("emergency_contact_phone_number")]
 //         public string EmergencyContactPhoneNumber { get; set; }
 //
-         [JsonProperty("first_name")]
-         public string FirstName { get; set; }
+         [JsonProperty(propertyName: "first_name")]
+         public string? FirstName { get; set; }
 
-         [JsonProperty("kind")]
+         [JsonProperty(propertyName: "kind")]
          public AttendeeType Kind { get; set; }
 
-         [JsonProperty("last_name")]
-         public string LastName { get; set; }
+         [JsonProperty(propertyName: "last_name")]
+         public string? LastName { get; set; }
 //
 //         [JsonProperty("medical_notes")]
 //         public object MedicalNotes { get; set; }
@@ -72,8 +70,8 @@ namespace CheckInsExtension.PlanningCenterAPIClient.Models.CheckInResult
 //         [JsonProperty("number")]
 //         public long Number { get; set; }
 //
-         [JsonProperty("security_code")]
-         public string SecurityCode { get; set; }
+         [JsonProperty(propertyName: "security_code")]
+         public string? SecurityCode { get; set; }
 //
 //         [JsonProperty("updated_at")]
 //         public DateTimeOffset UpdatedAt { get; set; }
@@ -87,14 +85,14 @@ namespace CheckInsExtension.PlanningCenterAPIClient.Models.CheckInResult
 //
      public class AttendeeRelationships
      {
-         [JsonProperty("locations")]
-         public Locations Locations { get; set; }
+         [JsonProperty(propertyName: "locations")]
+         public Locations? Locations { get; set; }
 
-         [JsonProperty("person")]
-         public Event Person { get; set; }
+         [JsonProperty(propertyName: "person")]
+         public Event? Person { get; set; }
 
-         [JsonProperty("event")]
-         public Event Event { get; set; }
+         [JsonProperty(propertyName: "event")]
+         public Event? Event { get; set; }
      }
 //
      public class Event
@@ -102,7 +100,7 @@ namespace CheckInsExtension.PlanningCenterAPIClient.Models.CheckInResult
 //         [JsonProperty("links", NullValueHandling = NullValueHandling.Ignore)]
 //         public EventLinks Links { get; set; }
 //
-         [JsonProperty("data")]
+         [JsonProperty(propertyName: "data")]
          public ParentElement? Data { get; set; }
      }
 //
@@ -111,8 +109,8 @@ namespace CheckInsExtension.PlanningCenterAPIClient.Models.CheckInResult
 //         [JsonProperty("type")]
 //         public IncludeType Type { get; set; }
 //
-         [JsonProperty("id")]
-         [JsonConverter(typeof(ParseStringConverter))]
+         [JsonProperty(propertyName: "id")]
+         [JsonConverter(converterType: typeof(ParseStringConverter))]
          public long Id { get; set; }
      }
 //
@@ -127,21 +125,21 @@ namespace CheckInsExtension.PlanningCenterAPIClient.Models.CheckInResult
 //         [JsonProperty("links")]
 //         public EventLinks Links { get; set; }
 //
-         [JsonProperty("data")]
-         public List<ParentElement> Data { get; set; }
+         [JsonProperty(propertyName: "data")]
+         public List<ParentElement>? Data { get; set; }
      }
 
      public class Included
      {
-         [JsonProperty("type")]
+         [JsonProperty(propertyName: "type")]
          public IncludeType Type { get; set; }
 
-         [JsonProperty("id")]
-         [JsonConverter(typeof(ParseStringConverter))]
+         [JsonProperty(propertyName: "id")]
+         [JsonConverter(converterType: typeof(ParseStringConverter))]
          public long Id { get; set; }
 
-         [JsonProperty("attributes")]
-         public IncludedAttributes Attributes { get; set; }
+         [JsonProperty(propertyName: "attributes")]
+         public IncludedAttributes? Attributes { get; set; }
 //
 //         [JsonProperty("relationships", NullValueHandling = NullValueHandling.Ignore)]
 //         public IncludedRelationships Relationships { get; set; }
@@ -194,8 +192,8 @@ namespace CheckInsExtension.PlanningCenterAPIClient.Models.CheckInResult
 //         [JsonProperty("min_volunteers")]
 //         public object MinVolunteers { get; set; }
 //
-         [JsonProperty("name", NullValueHandling = NullValueHandling.Ignore)]
-         public string Name { get; set; }
+         [JsonProperty(propertyName: "name", NullValueHandling = NullValueHandling.Ignore)]
+         public string? Name { get; set; }
 //
 //         [JsonProperty("opened", NullValueHandling = NullValueHandling.Ignore)]
 //         public bool? Opened { get; set; }
@@ -370,19 +368,21 @@ namespace CheckInsExtension.PlanningCenterAPIClient.Models.CheckInResult
 //         public ParentElement Parent { get; set; }
 //     }
 //
-     public enum AttendeeType { Guest, Regular, Volunteer };
+     public enum AttendeeType { Guest, Regular, Volunteer }
 
-     public enum IncludeType { Event, Location, Organization, Parent, Person };
+     public enum IncludeType { Event, Location, Organization, Parent, Person }
 
-     public enum PurpleType { CheckIn };
+     public enum PurpleType { CheckIn }
 
-     public enum Location { Home };
+     public enum Location { Home }
 
-     public enum Gender { F, M };
+     public enum Gender { F, M }
 
+     // ReSharper disable once UnusedType.Global
      internal static class Converter
      {
-         public static readonly JsonSerializerSettings Settings = new JsonSerializerSettings
+         // ReSharper disable once UnusedMember.Global
+         public static readonly JsonSerializerSettings Settings = new()
          {
              MetadataPropertyHandling = MetadataPropertyHandling.Ignore,
              DateParseHandling = DateParseHandling.None,
@@ -394,7 +394,7 @@ namespace CheckInsExtension.PlanningCenterAPIClient.Models.CheckInResult
                  LocationConverter.Singleton,
                  GenderConverter.Singleton,
                  new IsoDateTimeConverter { DateTimeStyles = DateTimeStyles.AssumeUniversal }
-             },
+             }
          };
      }
 
@@ -402,241 +402,225 @@ namespace CheckInsExtension.PlanningCenterAPIClient.Models.CheckInResult
      {
          public override bool CanConvert(Type t) => t == typeof(AttendeeType) || t == typeof(AttendeeType?);
 
-         public override object ReadJson(JsonReader reader, Type t, object existingValue, JsonSerializer serializer)
+         public override object? ReadJson(JsonReader reader, Type t, object? existingValue, JsonSerializer serializer)
          {
              if (reader.TokenType == JsonToken.Null) return null;
-             var value = serializer.Deserialize<string>(reader);
-             switch (value)
+             var value = serializer.Deserialize<string>(reader: reader);
+             return value switch
              {
-                 case "Guest":
-                     return AttendeeType.Guest;
-                 case "Regular":
-                     return AttendeeType.Regular;
-                 case "Volunteer":
-                     return AttendeeType.Volunteer;
-             }
-             throw new Exception("Cannot unmarshal type Kind");
+                 "Guest" => AttendeeType.Guest,
+                 "Regular" => AttendeeType.Regular,
+                 "Volunteer" => AttendeeType.Volunteer,
+                 _ => throw new Exception(message: "Cannot unmarshal type Kind")
+             };
          }
 
-         public override void WriteJson(JsonWriter writer, object untypedValue, JsonSerializer serializer)
+         public override void WriteJson(JsonWriter writer, object? untypedValue, JsonSerializer serializer)
          {
              if (untypedValue == null)
              {
-                 serializer.Serialize(writer, null);
+                 serializer.Serialize(jsonWriter: writer, value: null);
                  return;
              }
              var value = (AttendeeType)untypedValue;
              switch (value)
              {
                  case AttendeeType.Guest:
-                     serializer.Serialize(writer, "Guest");
+                     serializer.Serialize(jsonWriter: writer, value: "Guest");
                      return;
                  case AttendeeType.Regular:
-                     serializer.Serialize(writer, "Regular");
+                     serializer.Serialize(jsonWriter: writer, value: "Regular");
                      return;
                  case AttendeeType.Volunteer:
-                     serializer.Serialize(writer, "Volunteer");
+                     serializer.Serialize(jsonWriter: writer, value: "Volunteer");
                      return;
+                 default:
+                     throw new Exception(message: "Cannot marshal type Kind");
              }
-             throw new Exception("Cannot marshal type Kind");
          }
 
-         public static readonly KindConverter Singleton = new KindConverter();
+         public static readonly KindConverter Singleton = new();
      }
 
      internal class ParseStringConverter : JsonConverter
      {
          public override bool CanConvert(Type t) => t == typeof(long) || t == typeof(long?);
 
-         public override object ReadJson(JsonReader reader, Type t, object existingValue, JsonSerializer serializer)
+         public override object? ReadJson(JsonReader reader, Type t, object? existingValue, JsonSerializer serializer)
          {
              if (reader.TokenType == JsonToken.Null) return null;
-             var value = serializer.Deserialize<string>(reader);
-             long l;
-             if (Int64.TryParse(value, out l))
+             var value = serializer.Deserialize<string>(reader: reader);
+             if (long.TryParse(s: value, result: out var l))
              {
                  return l;
              }
-             throw new Exception("Cannot unmarshal type long");
+             throw new Exception(message: "Cannot unmarshal type long");
          }
 
-         public override void WriteJson(JsonWriter writer, object untypedValue, JsonSerializer serializer)
+         public override void WriteJson(JsonWriter writer, object? untypedValue, JsonSerializer serializer)
          {
              if (untypedValue == null)
              {
-                 serializer.Serialize(writer, null);
+                 serializer.Serialize(jsonWriter: writer, value: null);
                  return;
              }
              var value = (long)untypedValue;
-             serializer.Serialize(writer, value.ToString());
-             return;
+             serializer.Serialize(jsonWriter: writer, value: value.ToString());
          }
 
-         public static readonly ParseStringConverter Singleton = new ParseStringConverter();
+         // ReSharper disable once UnusedMember.Global
+         public static readonly ParseStringConverter Singleton = new();
      }
 
      internal class KindEnumConverter : JsonConverter
      {
          public override bool CanConvert(Type t) => t == typeof(IncludeType) || t == typeof(IncludeType?);
 
-         public override object ReadJson(JsonReader reader, Type t, object existingValue, JsonSerializer serializer)
+         public override object? ReadJson(JsonReader reader, Type t, object? existingValue, JsonSerializer serializer)
          {
              if (reader.TokenType == JsonToken.Null) return null;
-             var value = serializer.Deserialize<string>(reader);
-             switch (value)
+             var value = serializer.Deserialize<string>(reader: reader);
+             return value switch
              {
-                 case "Event":
-                     return IncludeType.Event;
-                 case "Location":
-                     return IncludeType.Location;
-                 case "Organization":
-                     return IncludeType.Organization;
-                 case "Parent":
-                     return IncludeType.Parent;
-                 case "Person":
-                     return IncludeType.Person;
-             }
-             throw new Exception("Cannot unmarshal type KindEnum");
+                 "Event" => IncludeType.Event,
+                 "Location" => IncludeType.Location,
+                 "Organization" => IncludeType.Organization,
+                 "Parent" => IncludeType.Parent,
+                 "Person" => IncludeType.Person,
+                 _ => throw new Exception(message: "Cannot unmarshal type KindEnum")
+             };
          }
 
-         public override void WriteJson(JsonWriter writer, object untypedValue, JsonSerializer serializer)
+         public override void WriteJson(JsonWriter writer, object? untypedValue, JsonSerializer serializer)
          {
              if (untypedValue == null)
              {
-                 serializer.Serialize(writer, null);
+                 serializer.Serialize(jsonWriter: writer, value: null);
                  return;
              }
              var value = (IncludeType)untypedValue;
              switch (value)
              {
                  case IncludeType.Event:
-                     serializer.Serialize(writer, "Event");
+                     serializer.Serialize(jsonWriter: writer, value: "Event");
                      return;
                  case IncludeType.Location:
-                     serializer.Serialize(writer, "Location");
+                     serializer.Serialize(jsonWriter: writer, value: "Location");
                      return;
                  case IncludeType.Organization:
-                     serializer.Serialize(writer, "Organization");
+                     serializer.Serialize(jsonWriter: writer, value: "Organization");
                      return;
                  case IncludeType.Parent:
-                     serializer.Serialize(writer, "Parent");
+                     serializer.Serialize(jsonWriter: writer, value: "Parent");
                      return;
                  case IncludeType.Person:
-                     serializer.Serialize(writer, "Person");
+                     serializer.Serialize(jsonWriter: writer, value: "Person");
                      return;
+                 default:
+                     throw new Exception(message: "Cannot marshal type KindEnum");
              }
-             throw new Exception("Cannot marshal type KindEnum");
          }
 
-         public static readonly KindEnumConverter Singleton = new KindEnumConverter();
+         public static readonly KindEnumConverter Singleton = new();
      }
 
      internal class PurpleTypeConverter : JsonConverter
      {
          public override bool CanConvert(Type t) => t == typeof(PurpleType) || t == typeof(PurpleType?);
 
-         public override object ReadJson(JsonReader reader, Type t, object existingValue, JsonSerializer serializer)
+         public override object? ReadJson(JsonReader reader, Type t, object? existingValue, JsonSerializer serializer)
          {
              if (reader.TokenType == JsonToken.Null) return null;
-             var value = serializer.Deserialize<string>(reader);
+             var value = serializer.Deserialize<string>(reader: reader);
              if (value == "CheckIn")
              {
                  return PurpleType.CheckIn;
              }
-             throw new Exception("Cannot unmarshal type PurpleType");
+             throw new Exception(message: "Cannot unmarshal type PurpleType");
          }
 
-         public override void WriteJson(JsonWriter writer, object untypedValue, JsonSerializer serializer)
+         public override void WriteJson(JsonWriter writer, object? untypedValue, JsonSerializer serializer)
          {
              if (untypedValue == null)
              {
-                 serializer.Serialize(writer, null);
+                 serializer.Serialize(jsonWriter: writer, value: null);
                  return;
              }
              var value = (PurpleType)untypedValue;
-             if (value == PurpleType.CheckIn)
-             {
-                 serializer.Serialize(writer, "CheckIn");
-                 return;
-             }
-             throw new Exception("Cannot marshal type PurpleType");
+             if (value != PurpleType.CheckIn) throw new Exception(message: "Cannot marshal type PurpleType");
+             serializer.Serialize(jsonWriter: writer, value: "CheckIn");
          }
 
-         public static readonly PurpleTypeConverter Singleton = new PurpleTypeConverter();
+         public static readonly PurpleTypeConverter Singleton = new();
      }
 
      internal class LocationConverter : JsonConverter
      {
          public override bool CanConvert(Type t) => t == typeof(Location) || t == typeof(Location?);
 
-         public override object ReadJson(JsonReader reader, Type t, object existingValue, JsonSerializer serializer)
+         public override object? ReadJson(JsonReader reader, Type t, object? existingValue, JsonSerializer serializer)
          {
              if (reader.TokenType == JsonToken.Null) return null;
-             var value = serializer.Deserialize<string>(reader);
+             var value = serializer.Deserialize<string>(reader: reader);
              if (value == "Home")
              {
                  return Location.Home;
              }
-             throw new Exception("Cannot unmarshal type Location");
+             throw new Exception(message: "Cannot unmarshal type Location");
          }
 
-         public override void WriteJson(JsonWriter writer, object untypedValue, JsonSerializer serializer)
+         public override void WriteJson(JsonWriter writer, object? untypedValue, JsonSerializer serializer)
          {
              if (untypedValue == null)
              {
-                 serializer.Serialize(writer, null);
+                 serializer.Serialize(jsonWriter: writer, value: null);
                  return;
              }
              var value = (Location)untypedValue;
-             if (value == Location.Home)
-             {
-                 serializer.Serialize(writer, "Home");
-                 return;
-             }
-             throw new Exception("Cannot marshal type Location");
+             if (value != Location.Home) throw new Exception(message: "Cannot marshal type Location");
+             serializer.Serialize(jsonWriter: writer, value: "Home");
          }
 
-         public static readonly LocationConverter Singleton = new LocationConverter();
+         public static readonly LocationConverter Singleton = new();
      }
 
      internal class GenderConverter : JsonConverter
      {
          public override bool CanConvert(Type t) => t == typeof(Gender) || t == typeof(Gender?);
 
-         public override object ReadJson(JsonReader reader, Type t, object existingValue, JsonSerializer serializer)
+         public override object? ReadJson(JsonReader reader, Type t, object? existingValue, JsonSerializer serializer)
          {
              if (reader.TokenType == JsonToken.Null) return null;
-             var value = serializer.Deserialize<string>(reader);
-             switch (value)
+             var value = serializer.Deserialize<string>(reader: reader);
+             return value switch
              {
-                 case "F":
-                     return Gender.F;
-                 case "M":
-                     return Gender.M;
-             }
-             throw new Exception("Cannot unmarshal type Gender");
+                 "F" => Gender.F,
+                 "M" => Gender.M,
+                 _ => throw new Exception(message: "Cannot unmarshal type Gender")
+             };
          }
 
-         public override void WriteJson(JsonWriter writer, object untypedValue, JsonSerializer serializer)
+         public override void WriteJson(JsonWriter writer, object? untypedValue, JsonSerializer serializer)
          {
              if (untypedValue == null)
              {
-                 serializer.Serialize(writer, null);
+                 serializer.Serialize(jsonWriter: writer, value: null);
                  return;
              }
              var value = (Gender)untypedValue;
              switch (value)
              {
                  case Gender.F:
-                     serializer.Serialize(writer, "F");
+                     serializer.Serialize(jsonWriter: writer, value: "F");
                      return;
                  case Gender.M:
-                     serializer.Serialize(writer, "M");
+                     serializer.Serialize(jsonWriter: writer, value: "M");
                      return;
+                 default:
+                     throw new Exception(message: "Cannot marshal type Gender");
              }
-             throw new Exception("Cannot marshal type Gender");
          }
 
-         public static readonly GenderConverter Singleton = new GenderConverter();
+         public static readonly GenderConverter Singleton = new();
      }
 }

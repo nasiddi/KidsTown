@@ -26,18 +26,18 @@ namespace CheckInsExtension.CheckInUpdateJobs.People
 
         public async Task<ImmutableList<Location>> GetActiveLocations()
         {
-            return await _configurationRepository.GetActiveLocations();
+            return await _configurationRepository.GetActiveLocations().ConfigureAwait(continueOnCapturedContext: false);
         }
         
         public long GetDefaultEventId()
         {
-            return _configuration.GetValue<long>("EventId");
+            return _configuration.GetValue<long>(key: "EventId");
         }
 
         public async Task<ImmutableList<CheckInsEvent>> GetAvailableEvents()
         {
-            var activeEvents = await _planningCenterClient.GetActiveEvents();
-            return activeEvents.Data.Select(MapCheckInsEvent).ToImmutableList();
+            var activeEvents = await _planningCenterClient.GetActiveEvents().ConfigureAwait(continueOnCapturedContext: false);
+            return activeEvents?.Data?.Select(selector: MapCheckInsEvent).ToImmutableList() ?? ImmutableList<CheckInsEvent>.Empty;
         }
 
         private static CheckInsEvent MapCheckInsEvent(Datum data)
@@ -45,7 +45,7 @@ namespace CheckInsExtension.CheckInUpdateJobs.People
             return new()
             {
                 EventId = data.Id,
-                Name = data.Attributes.Name,
+                Name = data.Attributes?.Name ?? string.Empty
             };
         }
     }

@@ -1,4 +1,3 @@
-#pragma warning disable 8618
 namespace CheckInsExtension.PlanningCenterAPIClient.Models.EventResult
 {
     using System;
@@ -10,125 +9,128 @@ namespace CheckInsExtension.PlanningCenterAPIClient.Models.EventResult
 
     public class EventResult
     {
-        [JsonProperty("links")]
-        public Links Links { get; set; }
+        [JsonProperty(propertyName: "links")]
+        public Links? Links { get; set; }
 
-        [JsonProperty("data")]
-        public List<Datum> Data { get; set; }
+        [JsonProperty(propertyName: "data")]
+        public List<Datum>? Data { get; set; }
 
-        [JsonProperty("included")]
-        public List<object> Included { get; set; }
+        [JsonProperty(propertyName: "included")]
+        public List<object>? Included { get; set; }
 
-        [JsonProperty("meta")]
-        public Meta Meta { get; set; }
+        [JsonProperty(propertyName: "meta")]
+        public Meta? Meta { get; set; }
     }
 
     public class Datum
     {
-        [JsonProperty("type")]
-        public string Type { get; set; }
+        [JsonProperty(propertyName: "type")]
+        public string? Type { get; set; }
 
-        [JsonProperty("id")]
-        [JsonConverter(typeof(ParseStringConverter))]
+        [JsonProperty(propertyName: "id")]
+        [JsonConverter(converterType: typeof(ParseStringConverter))]
         public long Id { get; set; }
 
-        [JsonProperty("attributes")]
-        public Attributes Attributes { get; set; }
+        [JsonProperty(propertyName: "attributes")]
+        public Attributes? Attributes { get; set; }
 
-        [JsonProperty("links")]
-        public Links Links { get; set; }
+        [JsonProperty(propertyName: "links")]
+        public Links? Links { get; set; }
     }
 
     public class Attributes
     {
-        [JsonProperty("archived_at")]
-        public object ArchivedAt { get; set; }
+        [JsonProperty(propertyName: "archived_at")]
+        public object? ArchivedAt { get; set; }
 
-        [JsonProperty("created_at")]
+        [JsonProperty(propertyName: "created_at")]
         public DateTimeOffset CreatedAt { get; set; }
 
-        [JsonProperty("enable_services_integration")]
+        [JsonProperty(propertyName: "enable_services_integration")]
         public bool EnableServicesIntegration { get; set; }
 
-        [JsonProperty("frequency")]
-        public string Frequency { get; set; }
+        [JsonProperty(propertyName: "frequency")]
+        public string? Frequency { get; set; }
 
-        [JsonProperty("integration_key")]
-        public object IntegrationKey { get; set; }
+        [JsonProperty(propertyName: "integration_key")]
+        public object? IntegrationKey { get; set; }
 
-        [JsonProperty("location_times_enabled")]
+        [JsonProperty(propertyName: "location_times_enabled")]
         public bool LocationTimesEnabled { get; set; }
 
-        [JsonProperty("name")]
-        public string Name { get; set; }
+        [JsonProperty(propertyName: "name")]
+        public string? Name { get; set; }
 
-        [JsonProperty("pre_select_enabled")]
+        [JsonProperty(propertyName: "pre_select_enabled")]
         public bool PreSelectEnabled { get; set; }
 
-        [JsonProperty("updated_at")]
+        [JsonProperty(propertyName: "updated_at")]
         public DateTimeOffset UpdatedAt { get; set; }
     }
 
     public class Links
     {
-        [JsonProperty("self")]
-        public Uri Self { get; set; }
+        [JsonProperty(propertyName: "self")]
+        public Uri? Self { get; set; }
     }
 
     public class Meta
     {
-        [JsonProperty("total_count")]
+        [JsonProperty(propertyName: "total_count")]
         public long TotalCount { get; set; }
 
-        [JsonProperty("count")]
+        [JsonProperty(propertyName: "count")]
         public long Count { get; set; }
 
-        [JsonProperty("can_order_by")]
-        public List<string> CanOrderBy { get; set; }
+        [JsonProperty(propertyName: "can_order_by")]
+        public List<string>? CanOrderBy { get; set; }
 
-        [JsonProperty("can_query_by")]
-        public List<string> CanQueryBy { get; set; }
+        [JsonProperty(propertyName: "can_query_by")]
+        public List<string>? CanQueryBy { get; set; }
 
-        [JsonProperty("can_include")]
-        public List<string> CanInclude { get; set; }
+        [JsonProperty(propertyName: "can_include")]
+        public List<string>? CanInclude { get; set; }
 
-        [JsonProperty("can_filter")]
-        public List<string> CanFilter { get; set; }
+        [JsonProperty(propertyName: "can_filter")]
+        public List<string>? CanFilter { get; set; }
 
-        [JsonProperty("parent")]
-        public Parent Parent { get; set; }
+        [JsonProperty(propertyName: "parent")]
+        public Parent? Parent { get; set; }
     }
 
     public class Parent
     {
-        [JsonProperty("id")]
-        [JsonConverter(typeof(ParseStringConverter))]
+        [JsonProperty(propertyName: "id")]
+        [JsonConverter(converterType: typeof(ParseStringConverter))]
         public long Id { get; set; }
 
-        [JsonProperty("type")]
-        public string Type { get; set; }
+        [JsonProperty(propertyName: "type")]
+        public string? Type { get; set; }
     }
 
     public class Welcome
     {
-        public static Welcome FromJson(string json) => JsonConvert.DeserializeObject<Welcome>(json, Converter.Settings);
+        // ReSharper disable once UnusedMember.Global
+        public static Welcome? FromJson(string json) => JsonConvert.DeserializeObject<Welcome>(value: json, settings: Converter.Settings);
     }
 
+    // ReSharper disable once UnusedType.Global
     public static class Serialize
     {
-        public static string ToJson(this Welcome self) => JsonConvert.SerializeObject(self, Converter.Settings);
+        // ReSharper disable once UnusedMember.Global
+        public static string ToJson(this Welcome self) => JsonConvert.SerializeObject(value: self, settings: Converter.Settings);
     }
 
     internal static class Converter
     {
-        public static readonly JsonSerializerSettings Settings = new JsonSerializerSettings
+        public static readonly JsonSerializerSettings Settings = new()
         {
             MetadataPropertyHandling = MetadataPropertyHandling.Ignore,
             DateParseHandling = DateParseHandling.None,
             Converters =
             {
                 new IsoDateTimeConverter { DateTimeStyles = DateTimeStyles.AssumeUniversal }
-            },
+            }
         };
     }
 
@@ -136,30 +138,29 @@ namespace CheckInsExtension.PlanningCenterAPIClient.Models.EventResult
     {
         public override bool CanConvert(Type t) => t == typeof(long) || t == typeof(long?);
 
-        public override object ReadJson(JsonReader reader, Type t, object existingValue, JsonSerializer serializer)
+        public override object? ReadJson(JsonReader reader, Type t, object? existingValue, JsonSerializer serializer)
         {
             if (reader.TokenType == JsonToken.Null) return null;
-            var value = serializer.Deserialize<string>(reader);
-            long l;
-            if (Int64.TryParse(value, out l))
+            var value = serializer.Deserialize<string>(reader: reader);
+            if (long.TryParse(s: value, result: out var l))
             {
                 return l;
             }
-            throw new Exception("Cannot unmarshal type long");
+            throw new Exception(message: "Cannot unmarshal type long");
         }
 
-        public override void WriteJson(JsonWriter writer, object untypedValue, JsonSerializer serializer)
+        public override void WriteJson(JsonWriter writer, object? untypedValue, JsonSerializer serializer)
         {
             if (untypedValue == null)
             {
-                serializer.Serialize(writer, null);
+                serializer.Serialize(jsonWriter: writer, value: null);
                 return;
             }
             var value = (long)untypedValue;
-            serializer.Serialize(writer, value.ToString());
-            return;
+            serializer.Serialize(jsonWriter: writer, value: value.ToString());
         }
 
-        public static readonly ParseStringConverter Singleton = new ParseStringConverter();
+        // ReSharper disable once UnusedMember.Global
+        public static readonly ParseStringConverter Singleton = new();
     }
 }

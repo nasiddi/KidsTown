@@ -2,8 +2,8 @@ namespace CheckInsExtension.CheckInUpdateJobs.Update
 {
     public class PersistedLocation
     {
-        public int LocationId;
-        public long CheckInsLocationId;
+        public readonly int LocationId;
+        public readonly long CheckInsLocationId;
 
         public PersistedLocation(int locationId, long checkInsLocationId)
         {
