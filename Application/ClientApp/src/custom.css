@@ -12,7 +12,7 @@ code {
   box-shadow: none;
 }
 
-button[class^="btn-outline"], 
+button[class^="btn-outline"],
 button[class*=" btn-outline"]:hover {
   background-color: gray;
 }

@@ -27,12 +27,12 @@ namespace CheckInsExtension.CheckInUpdateJobs.Update
             {
                 if (!TaskIsActive)
                 {
-                    activationTime = await WaitForActivation(cancellationToken: cancellationToken);
+                    activationTime = await WaitForActivation(cancellationToken: cancellationToken).ConfigureAwait(continueOnCapturedContext: false);
                 }
 
-                await RunTask();
+                await RunTask().ConfigureAwait(continueOnCapturedContext: false);
 
-                await Sleep(cancellationToken: cancellationToken);
+                await Sleep(cancellationToken: cancellationToken).ConfigureAwait(continueOnCapturedContext: false);
 
                 if (activationTime < DateTime.UtcNow.Date.AddHours(value: 1))
                 {
@@ -45,7 +45,7 @@ namespace CheckInsExtension.CheckInUpdateJobs.Update
         {
             try
             {
-                await _updateService.FetchDataFromPlanningCenter();
+                await _updateService.FetchDataFromPlanningCenter().ConfigureAwait(continueOnCapturedContext: false);
             }
             catch (Exception e)
             {
@@ -57,7 +57,7 @@ namespace CheckInsExtension.CheckInUpdateJobs.Update
         {
             while (!TaskIsActive)
             {
-                await Sleep(cancellationToken: cancellationToken);
+                await Sleep(cancellationToken: cancellationToken).ConfigureAwait(continueOnCapturedContext: false);
             }
 
             return DateTime.UtcNow;
