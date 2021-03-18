@@ -134,7 +134,7 @@ namespace CheckInsExtension.CheckInUpdateJobs.Update
             var locationIdsByCheckInsLocationId =
                 persistedLocations.ToImmutableDictionary(keySelector: k => k.CheckInsLocationId, elementSelector: v => v.LocationId);
             
-            var attendees = checkIns.Attendees?.Select(selector: a => MapPreCheckIn(a, locationIdsByCheckInsLocationId))
+            var attendees = checkIns.Attendees?.Select(selector: a => MapPreCheckIn(attendee: a, locationIdsByCheckInsLocationId: locationIdsByCheckInsLocationId))
                 .ToImmutableList() ?? ImmutableList<CheckInUpdate>.Empty;
 
             return attendees;

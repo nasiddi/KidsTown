@@ -23,10 +23,10 @@ namespace CheckInsExtension.PlanningCenterAPIClient
 
         private HttpClient Client => _clientBackingField ?? InitClient();
 
-        public async Task<EventResult> GetActiveEvents()
+        public async Task<Event> GetActiveEvents()
         {
             var response = await Client.GetStringAsync(requestUri: "check-ins/v2/events?filter=not_archived");
-            var responseBody = JsonConvert.DeserializeObject<EventResult>(value: response);
+            var responseBody = JsonConvert.DeserializeObject<Event>(value: response);
             return responseBody;
         }
         

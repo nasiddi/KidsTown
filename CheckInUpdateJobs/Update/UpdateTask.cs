@@ -2,32 +2,38 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 using static System.Threading.Tasks.Task;
 
 namespace CheckInsExtension.CheckInUpdateJobs.Update
 {
     public class UpdateTask : IHostedService
     {
-        private readonly ILogger<UpdateTask> _logger;
         private readonly IUpdateService _updateService;
 
         public bool TaskIsActive { get; set; } = true;
+        public int ExecutionCount { get; private set; }
 
-        public UpdateTask(ILogger<UpdateTask> logger, IUpdateService updateService)
+        public UpdateTask(IUpdateService updateService)
         {
-            _logger = logger;
             _updateService = updateService;
         }
         
-        public async Task StartAsync(CancellationToken cancellationToken)
+        public Task StartAsync(CancellationToken cancellationToken)
         {
-            var activationTime = new DateTime();
+            var task = ExecuteAsync(cancellationToken: cancellationToken);
+            return task.IsCompleted ? task : CompletedTask;
+        }
+
+        private async Task ExecuteAsync(CancellationToken cancellationToken)
+        {
+            var activationTime = TaskIsActive ? DateTime.UtcNow : new DateTime();
+
             while (!cancellationToken.IsCancellationRequested)
             {
                 if (!TaskIsActive)
                 {
-                    activationTime = await WaitForActivation(cancellationToken: cancellationToken).ConfigureAwait(continueOnCapturedContext: false);
+                    activationTime = await WaitForActivation(cancellationToken: cancellationToken)
+                        .ConfigureAwait(continueOnCapturedContext: false);
                 }
 
                 await RunTask().ConfigureAwait(continueOnCapturedContext: false);
@@ -46,10 +52,12 @@ namespace CheckInsExtension.CheckInUpdateJobs.Update
             try
             {
                 await _updateService.FetchDataFromPlanningCenter().ConfigureAwait(continueOnCapturedContext: false);
+                ExecutionCount++;
             }
             catch (Exception e)
             {
-                _logger.LogError(message: e.Message, e);
+                Console.WriteLine(value: e.Message);
+                Console.WriteLine(value: e.StackTrace);
             }
         }
 
@@ -71,7 +79,6 @@ namespace CheckInsExtension.CheckInUpdateJobs.Update
 
         public Task StopAsync(CancellationToken cancellationToken)
         {
-            _logger.LogInformation(message: "Timed Hosted Service is stopping.");
             return CompletedTask;        
         }
     }

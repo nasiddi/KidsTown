@@ -10,120 +10,120 @@ namespace CheckInsExtension.PlanningCenterAPIClient.Models.PeopleResult
      {
 //         [JsonProperty("links")]
 //         public DatumLinks Links { get; set; }
-//
+
          [JsonProperty(propertyName: "data")]
          public List<Datum>? Data { get; set; }
 
          [JsonProperty(propertyName: "included")]
          public List<Included>? Included { get; set; }
-//
+
 //         //[JsonProperty("meta")]
 //         //public Meta Meta { get; set; }
      }
-//
+
      public class Datum
      {
 //         [JsonProperty("type")]
 //         public PeopleIncludedType PeopleIncludedType { get; set; }
-//
+
          [JsonProperty(propertyName: "id")]
          [JsonConverter(converterType: typeof(ParseStringConverter))]
          public long Id { get; set; }
-//
+
          [JsonProperty(propertyName: "attributes")]
          public DatumAttributes? Attributes { get; set; }
-//
+
          [JsonProperty(propertyName: "relationships")]
          public DatumRelationships? Relationships { get; set; }
-//
+
 //         [JsonProperty("links")]
 //         public DatumLinks Links { get; set; }
      }
-//
+
      public class DatumAttributes
      {
 //         [JsonProperty("accounting_administrator")]
 //         public bool AccountingAdministrator { get; set; }
-//
+
 //         [JsonProperty("anniversary")]
 //         public object Anniversary { get; set; }
-//
+
 //         [JsonProperty("avatar")]
 //         public Uri Avatar { get; set; }
-//
+
 //         [JsonProperty("birthdate")]
 //         public DateTimeOffset Birthdate { get; set; }
-//
+
 //         [JsonProperty("child")]
 //         public bool Child { get; set; }
-//
+
 //         [JsonProperty("created_at")]
 //         public DateTimeOffset CreatedAt { get; set; }
-//
+
 //         [JsonProperty("demographic_avatar_url")]
 //         public Uri DemographicAvatarUrl { get; set; }
-//
+
 //         [JsonProperty("directory_status")]
 //         public string DirectoryStatus { get; set; }
-//
+
          [JsonProperty(propertyName: "first_name")]
          public string? FirstName { get; set; }
-//
+
 //         [JsonProperty("gender")]
 //         public string Gender { get; set; }
-//
+
 //         [JsonProperty("given_name")]
 //         public object GivenName { get; set; }
-//
+
 //         [JsonProperty("grade")]
 //         public long? Grade { get; set; }
-//
+
 //         [JsonProperty("graduation_year")]
 //         public object GraduationYear { get; set; }
-//
+
 //         [JsonProperty("inactivated_at")]
 //         public object InactivatedAt { get; set; }
-//
+
          [JsonProperty(propertyName: "last_name")]
          public string? LastName { get; set; }
-//
+
 //         [JsonProperty("medical_notes")]
 //         public object MedicalNotes { get; set; }
-//
+
 //         [JsonProperty("membership")]
 //         public string Membership { get; set; }
-//
+
 //         [JsonProperty("middle_name")]
 //         public string MiddleName { get; set; }
-//
+
 //         [JsonProperty("name")]
 //         public string Name { get; set; }
-//
+
 //         [JsonProperty("nickname")]
 //         public object Nickname { get; set; }
-//
+
 //         [JsonProperty("passed_background_check")]
 //         public bool PassedBackgroundCheck { get; set; }
-//
+
 //         [JsonProperty("people_permissions")]
 //         public object PeoplePermissions { get; set; }
-//
+
 //         [JsonProperty("remote_id")]
 //         public long RemoteId { get; set; }
-//
+
 //         [JsonProperty("school_type")]
 //         public object SchoolType { get; set; }
-//
+
 //         [JsonProperty("site_administrator")]
 //         public bool SiteAdministrator { get; set; }
-//
+
 //         [JsonProperty("status")]
 //         public string Status { get; set; }
-//
+
 //         [JsonProperty("updated_at")]
 //         public DateTimeOffset UpdatedAt { get; set; }
      }
-//
+
 //     public class DatumLinks
 //     {
 //         [JsonProperty("self")]
@@ -134,118 +134,118 @@ namespace CheckInsExtension.PlanningCenterAPIClient.Models.PeopleResult
      {
 //         [JsonProperty("primary_campus")]
 //         public PrimaryCampus PrimaryCampus { get; set; }
-//
+
          [JsonProperty(propertyName: "field_data")]
          public FieldData? FieldData { get; set; }
      }
-//
+
      public class FieldData
      {
 //         [JsonProperty("links")]
 //         public FieldDataLinks Links { get; set; }
-//
+
          [JsonProperty(propertyName: "data")]
          public List<Parent>? Data { get; set; }
      }
-//
+
      public class Parent
      {
 //         [JsonProperty("type")]
 //         public PeopleIncludedType PeopleIncludedType { get; set; }
-//
+
          [JsonProperty(propertyName: "id")]
          [JsonConverter(converterType: typeof(ParseStringConverter))]
          public long Id { get; set; }
      }
-//
+
 //     public class FieldDataLinks
 //     {
 //         [JsonProperty("related")]
 //         public Uri Related { get; set; }
 //     }
-//
-     public class PrimaryCampus
+
+     public class Relationship
      {
          [JsonProperty(propertyName: "data")]
          public Parent? Data { get; set; }
      }
-//
+
      public class Included
      {
          [JsonProperty(propertyName: "type")]
          public PeopleIncludedType PeopleIncludedType { get; set; }
-//
+
          [JsonProperty(propertyName: "id")]
          [JsonConverter(converterType: typeof(ParseStringConverter))]
          public long Id { get; set; }
-//
+
          [JsonProperty(propertyName: "attributes")]
          public IncludedAttributes? Attributes { get; set; }
-//
+
          [JsonProperty(propertyName: "relationships")]
          public IncludedRelationships? Relationships { get; set; }
-//
+
 //         [JsonProperty("links")]
 //         public DatumLinks Links { get; set; }
      }
-//
+
      public class IncludedAttributes
      {
 //         [JsonProperty("file")]
 //         public File File { get; set; }
-//
+
 //         [JsonProperty("file_content_type")]
 //         public string FileContentType { get; set; }
-//
+
 //         [JsonProperty("file_name")]
 //         public string FileName { get; set; }
-//
+
 //         [JsonProperty("file_size")]
 //         public long? FileSize { get; set; }
-//
+
          [JsonProperty(propertyName: "value")]
          public string? Value { get; set; }
      }
-//
+
 //     public class File
 //     {
 //         [JsonProperty("url")]
 //         public Uri Url { get; set; }
 //     }
-//
+
      public class IncludedRelationships
      {
          [JsonProperty(propertyName: "field_definition")]
-         public PrimaryCampus? FieldDefinition { get; set; }
-//
+         public Relationship? FieldDefinition { get; set; }
+
 //         [JsonProperty("customizable")]
 //         public PrimaryCampus Customizable { get; set; }
      }
-//
+
 //     public class Meta
 //     {
 //         [JsonProperty("total_count")]
 //         public long TotalCount { get; set; }
-//
+
 //         [JsonProperty("count")]
 //         public long Count { get; set; }
-//
+
 //         [JsonProperty("can_order_by")]
 //         public List<string> CanOrderBy { get; set; }
-//
+
 //         [JsonProperty("can_query_by")]
 //         public List<string> CanQueryBy { get; set; }
-//
+
 //         [JsonProperty("can_include")]
 //         public List<string> CanInclude { get; set; }
-//
+
 //         [JsonProperty("can_filter")]
 //         public List<string> CanFilter { get; set; }
-//
+
 //         [JsonProperty("parent")]
 //         public Parent Parent { get; set; }
 //     }
-//
+
      public enum PeopleIncludedType { FieldDatum, FieldDefinition, Organization, Person, PrimaryCampus }
 
      // ReSharper disable once UnusedType.Global

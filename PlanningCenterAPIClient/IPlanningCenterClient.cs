@@ -10,6 +10,6 @@ namespace CheckInsExtension.PlanningCenterAPIClient
     {
         Task<CheckIns> GetCheckedInPeople(int daysLookBack);
         Task<People> GetPeopleUpdates(IImmutableList<long> peopleIds);
-        Task<EventResult> GetActiveEvents();
+        Task<Event> GetActiveEvents();
     }
 }

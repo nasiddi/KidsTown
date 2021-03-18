@@ -11,18 +11,6 @@
         public PeopleUpdate(
             long? peopleId, 
             string firstName, 
-            string lastName)
-        {
-            PeopleId = peopleId;
-            FirstName = firstName;
-            LastName = lastName;
-            MayLeaveAlone = true;
-            HasPeopleWithoutPickupPermission = false;
-        }
-        
-        public PeopleUpdate(
-            long? peopleId, 
-            string firstName, 
             string lastName, 
             bool mayLeaveAlone,
             bool hasPeopleWithoutPickupPermission)
