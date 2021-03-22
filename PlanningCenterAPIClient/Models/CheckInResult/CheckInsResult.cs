@@ -7,10 +7,10 @@
     using Newtonsoft.Json;
     using Newtonsoft.Json.Converters;
 
-    public class CheckIns
+    public class CheckIns : IPlanningCenterResponse
     {
-//         [JsonProperty("links")]
-//         public AttendeeLinks Links { get; set; }
+         [JsonProperty(propertyName: "links")]
+         public AttendeeLinks? Links { get; set; }
 
          [JsonProperty(propertyName: "data")]
          public List<Attendee>? Attendees { get; set; }
@@ -20,7 +20,9 @@
 
 //         [JsonProperty("meta")]
 //         public Meta Meta { get; set; }
-     }
+
+        public Uri? NextLink => Links?.Next;
+    }
 
      public class Attendee
      {
@@ -77,11 +79,17 @@
 //         public DateTimeOffset UpdatedAt { get; set; }
      }
 
-//     public class AttendeeLinks
-//     {
-//         [JsonProperty("self")]
-//         public Uri Self { get; set; }
-//     }
+     public class AttendeeLinks
+     {
+         // [JsonProperty("self")]
+         // public Uri? Self { get; set; }
+         
+         [JsonProperty(propertyName: "next")]
+         public Uri? Next { get; set; }
+         
+         // [JsonProperty("prev")]
+         // public Uri? Prev { get; set; }
+     }
 
      public class AttendeeRelationships
      {

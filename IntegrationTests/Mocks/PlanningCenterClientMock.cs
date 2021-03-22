@@ -109,28 +109,27 @@ namespace IntegrationTests.Mocks
                 );
         }
         
-        
-
-        
-        public Task<CheckIns> GetCheckedInPeople(int daysLookBack)
+        public Task<ImmutableList<CheckIns>> GetCheckedInPeople(int daysLookBack)
         {
             var data = GetAttendanceData();
-            return Task.FromResult(result: new CheckIns
-            {
-                Attendees = GetAttendees(data: data),
-                Included = GetCheckInIncluded()
-            });
+            return Task.FromResult(result: ImmutableList.Create(
+                item: new CheckIns
+                {
+                    Attendees = GetAttendees(data: data),
+                    Included = GetCheckInIncluded()
+                }));
         }
 
-        public Task<People> GetPeopleUpdates(IImmutableList<long> peopleIds)
+        public Task<ImmutableList<People>> GetPeopleUpdates(IImmutableList<long> peopleIds)
         {
             var data = GetPersonData();
             
-            return Task.FromResult(result: new People
+            return Task.FromResult(result: ImmutableList.Create(
+                item: new People
             {
                 Data = GetPeopleData(data: data),
                 Included = GetPeopleIncluded()
-            });
+            }));
         }
 
         public Task<Event> GetActiveEvents()

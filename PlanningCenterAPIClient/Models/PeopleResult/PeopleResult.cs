@@ -6,10 +6,10 @@ using Newtonsoft.Json.Converters;
 
 namespace CheckInsExtension.PlanningCenterAPIClient.Models.PeopleResult
 {
-     public class People
+     public class People : IPlanningCenterResponse
      {
-//         [JsonProperty("links")]
-//         public DatumLinks Links { get; set; }
+         [JsonProperty(propertyName: "links")]
+         public DatumLinks? Links { get; set; }
 
          [JsonProperty(propertyName: "data")]
          public List<Datum>? Data { get; set; }
@@ -19,6 +19,7 @@ namespace CheckInsExtension.PlanningCenterAPIClient.Models.PeopleResult
 
 //         //[JsonProperty("meta")]
 //         //public Meta Meta { get; set; }
+         public Uri? NextLink => Links?.Next;
      }
 
      public class Datum
@@ -124,11 +125,17 @@ namespace CheckInsExtension.PlanningCenterAPIClient.Models.PeopleResult
 //         public DateTimeOffset UpdatedAt { get; set; }
      }
 
-//     public class DatumLinks
-//     {
-//         [JsonProperty("self")]
-//         public Uri Self { get; set; }
-//     }
+     public class DatumLinks
+     {
+         // [JsonProperty("self")]
+         // public Uri? Self { get; set; }
+         
+         [JsonProperty(propertyName: "next")]
+         public Uri? Next { get; set; }
+         
+         // [JsonProperty("prev")]
+         // public Uri? Prev { get; set; }
+     }
 
      public class DatumRelationships
      {

@@ -8,8 +8,8 @@ namespace CheckInsExtension.PlanningCenterAPIClient
 {
     public interface IPlanningCenterClient
     {
-        Task<CheckIns> GetCheckedInPeople(int daysLookBack);
-        Task<People> GetPeopleUpdates(IImmutableList<long> peopleIds);
+        Task<ImmutableList<CheckIns>> GetCheckedInPeople(int daysLookBack);
+        Task<ImmutableList<People>> GetPeopleUpdates(IImmutableList<long> peopleIds);
         Task<Event> GetActiveEvents();
     }
 }
