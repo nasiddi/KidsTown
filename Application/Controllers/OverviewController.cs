@@ -36,13 +36,17 @@ namespace Application.Controllers
         [HttpPost]
         [Route(template: "event/{eventId}/attendees/headcounts")]
         [Produces(contentType: "application/json")]
-        public async Task<ImmutableList<HeadCounts>> GetAttendeeHeadCounts(
+        public async Task<ImmutableList<LiveHeadCounts>> GetAttendeeHeadCounts(
             [FromRoute] long eventId, 
             [FromQuery] string date,
             [FromBody] IImmutableList<int> selectedLocations)
         {
             var parsedDate = DateTime.Parse(s: date);
-            var headCounts = await _overviewService.GetHeadCountsByLocations(eventId: eventId, selectedLocations: selectedLocations, startDate: parsedDate, endDate: parsedDate)
+            var headCounts = await _overviewService.GetHeadCountsByLocations(
+                    eventId: eventId,
+                    selectedLocations: selectedLocations,
+                    startDate: parsedDate,
+                    endDate: parsedDate)
                 .ConfigureAwait(continueOnCapturedContext: false);
             return headCounts;
         }
@@ -54,7 +58,11 @@ namespace Application.Controllers
             [FromRoute] long eventId,
             [FromBody] IImmutableList<int> selectedLocations)
         {
-            return await _overviewService.GetSummedUpHeadCounts(eventId: eventId, selectedLocationGroups: selectedLocations, startDate: new DateTime()).ConfigureAwait(continueOnCapturedContext: false);
+            return await _overviewService.GetSummedUpHeadCounts(
+                    eventId: eventId,
+                    selectedLocationGroups: selectedLocations,
+                    startDate: new DateTime())
+                .ConfigureAwait(continueOnCapturedContext: false);
         }
     }
 }

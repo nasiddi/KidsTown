@@ -21,11 +21,69 @@ namespace CheckInsExtension.CheckInUpdateJobs.People
             IImmutableList<int> selectedLocationGroups,
             DateTime date)
         {
-            var attendees = await _overviewRepository.GetActiveAttendees(selectedLocationGroups: selectedLocationGroups, eventId: eventId, date: date)
+            var attendees = await _overviewRepository.GetActiveAttendees(
+                    selectedLocationGroups: selectedLocationGroups,
+                    eventId: eventId,
+                    date: date)
                 .ConfigureAwait(continueOnCapturedContext: false);
-            return attendees.GroupBy(keySelector: a => a.Location).Select(selector: MapAttendeesByLocation).ToImmutableList();
+            
+            return attendees.GroupBy(keySelector: a => a.Location)
+                .Select(selector: MapAttendeesByLocation)
+                .ToImmutableList();
         }
 
+        public async Task<ImmutableList<HeadCounts>> GetSummedUpHeadCounts(
+            long eventId,
+            IImmutableList<int> selectedLocationGroups,
+            DateTime startDate)
+        {
+            var attendees = await _overviewRepository.GetAttendanceHistory(
+                    selectedLocationGroups: selectedLocationGroups,
+                    eventId: eventId,
+                    startDate: startDate,
+                    endDate: DateTime.Today)
+                .ConfigureAwait(continueOnCapturedContext: false);
+            
+            return attendees.GroupBy(keySelector: a => a.InsertDate.Date)
+                .Select(selector: MapDailyStatistic)
+                .ToImmutableList();
+        }
+
+        public async Task<ImmutableList<LiveHeadCounts>> GetHeadCountsByLocations(
+            long eventId,
+            IImmutableList<int> selectedLocations,
+            DateTime startDate,
+            DateTime endDate
+        )
+        {
+            var attendees = await _overviewRepository.GetAttendanceHistory(
+                    selectedLocationGroups: selectedLocations,
+                    eventId: eventId,
+                    startDate: startDate,
+                    endDate: endDate)
+                .ConfigureAwait(continueOnCapturedContext: false);
+            
+            return attendees.GroupBy(keySelector: a => a.Location)
+                .Select(selector: l => MapLiveStatistics(attendees: l.ToImmutableList()))
+                .OrderBy(keySelector: c => c.LocationId)
+                .ThenBy(keySelector: c => c.Location).ToImmutableList();
+        }
+
+        private static LiveHeadCounts MapLiveStatistics(IImmutableList<Attendee> attendees)
+        {
+            var regularCounts = GetCounts(attendees: attendees, attendanceType: AttendanceTypes.Regular);
+            var guestCounts = GetCounts(attendees: attendees, attendanceType: AttendanceTypes.Guest);
+            var volunteerCounts = GetCounts(attendees: attendees, attendanceType: AttendanceTypes.Volunteer);
+
+            return new LiveHeadCounts
+            {
+                LocationId = attendees[index: 0].LocationGroupId,
+                Location = attendees[index: 0].Location,
+                KidsCount = regularCounts.CheckedIn + guestCounts.CheckedIn,
+                VolunteersCount = volunteerCounts.CheckedIn
+            };
+        }
+        
         private static AttendeesByLocation MapAttendeesByLocation(IGrouping<string, Attendee> attendees)
         {
             var volunteers = attendees.Where(predicate: a => a.AttendanceType == AttendanceTypes.Volunteer).ToImmutableList();
@@ -40,57 +98,6 @@ namespace CheckInsExtension.CheckInUpdateJobs.People
             };
         }
 
-        public async Task<ImmutableList<HeadCounts>> GetSummedUpHeadCounts(
-            long eventId,
-            IImmutableList<int> selectedLocationGroups,
-            DateTime startDate)
-        {
-            var headCounts = await GetHeadCounts(eventId: eventId, selectedLocations: selectedLocationGroups, startDate: startDate, endDate: DateTime.Today)
-                .ConfigureAwait(continueOnCapturedContext: false);
-            return headCounts.GroupBy(keySelector: h => h.Date).Select(selector: SumUpDay).ToImmutableList();
-        }
-
-        private static HeadCounts SumUpDay(IGrouping<DateTime, HeadCounts> headCounts) =>
-            new()
-            {
-                Date = headCounts.Key,
-                LocationId = 0,
-                RegularCount = headCounts.Sum(selector: h => h.RegularCount),
-                GuestCount = headCounts.Sum(selector: h => h.GuestCount),
-                VolunteerCount = headCounts.Sum(selector: h => h.VolunteerCount),
-                PreCheckInOnlyCount = headCounts.Sum(selector: h => h.PreCheckInOnlyCount),
-                NoCheckOutCount = headCounts.Sum(selector: h => h.NoCheckOutCount)
-            };
-
-        public async Task<ImmutableList<HeadCounts>> GetHeadCountsByLocations(
-            long eventId,
-            IImmutableList<int> selectedLocations,
-            DateTime startDate,
-            DateTime endDate)
-        {
-            var attendees = await _overviewRepository.GetAttendanceHistory(selectedLocationGroups: selectedLocations, eventId: eventId, startDate: startDate, endDate: endDate)
-                .ConfigureAwait(continueOnCapturedContext: false);
-            return attendees.GroupBy(keySelector: a => a.Location).SelectMany(selector: MapHeadCounts)
-                .OrderBy(keySelector: c => c.LocationId)
-                .ThenBy(keySelector: c => c.Location).ToImmutableList();
-        }
-        
-        private async Task<ImmutableList<HeadCounts>> GetHeadCounts(
-            long eventId,
-            IImmutableList<int> selectedLocations,
-            DateTime startDate,
-            DateTime endDate)
-        {
-            var attendees = await _overviewRepository.GetAttendanceHistory(selectedLocationGroups: selectedLocations, eventId: eventId, startDate: startDate, endDate: endDate)
-                .ConfigureAwait(continueOnCapturedContext: false);
-            return attendees.GroupBy(keySelector: a => a.LocationGroupId).SelectMany(selector: MapHeadCounts).ToImmutableList();
-        }
-
-        private static ImmutableList<HeadCounts> MapHeadCounts<T>(IGrouping<T, Attendee> attendeesByLocation)
-        {
-            return attendeesByLocation.GroupBy(keySelector: a => a.InsertDate.Date).Select(selector: MapDailyStatistic).ToImmutableList();
-        }
-
         private static HeadCounts MapDailyStatistic(IGrouping<DateTime, Attendee> attendees)
         {
             var attendeesByDate = attendees.ToImmutableList();
@@ -101,13 +108,11 @@ namespace CheckInsExtension.CheckInUpdateJobs.People
             return new HeadCounts
             {
                 Date = attendees.Key.AddHours(value: 12),
-                LocationId = attendees.First().LocationGroupId,
-                Location = attendees.First().Location,
-                RegularCount = regularCounts.CheckedIn,
-                GuestCount = guestCounts.CheckedIn,
-                VolunteerCount = volunteerCounts.CheckedIn,
-                PreCheckInOnlyCount = regularCounts.PreCheckedInOnly + guestCounts.PreCheckedInOnly,
-                NoCheckOutCount = regularCounts.NoCheckOut + guestCounts.NoCheckOut
+                RegularCount = regularCounts.Attendance,
+                GuestCount = guestCounts.Attendance,
+                VolunteerCount = volunteerCounts.Attendance,
+                PreCheckInOnlyCount = regularCounts.PreCheckedIn + guestCounts.PreCheckedIn,
+                NoCheckOutCount = regularCounts.NoOrAutoCheckOut + guestCounts.NoOrAutoCheckOut
             };
         }
 
@@ -115,27 +120,36 @@ namespace CheckInsExtension.CheckInUpdateJobs.People
         {
             var preCheckedIn = attendees.Where(predicate: a => a.AttendanceType == attendanceType).ToImmutableList();
             var checkedIn = preCheckedIn.Where(predicate: a => a.CheckState > CheckState.PreCheckedIn ).ToImmutableList();
-            var checkedOutCount = checkedIn.Count(predicate: a => a.CheckState == CheckState.CheckedOut
-                                                                  && a.CheckOutDate!.Value.TimeOfDay < TimeSpan.FromDays(value: 1).Subtract(ts: TimeSpan.FromSeconds(value: 1)));
+            var checkedOut = checkedIn.Where(predicate: a => a.CheckState == CheckState.CheckedOut).ToImmutableList();
+            var autoCheckedOutCount = checkedOut.Count(predicate: a 
+                => a.CheckOutDate!.Value.TimeOfDay >= TimeSpan.FromDays(value: 1).Subtract(ts: TimeSpan.FromSeconds(value: 1)));
 
-            return new Counts(preCheckedIn: preCheckedIn.Count, checkedIn: checkedIn.Count, checkedOut: checkedOutCount);
+            return new Counts(
+                preCheckedIn: preCheckedIn.Count,
+                checkedIn: checkedIn.Count,
+                checkedOut: checkedOut.Count,
+                autoCheckedOut: autoCheckedOutCount);
         }
 
         private class Counts
         {
             private readonly int _preCheckedIn;
-            public readonly int CheckedIn;
+            public readonly int Attendance;
             private readonly int _checkedOut;
+            private readonly int _autoCheckedOut;
 
-            public Counts(int preCheckedIn, int checkedIn, int checkedOut)
+            public Counts(int preCheckedIn, int checkedIn, int checkedOut, int autoCheckedOut)
             {
                 _preCheckedIn = preCheckedIn;
-                CheckedIn = checkedIn;
+                Attendance = checkedIn;
                 _checkedOut = checkedOut;
+                _autoCheckedOut = autoCheckedOut;
             }
 
-            public int PreCheckedInOnly => _preCheckedIn - CheckedIn;
-            public int NoCheckOut => CheckedIn - _checkedOut;
+            public int PreCheckedIn => _preCheckedIn - Attendance;
+            public int CheckedIn => Attendance - _checkedOut;
+
+            public int NoOrAutoCheckOut => Attendance - (_checkedOut - _autoCheckedOut);
         }
     }
 }

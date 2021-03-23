@@ -56,7 +56,7 @@ class Statistic extends Component {
 							name={'statisticLocations'}
 							onChange={this.updateOptions}
 							options={this.state.locations}
-							defaultOptions={this.state.overviewLocations}
+							defaultOptions={this.state.statisticLocations}
 						/>
 					</Grid>
 				</Grid>

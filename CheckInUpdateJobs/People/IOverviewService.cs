@@ -15,10 +15,11 @@ namespace CheckInsExtension.CheckInUpdateJobs.People
             IImmutableList<int> selectedLocationGroups,
             DateTime startDate);
 
-        Task<ImmutableList<HeadCounts>> GetHeadCountsByLocations(
+        Task<ImmutableList<LiveHeadCounts>> GetHeadCountsByLocations(
             long eventId,
             IImmutableList<int> selectedLocations,
             DateTime startDate,
-            DateTime endDate);
+            DateTime endDate
+        );
     }
 }

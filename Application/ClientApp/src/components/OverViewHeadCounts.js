@@ -77,24 +77,22 @@ class OverViewHeadCounts extends Component {
 
 	GetCount(headCounts, isVolunteer) {
 		if (isVolunteer) {
-			return headCounts['volunteerCount']
+			return headCounts['volunteersCount']
 		}
 
-		return headCounts['regularCount'] + headCounts['guestCount']
+		return headCounts['kidsCount']
 	}
 
 	GetTotalCount(isVolunteer) {
 		if (isVolunteer) {
 			const locationCount = this.state.headCounts.map(
-				(h) => h['volunteerCount']
+				(h) => h['volunteersCount']
 			)
 
 			return locationCount.reduce(this.sum, 0)
 		}
 
-		const locationCount = this.state.headCounts.map(
-			(h) => h['regularCount'] + h['guestCount']
-		)
+		const locationCount = this.state.headCounts.map((h) => h['kidsCount'])
 
 		return locationCount.reduce(this.sum, 0)
 	}
