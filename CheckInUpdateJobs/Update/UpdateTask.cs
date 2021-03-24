@@ -2,6 +2,7 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using static System.Threading.Tasks.Task;
 
 namespace CheckInsExtension.CheckInUpdateJobs.Update
@@ -9,13 +10,15 @@ namespace CheckInsExtension.CheckInUpdateJobs.Update
     public class UpdateTask : IHostedService
     {
         private readonly IUpdateService _updateService;
+        private readonly ILoggerFactory _loggerFactory;
 
         public bool TaskIsActive { get; set; } = true;
         public int ExecutionCount { get; private set; }
 
-        public UpdateTask(IUpdateService updateService)
+        public UpdateTask(IUpdateService updateService, ILoggerFactory loggerFactory)
         {
             _updateService = updateService;
+            _loggerFactory = loggerFactory;
         }
         
         public Task StartAsync(CancellationToken cancellationToken)
@@ -26,6 +29,7 @@ namespace CheckInsExtension.CheckInUpdateJobs.Update
 
         private async Task ExecuteAsync(CancellationToken cancellationToken)
         {
+            var logger = _loggerFactory.CreateLogger<UpdateTask>();
             var activationTime = TaskIsActive ? DateTime.UtcNow : new DateTime();
 
             while (!cancellationToken.IsCancellationRequested)
@@ -36,7 +40,7 @@ namespace CheckInsExtension.CheckInUpdateJobs.Update
                         .ConfigureAwait(continueOnCapturedContext: false);
                 }
 
-                await RunTask().ConfigureAwait(continueOnCapturedContext: false);
+                await RunTask(logger: logger).ConfigureAwait(continueOnCapturedContext: false);
 
                 await Sleep(cancellationToken: cancellationToken).ConfigureAwait(continueOnCapturedContext: false);
 
@@ -47,7 +51,7 @@ namespace CheckInsExtension.CheckInUpdateJobs.Update
             }
         }
 
-        private async Task RunTask()
+        private async Task RunTask(ILogger logger)
         {
             try
             {
@@ -56,8 +60,7 @@ namespace CheckInsExtension.CheckInUpdateJobs.Update
             }
             catch (Exception e)
             {
-                Console.WriteLine(value: e.Message);
-                Console.WriteLine(value: e.StackTrace);
+                logger.LogError(eventId: new EventId(id: 0, name: nameof(UpdateTask)), exception: e, message: e.Message);
             }
         }
 

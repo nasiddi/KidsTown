@@ -36,13 +36,13 @@ namespace CheckInsExtension.PlanningCenterAPIClient
         {
             var dateString = DateTime.Today.AddDays(value: -daysLookBack).ToString(format: "yyyy-MM-ddT00:00:00Z");
             var endPoint = $"check-ins/v2/check_ins?include=event,locations,person&order=created_at&per_page=100&where[created_at][gte]={dateString}";
-            return await FetchData<CheckIns>(endPoint: endPoint);
+            return await FetchData<CheckIns>(endPoint: endPoint).ConfigureAwait(continueOnCapturedContext: false);
         }
 
         public async Task<ImmutableList<People>> GetPeopleUpdates(IImmutableList<long> peopleIds)
         {
             var endPoint = $"people/v2/people?include=field_data&per_page=100&where[id]={string.Join(separator: ',', values: peopleIds)}";
-            return await FetchData<People>(endPoint: endPoint);
+            return await FetchData<People>(endPoint: endPoint).ConfigureAwait(continueOnCapturedContext: false);
         }
 
         private HttpClient InitClient()

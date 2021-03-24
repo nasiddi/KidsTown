@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Immutable;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading;
@@ -29,52 +30,51 @@ namespace IntegrationTests
     {
         private IServiceProvider? _serviceProvider;
 
-        [SetUp]
-        public void Setup()
-        {
-        }
-
         [TearDown]
         public async Task TearDown()
         {
             await CleanDatabase();
         }
-
+        
         [Test]
         public async Task TaskRunsWithoutExceptions()
         {
             SetupServiceProvider();
             
             var updateTask = _serviceProvider!.GetService<IHostedService>() as UpdateTask;
+            await RunTask(updateTask: updateTask!, minExecutionCount: 2);
             
-            updateTask!.TaskIsActive = true;
-            var _ = updateTask.StartAsync(cancellationToken: CancellationToken.None).ConfigureAwait(continueOnCapturedContext: false);
-            await Task.Delay(millisecondsDelay: 3000);
-            updateTask.TaskIsActive = true;
-
-            await Task.Delay(millisecondsDelay: 15000);
             Assert.That(actual: updateTask.ExecutionCount, expression: Is.GreaterThan(expected: 1));
+
         }
-        
+
         [Test]
         public async Task UpdateMockData()
         {
             SetupServiceProvider(mockPlanningCenterClient: true);
-            
-            await Task.Delay(millisecondsDelay: 2000);
             await CleanDatabase();
             
             var updateTask = _serviceProvider!.GetService<IHostedService>() as UpdateTask;
-            
-            updateTask!.TaskIsActive = true;
-            var _ = updateTask.StartAsync(cancellationToken: CancellationToken.None).ConfigureAwait(continueOnCapturedContext: false);
-            await Task.Delay(millisecondsDelay: 3000);
-            updateTask.TaskIsActive = true;
-
-            await Task.Delay(millisecondsDelay: 15000);
-            Assert.That(actual: updateTask.ExecutionCount, expression: Is.GreaterThan(expected: 1));
+            await RunTask(updateTask: updateTask!);
 
             await AssertUpdateTask();
+        }
+        
+        private static async Task RunTask(UpdateTask updateTask, int minExecutionCount = 1)
+        {
+            updateTask.TaskIsActive = true;
+            
+            var task = updateTask.StartAsync(cancellationToken: CancellationToken.None)
+                .ConfigureAwait(continueOnCapturedContext: false);
+
+            var watch = Stopwatch.StartNew();
+            while (minExecutionCount > updateTask.ExecutionCount && watch.ElapsedMilliseconds < 60000)
+            {
+                await Task.Delay(millisecondsDelay: 100);
+            }
+            
+            updateTask.TaskIsActive = false;
+            await task;
         }
         
         private void SetupServiceProvider(bool mockPlanningCenterClient = false)
@@ -102,7 +102,9 @@ namespace IntegrationTests
             services.AddSingleton<IUpdateRepository, UpdateRepository>();
             services.AddSingleton<ILoggerFactory, LoggerFactory>();
             services.AddSingleton(serviceType: typeof(ILogger), implementationType: typeof(Logger<UpdateTask>));
-            services.AddDbContext<CheckInsExtensionContext>(optionsAction: o
+            services.AddDbContext<CheckInsExtensionContext>(
+                contextLifetime: ServiceLifetime.Transient,
+                optionsAction: o
                 => o.UseSqlServer(connectionString: configuration.GetConnectionString(name: "Database")));
             
             _serviceProvider =  services.BuildServiceProvider();
@@ -133,7 +135,9 @@ namespace IntegrationTests
             var expectedData = GetExpectedData();
             var actualData = await GetActualData();
 
-            expectedData.ForEach(action: e => AssertAttendance(expected: e, actual: actualData.SingleOrDefault(predicate: a => a.PeopleId == e.PeopleId)));
+            expectedData.ForEach(action: e => AssertAttendance(
+                expected: e,
+                actual: actualData.SingleOrDefault(predicate: a => a.PeopleId == e.PeopleId)));
 
         }
 
@@ -157,13 +161,17 @@ namespace IntegrationTests
 
         private async Task CleanDatabase()
         {
-            var serviceScopeFactory = _serviceProvider!.GetService<IServiceScopeFactory>();
             
-            await using (var db = serviceScopeFactory!.CreateScope().ServiceProvider
-                .GetRequiredService<CheckInsExtensionContext>())
+            await using (var db = _serviceProvider!.GetRequiredService<CheckInsExtensionContext>())
             {
+                while (!await db.Database.CanConnectAsync())
+                {
+                    await Task.Delay(millisecondsDelay: 100);
+                }
+                
                 var attendances = await db.Attendances.Where(predicate: a => a.CheckInId < 100).ToListAsync();
-                var people = await db.People.Where(predicate: p => attendances.Select(a => a.PersonId).Contains(p.Id)).ToListAsync();
+                var people = await db.People.Where(predicate: p => attendances.Select(a => a.PersonId)
+                    .Contains(p.Id)).ToListAsync();
                 
                 db.RemoveRange(entities: attendances);
                 db.RemoveRange(entities: people);
