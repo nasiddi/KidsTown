@@ -15,9 +15,9 @@ namespace Application.Controllers
     public class ConfigurationController : ControllerBase
     {
         private readonly IConfigurationService _configurationService;
-        private readonly UpdateTask _updateTask;
+        private readonly IUpdateTask _updateTask;
 
-        public ConfigurationController(IConfigurationService configurationService, UpdateTask updateTask)
+        public ConfigurationController(IConfigurationService configurationService, IUpdateTask updateTask)
         {
             _configurationService = configurationService;
             _updateTask = updateTask;
@@ -28,7 +28,7 @@ namespace Application.Controllers
         [Produces(contentType: "application/json")]
         public async Task<ImmutableList<Options>> GetLocations()
         {
-            _updateTask.TaskIsActive = true;
+            _updateTask.ActivateTask();
             var locations = await _configurationService.GetActiveLocations().ConfigureAwait(continueOnCapturedContext: false);
             return locations.Select(selector: MapOptions).ToImmutableList();
         }

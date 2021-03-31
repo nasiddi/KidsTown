@@ -28,12 +28,12 @@ namespace IntegrationTests
 {
     public class UpdateTaskTest
     {
-        private IServiceProvider? _serviceProvider;
+        private IServiceProvider _serviceProvider = null!;
 
         [TearDown]
         public async Task TearDown()
         {
-            await CleanDatabase();
+            await TestHelper.CleanDatabase(serviceProvider: _serviceProvider);
         }
         
         [Test]
@@ -41,10 +41,10 @@ namespace IntegrationTests
         {
             SetupServiceProvider();
             
-            var updateTask = _serviceProvider!.GetService<IHostedService>() as UpdateTask;
+            var updateTask = _serviceProvider.GetService<IHostedService>() as UpdateTask;
             await RunTask(updateTask: updateTask!, minExecutionCount: 2);
             
-            Assert.That(actual: updateTask.ExecutionCount, expression: Is.GreaterThan(expected: 1));
+            Assert.That(actual: updateTask.GetExecutionCount(), expression: Is.GreaterThan(expected: 1));
 
         }
 
@@ -52,9 +52,9 @@ namespace IntegrationTests
         public async Task UpdateMockData()
         {
             SetupServiceProvider(mockPlanningCenterClient: true);
-            await CleanDatabase();
+            await TestHelper.CleanDatabase(_serviceProvider);
             
-            var updateTask = _serviceProvider!.GetService<IHostedService>() as UpdateTask;
+            var updateTask = _serviceProvider.GetService<IHostedService>() as UpdateTask;
             await RunTask(updateTask: updateTask!);
 
             await AssertUpdateTask();
@@ -62,18 +62,18 @@ namespace IntegrationTests
         
         private static async Task RunTask(UpdateTask updateTask, int minExecutionCount = 1)
         {
-            updateTask.TaskIsActive = true;
+            updateTask.ActivateTask();
             
             var task = updateTask.StartAsync(cancellationToken: CancellationToken.None)
                 .ConfigureAwait(continueOnCapturedContext: false);
 
             var watch = Stopwatch.StartNew();
-            while (minExecutionCount > updateTask.ExecutionCount && watch.ElapsedMilliseconds < 60000)
+            while (minExecutionCount > updateTask.GetExecutionCount() && watch.ElapsedMilliseconds < 60000)
             {
                 await Task.Delay(millisecondsDelay: 100);
             }
             
-            updateTask.TaskIsActive = false;
+            updateTask.DeactivateTask();
             await task;
         }
         
@@ -112,7 +112,7 @@ namespace IntegrationTests
 
         private async Task<ImmutableList<Data>> GetActualData()
         {
-            var serviceScopeFactory = _serviceProvider!.GetService<IServiceScopeFactory>();
+            var serviceScopeFactory = _serviceProvider.GetService<IServiceScopeFactory>();
             
             await using (var db = serviceScopeFactory!.CreateScope().ServiceProvider
                 .GetRequiredService<CheckInsExtensionContext>())
@@ -137,7 +137,7 @@ namespace IntegrationTests
 
             expectedData.ForEach(action: e => AssertAttendance(
                 expected: e,
-                actual: actualData.SingleOrDefault(predicate: a => a.PeopleId == e.PeopleId)));
+                actual: actualData.SingleOrDefault(predicate: a => a.CheckInId == e.CheckInId)));
 
         }
 
@@ -155,30 +155,12 @@ namespace IntegrationTests
                 checkInId: attendance.CheckInId,
                 peopleId: person.PeopleId,
                 attendanceType: (AttendanceTypes) attendance.AttendanceTypeId,
-                testLocation: location.CheckInsLocationId!.Value
+                testLocation: location.CheckInsLocationId!.Value,
+                mayLeaveAlone: person.MayLeaveAlone,
+                hasPeopleWithoutPickupPermission: person.HasPeopleWithoutPickupPermission
             );
         }
 
-        private async Task CleanDatabase()
-        {
-            
-            await using (var db = _serviceProvider!.GetRequiredService<CheckInsExtensionContext>())
-            {
-                while (!await db.Database.CanConnectAsync())
-                {
-                    await Task.Delay(millisecondsDelay: 100);
-                }
-                
-                var attendances = await db.Attendances.Where(predicate: a => a.CheckInId < 100).ToListAsync();
-                var people = await db.People.Where(predicate: p => attendances.Select(a => a.PersonId)
-                    .Contains(p.Id)).ToListAsync();
-                
-                db.RemoveRange(entities: attendances);
-                db.RemoveRange(entities: people);
-                await db.SaveChangesAsync();
-            }
-        }
-        
         private static ImmutableList<Data> GetExpectedData()
         {
             var attendeesData = PlanningCenterClientMock.GetAttendanceData();
@@ -194,7 +176,9 @@ namespace IntegrationTests
                     checkInId: a.CheckInId,
                     peopleId: a.PeopleId,
                     attendanceType: MapAttendanceType(attendeeType: a.AttendanceType),
-                    testLocation: (int) a.TestLocation);
+                    testLocation: (int) a.TestLocation,
+                    mayLeaveAlone: person?.MayLeaveAlone ?? true,
+                    hasPeopleWithoutPickupPermission: person?.HasPeopleWithoutPickupPermission ?? false);
             }).ToImmutableList();
         }
 
@@ -219,6 +203,8 @@ namespace IntegrationTests
             public readonly long? PeopleId;
             public readonly AttendanceTypes AttendanceType;
             public readonly long TestLocation;
+            public readonly bool MayLeaveAlone;
+            public readonly bool HasPeopleWithoutPickupPermission;
 
             public Data(
                 string firstName,
@@ -226,7 +212,9 @@ namespace IntegrationTests
                 long checkInId,
                 long? peopleId,
                 AttendanceTypes attendanceType,
-                long testLocation
+                long testLocation,
+                bool mayLeaveAlone,
+                bool hasPeopleWithoutPickupPermission
             )
             {
                 FirstName = firstName;
@@ -235,6 +223,8 @@ namespace IntegrationTests
                 PeopleId = peopleId;
                 AttendanceType = attendanceType;
                 TestLocation = testLocation;
+                MayLeaveAlone = mayLeaveAlone;
+                HasPeopleWithoutPickupPermission = hasPeopleWithoutPickupPermission;
             }
         }
     }

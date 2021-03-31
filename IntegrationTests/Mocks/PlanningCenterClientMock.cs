@@ -7,6 +7,7 @@ using CheckInsExtension.PlanningCenterAPIClient;
 using CheckInsExtension.PlanningCenterAPIClient.Models.CheckInResult;
 using CheckInsExtension.PlanningCenterAPIClient.Models.EventResult;
 using CheckInsExtension.PlanningCenterAPIClient.Models.PeopleResult;
+using IntegrationTests.TestData;
 using Attendee = CheckInsExtension.PlanningCenterAPIClient.Models.CheckInResult.Attendee;
 using Datum = CheckInsExtension.PlanningCenterAPIClient.Models.PeopleResult.Datum;
 using Included = CheckInsExtension.PlanningCenterAPIClient.Models.CheckInResult.Included;
@@ -25,15 +26,18 @@ namespace IntegrationTests.Mocks
             public readonly long CheckInId;
             public readonly long? PeopleId;
             public readonly AttendeeType AttendanceType;
-            public readonly TestLocations TestLocation;
+            public readonly TestLocationIds TestLocation;
+            public readonly string SecurityCode;
 
             public AttendanceData(
-                string firstName, 
-                string lastName, 
-                long checkInId, 
-                long? peopleId, 
+                string firstName,
+                string lastName,
+                long checkInId,
+                long? peopleId,
                 AttendeeType attendanceType,
-                TestLocations testLocation)
+                TestLocationIds testLocation,
+                string securityCode
+            )
             {
                 FirstName = firstName;
                 LastName = lastName;
@@ -41,6 +45,7 @@ namespace IntegrationTests.Mocks
                 PeopleId = peopleId;
                 AttendanceType = attendanceType;
                 TestLocation = testLocation;
+                SecurityCode = securityCode;
             }
         }
 
@@ -50,65 +55,61 @@ namespace IntegrationTests.Mocks
             public readonly string LastName;
             public readonly long PeopleId;
             public readonly IImmutableList<long> FieldDataIds;
+            public readonly bool? MayLeaveAlone;
+            public readonly bool? HasPeopleWithoutPickupPermission;
 
             public PersonData(
-                string firstName, 
-                string lastName, 
-                long peopleId, IImmutableList<long> fieldDataIds)
+                string firstName,
+                string lastName,
+                long peopleId,
+                IImmutableList<long> fieldDataIds,
+                bool? mayLeaveAlone,
+                bool? hasPeopleWithoutPickupPermission
+            )
             {
                 FirstName = firstName;
                 LastName = lastName;
                 PeopleId = peopleId;
                 FieldDataIds = fieldDataIds;
+                MayLeaveAlone = mayLeaveAlone;
+                HasPeopleWithoutPickupPermission = hasPeopleWithoutPickupPermission;
             }
         }
-        
+
         public static ImmutableList<AttendanceData> GetAttendanceData()
         {
-            return ImmutableList.Create(
+            return TestDataFactory.GetTestData().Select(selector: d =>
                 new AttendanceData(
-                    firstName: "Hanna", 
-                    lastName: "Hase", 
-                    checkInId: 1, 
-                    peopleId: 1, 
-                    attendanceType: AttendeeType.Regular,
-                    testLocation: TestLocations.Haesli),
-                
-                new AttendanceData(
-                    firstName: "Sarah", 
-                    lastName: "Schaf", 
-                    checkInId: 2, 
-                    peopleId: null, 
-                    attendanceType: AttendeeType.Guest,
-                    testLocation: TestLocations.Schoefli),
-                
-                new AttendanceData(
-                    firstName: "Frida", 
-                    lastName: "Fuchs", 
-                    checkInId: 3, 
-                    peopleId: 3, 
-                    attendanceType: AttendeeType.Volunteer,
-                    testLocation: TestLocations.Fuechsli)
-                );
+                    firstName: d.CheckInFirstName,
+                    lastName: d.CheckInLastName,
+                    checkInId: d.CheckInId,
+                    peopleId: d.PeopleId,
+                    attendanceType: d.AttendanceType,
+                    testLocation: d.TestLocation,
+                    securityCode: d.SecurityCode
+                )
+            ).ToImmutableList();
         }
 
         public static ImmutableList<PersonData> GetPersonData()
         {
-            return ImmutableList.Create(
-                new PersonData(
-                    firstName: "Hanna",
-                    lastName: "Osterhase",
-                    peopleId: 1,
-                    fieldDataIds: ImmutableList.Create(item: (long) 1)),
-
-                new PersonData(
-                    firstName: "Frida",
-                    lastName: "Fuchser",
-                    peopleId: 3,
-                    fieldDataIds: ImmutableList.Create(item: (long) 3))
-                );
+            return TestDataFactory.GetTestData()
+                .Where(predicate: d => d.PeopleId.HasValue)
+                .GroupBy(d => d.PeopleId)
+                .Select(selector: d =>
+                    {
+                        var person = d.First();
+                        return new PersonData(
+                            firstName: person.PeopleFirstName!,
+                            lastName: person.PeopleLastName!,
+                            peopleId: person.PeopleId!.Value,
+                            fieldDataIds: person.FieldData.Select(selector: f => f.FieldOptionId).ToImmutableList(),
+                            mayLeaveAlone: person.ExpectedMayLeaveAlone,
+                            hasPeopleWithoutPickupPermission: person.ExpectedHasPeopleWithoutPickupPermission);
+                    }
+                ).ToImmutableList();
         }
-        
+
         public Task<ImmutableList<CheckIns>> GetCheckedInPeople(int daysLookBack)
         {
             var data = GetAttendanceData();
@@ -123,13 +124,13 @@ namespace IntegrationTests.Mocks
         public Task<ImmutableList<People>> GetPeopleUpdates(IImmutableList<long> peopleIds)
         {
             var data = GetPersonData();
-            
+
             return Task.FromResult(result: ImmutableList.Create(
                 item: new People
-            {
-                Data = GetPeopleData(data: data),
-                Included = GetPeopleIncluded()
-            }));
+                {
+                    Data = MapPersonData(data: data),
+                    Included = GetPeopleIncluded()
+                }));
         }
 
         public Task<Event> GetActiveEvents()
@@ -155,7 +156,7 @@ namespace IntegrationTests.Mocks
             };
         }
 
-        private static List<Datum> GetPeopleData(ImmutableList<PersonData> data)
+        private static List<Datum> MapPersonData(ImmutableList<PersonData> data)
         {
             return data.Select(selector: d => new Datum
             {
@@ -185,66 +186,38 @@ namespace IntegrationTests.Mocks
 
         private static List<CheckInsExtension.PlanningCenterAPIClient.Models.PeopleResult.Included> GetPeopleIncluded()
         {
-            return new()
-            {
-                new CheckInsExtension.PlanningCenterAPIClient.Models.PeopleResult.Included
-                {
-                    PeopleIncludedType = PeopleIncludedType.FieldDatum,
-                    Id = 1,
-                    Attributes = new CheckInsExtension.PlanningCenterAPIClient.Models.PeopleResult.IncludedAttributes
+            var fieldData = TestDataFactory.GetTestData()
+                .Where(predicate: d => d.PeopleId.HasValue)
+                .SelectMany(selector: d => d.FieldData)
+                .ToImmutableList();
+
+            return fieldData.GroupBy(f => f.FieldOptionId)
+                .Select(selector: f =>
                     {
-                        Value = null
-                    },
-                    Relationships = new IncludedRelationships
-                    {
-                        FieldDefinition = new CheckInsExtension.PlanningCenterAPIClient.Models.PeopleResult.Relationship
+                        var field = f.Last();
+                        return new CheckInsExtension.PlanningCenterAPIClient.Models.PeopleResult.Included
                         {
-                            Data = new Parent
+                            PeopleIncludedType = PeopleIncludedType.FieldDatum,
+                            Id = field.FieldOptionId,
+                            Attributes =
+                                new CheckInsExtension.PlanningCenterAPIClient.Models.PeopleResult.IncludedAttributes
+                                {
+                                    Value = field.Value
+                                },
+                            Relationships = new IncludedRelationships
                             {
-                                Id = (long) FieldIds.None
+                                FieldDefinition =
+                                    new CheckInsExtension.PlanningCenterAPIClient.Models.PeopleResult.Relationship
+                                    {
+                                        Data = new Parent
+                                        {
+                                            Id = (long) field.FieldDefinitionId
+                                        }
+                                    }
                             }
-                        }
+                        };
                     }
-                },
-                new CheckInsExtension.PlanningCenterAPIClient.Models.PeopleResult.Included
-                {
-                    PeopleIncludedType = PeopleIncludedType.FieldDatum,
-                    Id = 2,
-                    Attributes = new CheckInsExtension.PlanningCenterAPIClient.Models.PeopleResult.IncludedAttributes
-                    {
-                        Value = null
-                    },
-                    Relationships = new IncludedRelationships
-                    {
-                        FieldDefinition = new CheckInsExtension.PlanningCenterAPIClient.Models.PeopleResult.Relationship
-                        {
-                            Data = new Parent
-                            {
-                                Id = (long) FieldIds.None
-                            }
-                        }
-                    }
-                },
-                new CheckInsExtension.PlanningCenterAPIClient.Models.PeopleResult.Included
-                {
-                    PeopleIncludedType = PeopleIncludedType.FieldDatum,
-                    Id = 3,
-                    Attributes = new CheckInsExtension.PlanningCenterAPIClient.Models.PeopleResult.IncludedAttributes
-                    {
-                        Value = null
-                    },
-                    Relationships = new IncludedRelationships
-                    {
-                        FieldDefinition = new CheckInsExtension.PlanningCenterAPIClient.Models.PeopleResult.Relationship
-                        {
-                            Data = new Parent
-                            {
-                                Id = (long) FieldIds.None
-                            }
-                        }
-                    }
-                }
-            };
+                ).ToList();
         }
 
         private static List<Attendee> GetAttendees(ImmutableList<AttendanceData> data)
@@ -260,8 +233,7 @@ namespace IntegrationTests.Mocks
                     FirstName = d.FirstName,
                     Kind = d.AttendanceType,
                     LastName = d.LastName,
-                    SecurityCode =
-                        $"{d.TestLocation.ToString().Substring(startIndex: 0, length: 1)}{d.CheckInId}{d.AttendanceType.ToString().Substring(startIndex: 0, length: 1)}{d.PeopleId ?? 0}"
+                    SecurityCode = d.SecurityCode
                 },
                 Relationships = new AttendeeRelationships
                 {
@@ -272,7 +244,7 @@ namespace IntegrationTests.Mocks
             }).ToList();
         }
 
-        private static Locations GetLocationParent(TestLocations testLocation) =>
+        private static Locations GetLocationParent(TestLocationIds testLocation) =>
             new()
             {
                 Data = new List<ParentElement>
@@ -292,7 +264,7 @@ namespace IntegrationTests.Mocks
                     Id = 389697
                 }
             };
-        
+
         private static Relationship GetPersonParent(long id) =>
             new()
             {
@@ -309,7 +281,7 @@ namespace IntegrationTests.Mocks
                 new Included
                 {
                     Type = IncludeType.Location,
-                    Id = (long) TestLocations.Haesli,
+                    Id = (long) TestLocationIds.Haesli,
                     Attributes = new IncludedAttributes
                     {
                         Name = "Häsli Test"
@@ -318,7 +290,7 @@ namespace IntegrationTests.Mocks
                 new Included
                 {
                     Type = IncludeType.Location,
-                    Id = (long) TestLocations.Schoefli,
+                    Id = (long) TestLocationIds.Schoefli,
                     Attributes = new IncludedAttributes
                     {
                         Name = "Schöfli Test"
@@ -327,7 +299,7 @@ namespace IntegrationTests.Mocks
                 new Included
                 {
                     Type = IncludeType.Location,
-                    Id = (long) TestLocations.Fuechsli,
+                    Id = (long) TestLocationIds.Fuechsli,
                     Attributes = new IncludedAttributes
                     {
                         Name = "Füchsli Test"
@@ -336,7 +308,7 @@ namespace IntegrationTests.Mocks
                 new Included
                 {
                     Type = IncludeType.Location,
-                    Id = (long) TestLocations.KidsChurch1St,
+                    Id = (long) TestLocationIds.KidsChurch1St,
                     Attributes = new IncludedAttributes
                     {
                         Name = "Kids Church 1. Klasse Test"
@@ -345,7 +317,7 @@ namespace IntegrationTests.Mocks
                 new Included
                 {
                     Type = IncludeType.Location,
-                    Id = (long) TestLocations.KidsChurch2Nd,
+                    Id = (long) TestLocationIds.KidsChurch2Nd,
                     Attributes = new IncludedAttributes
                     {
                         Name = "Kids Church 2. Klasse Test"
@@ -354,7 +326,7 @@ namespace IntegrationTests.Mocks
                 new Included
                 {
                     Type = IncludeType.Location,
-                    Id = (long) TestLocations.KidsChurch3Rd,
+                    Id = (long) TestLocationIds.KidsChurch3Rd,
                     Attributes = new IncludedAttributes
                     {
                         Name = "Kids Church 3. Klasse Test"
@@ -363,7 +335,7 @@ namespace IntegrationTests.Mocks
                 new Included
                 {
                     Type = IncludeType.Location,
-                    Id = (long) TestLocations.KidsChurch4Th,
+                    Id = (long) TestLocationIds.KidsChurch4Th,
                     Attributes = new IncludedAttributes
                     {
                         Name = "Kids Church 4. Klasse Test"
@@ -372,32 +344,13 @@ namespace IntegrationTests.Mocks
                 new Included
                 {
                     Type = IncludeType.Location,
-                    Id = (long) TestLocations.KidsChurch5Th,
+                    Id = (long) TestLocationIds.KidsChurch5Th,
                     Attributes = new IncludedAttributes
                     {
                         Name = "Kids Church 5. Klasse Test"
                     }
                 }
             };
-        }
-
-        private enum FieldIds
-        {
-            None = 0
-            //NeedsToBePickedUp = 438360,
-            //Kab = 441655
-        }
-
-        public enum TestLocations
-        {
-            Haesli = 788187,
-            Schoefli = 790575,
-            Fuechsli = 788188,
-            KidsChurch1St = 787349,
-            KidsChurch2Nd = 803333,
-            KidsChurch3Rd = 803334,
-            KidsChurch4Th = 803335,
-            KidsChurch5Th = 803336
         }
     }
 }

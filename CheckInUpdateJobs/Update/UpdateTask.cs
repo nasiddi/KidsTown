@@ -7,13 +7,13 @@ using static System.Threading.Tasks.Task;
 
 namespace CheckInsExtension.CheckInUpdateJobs.Update
 {
-    public class UpdateTask : IHostedService
+    public class UpdateTask : IHostedService, IUpdateTask
     {
         private readonly IUpdateService _updateService;
         private readonly ILoggerFactory _loggerFactory;
 
-        public bool TaskIsActive { get; set; } = true;
-        public int ExecutionCount { get; private set; }
+        private bool _taskIsActive = true;
+        private int _executionCount;
 
         public UpdateTask(IUpdateService updateService, ILoggerFactory loggerFactory)
         {
@@ -30,11 +30,11 @@ namespace CheckInsExtension.CheckInUpdateJobs.Update
         private async Task ExecuteAsync(CancellationToken cancellationToken)
         {
             var logger = _loggerFactory.CreateLogger<UpdateTask>();
-            var activationTime = TaskIsActive ? DateTime.UtcNow : new DateTime();
+            var activationTime = _taskIsActive ? DateTime.UtcNow : new DateTime();
 
             while (!cancellationToken.IsCancellationRequested)
             {
-                if (!TaskIsActive)
+                if (!_taskIsActive)
                 {
                     activationTime = await WaitForActivation(cancellationToken: cancellationToken)
                         .ConfigureAwait(continueOnCapturedContext: false);
@@ -46,7 +46,7 @@ namespace CheckInsExtension.CheckInUpdateJobs.Update
 
                 if (activationTime < DateTime.UtcNow.Date.AddHours(value: 1))
                 {
-                    TaskIsActive = false;
+                    _taskIsActive = false;
                 }
             }
         }
@@ -56,7 +56,7 @@ namespace CheckInsExtension.CheckInUpdateJobs.Update
             try
             {
                 await _updateService.FetchDataFromPlanningCenter().ConfigureAwait(continueOnCapturedContext: false);
-                ExecutionCount++;
+                _executionCount++;
             }
             catch (Exception e)
             {
@@ -66,7 +66,7 @@ namespace CheckInsExtension.CheckInUpdateJobs.Update
 
         private async Task<DateTime> WaitForActivation(CancellationToken cancellationToken)
         {
-            while (!TaskIsActive)
+            while (!_taskIsActive)
             {
                 await Sleep(cancellationToken: cancellationToken).ConfigureAwait(continueOnCapturedContext: false);
             }
@@ -84,5 +84,13 @@ namespace CheckInsExtension.CheckInUpdateJobs.Update
         {
             return CompletedTask;        
         }
+
+        public void ActivateTask() => _taskIsActive = true;
+
+        public void DeactivateTask() => _taskIsActive = false;
+
+        public bool IsTaskActive() => _taskIsActive;
+
+        public int GetExecutionCount() => _executionCount;
     }
 }

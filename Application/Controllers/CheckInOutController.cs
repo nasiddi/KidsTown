@@ -15,9 +15,9 @@ namespace Application.Controllers
     public class CheckInOutController : ControllerBase
     {
         private readonly ICheckInOutService _checkInOutService;
-        private readonly UpdateTask _updateTask;
+        private readonly IUpdateTask _updateTask;
 
-        public CheckInOutController(ICheckInOutService checkInOutService, UpdateTask updateTask)
+        public CheckInOutController(ICheckInOutService checkInOutService, IUpdateTask updateTask)
         {
             _checkInOutService = checkInOutService;
             _updateTask = updateTask;
@@ -60,7 +60,7 @@ namespace Application.Controllers
         [Produces(contentType: "application/json")]
         public async Task<IActionResult> GetPeople([FromBody] CheckInOutRequest request)
         {
-            _updateTask.TaskIsActive = true;
+            _updateTask.ActivateTask();
             
             var people = await _checkInOutService.SearchForPeople(
                 searchParameters: new PeopleSearchParameters(
