@@ -20,19 +20,19 @@ namespace IntegrationTests
         [TearDown]
         public async Task TearDown()
         {
-            //await TestHelper.CleanDatabase(serviceProvider: _serviceProvider);
+            await TestHelper.CleanDatabase(serviceProvider: _serviceProvider);
         }
         
         [Test]
         public async Task GetPeople_()
         {
             SetupServiceProvider();
-            await TestHelper.CleanDatabase(_serviceProvider);
-            await TestHelper.InsertTestData(_serviceProvider);
+            await TestHelper.CleanDatabase(serviceProvider: _serviceProvider);
+            await TestHelper.InsertTestData(serviceProvider: _serviceProvider);
 
             var checkInOutService = _serviceProvider.GetService<ICheckInOutService>();
             var updateTaskMock = new Mock<IUpdateTask>();
-            var controller = new CheckInOutController(checkInOutService!, updateTaskMock.Object);
+            var controller = new CheckInOutController(checkInOutService: checkInOutService!, updateTask: updateTaskMock.Object);
 
             var request = new CheckInOutRequest
             {
@@ -44,7 +44,7 @@ namespace IntegrationTests
                 CheckInOutCandidates = ImmutableList<CheckInOutCandidate>.Empty
             };
 
-            var response = await controller.GetPeople(request);
+            await controller.GetPeople(request: request);
         }
         
         private void SetupServiceProvider()

@@ -34,11 +34,11 @@ namespace CheckInsExtension.CheckInUpdateJobs.People
 
         public async Task<ImmutableList<HeadCounts>> GetSummedUpHeadCounts(
             long eventId,
-            IImmutableList<int> selectedLocationGroups,
+            IImmutableList<int> selectedLocations,
             DateTime startDate)
         {
             var attendees = await _overviewRepository.GetAttendanceHistory(
-                    selectedLocationGroups: selectedLocationGroups,
+                    selectedLocations: selectedLocations,
                     eventId: eventId,
                     startDate: startDate,
                     endDate: DateTime.Today)
@@ -51,13 +51,13 @@ namespace CheckInsExtension.CheckInUpdateJobs.People
 
         public async Task<ImmutableList<LiveHeadCounts>> GetHeadCountsByLocations(
             long eventId,
-            IImmutableList<int> selectedLocations,
+            IImmutableList<int> selectedLocationGroups,
             DateTime startDate,
             DateTime endDate
         )
         {
             var attendees = await _overviewRepository.GetAttendanceHistory(
-                    selectedLocationGroups: selectedLocations,
+                    selectedLocationGroups: selectedLocationGroups,
                     eventId: eventId,
                     startDate: startDate,
                     endDate: endDate)

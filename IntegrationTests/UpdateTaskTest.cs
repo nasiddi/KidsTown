@@ -52,7 +52,7 @@ namespace IntegrationTests
         public async Task UpdateMockData()
         {
             SetupServiceProvider(mockPlanningCenterClient: true);
-            await TestHelper.CleanDatabase(_serviceProvider);
+            await TestHelper.CleanDatabase(serviceProvider: _serviceProvider);
             
             var updateTask = _serviceProvider.GetService<IHostedService>() as UpdateTask;
             await RunTask(updateTask: updateTask!);

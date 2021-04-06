@@ -1,7 +1,7 @@
 import React, { Component } from 'react'
 import { Grid } from '@material-ui/core'
 import {
-	fetchLocations,
+	fetchLocationGroups,
 	getStringFromSession,
 	getSelectedOptionsFromStorage,
 	getLastSunday,
@@ -33,7 +33,7 @@ class Options extends Component {
 	}
 
 	async componentDidMount() {
-		const locations = await fetchLocations()
+		const locations = await fetchLocationGroups()
 		this.setState({
 			date: getStringFromSession(
 				'overviewDate',

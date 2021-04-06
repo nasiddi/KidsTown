@@ -34,7 +34,7 @@ namespace Application
             // In production, the React files will be served from this directory
             services.AddSpaStaticFiles(configuration: configuration => { configuration.RootPath = "ClientApp/build"; });
 
-            services.AddSingleton<IUpdateTask>(x => x.GetRequiredService<UpdateTask>());
+            services.AddSingleton<IUpdateTask>(implementationFactory: x => x.GetRequiredService<UpdateTask>());
             services.AddSingleton<IPlanningCenterClient, PlanningCenterClient>();
             services.AddSingleton<IUpdateService, UpdateService>();
             services.AddSingleton<IUpdateRepository, UpdateRepository>();

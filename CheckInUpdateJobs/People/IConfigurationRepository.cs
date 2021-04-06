@@ -6,6 +6,7 @@ namespace CheckInsExtension.CheckInUpdateJobs.People
 {
     public interface IConfigurationRepository
     {
-        Task<ImmutableList<Location>> GetActiveLocations();
+        Task<ImmutableList<LocationGroup>> GetActiveLocationGroups();
+        Task<ImmutableList<Location>> GetLocations(long eventId, IImmutableList<int> selectedLocationGroups);
     }
 }

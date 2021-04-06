@@ -10,6 +10,7 @@
     "bootstrap": "^4.6.0",
     "fg-loadcss": "^3.1.0",
     "jquery": "^3.6.0",
+    "lodash": "^4.17.21",
     "merge": "^2.1.1",
     "msal": "^1.4.8",
     "oidc-client": "^1.11.5",

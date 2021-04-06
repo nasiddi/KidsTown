@@ -46,17 +46,17 @@ namespace IntegrationTests
 
                 var people = testData
                     .GroupBy(keySelector: d => d.PeopleId)
-                    .Select(selector: d => MapPerson(d, locations.ToImmutableList()))
+                    .Select(selector: d => MapPerson(grouping: d, locations: locations.ToImmutableList()))
                     .ToImmutableList();
 
-                await db.AddRangeAsync(people);
+                await db.AddRangeAsync(entities: people);
                 await db.SaveChangesAsync();
             }
         }
 
         private static Attendance MapAttendance(TestData.TestData data, ImmutableList<Location> locations)
         {
-            var location = locations.Single(l => l.CheckInsLocationId == (long) data.TestLocation);
+            var location = locations.Single(predicate: l => l.CheckInsLocationId == (long) data.TestLocation);
 
             return new Attendance
             {
@@ -66,7 +66,7 @@ namespace IntegrationTests
                 AttendanceTypeId = (int) data.AttendanceType + 1,
                 InsertDate = DateTime.UtcNow,
                 CheckInDate = null,
-                CheckOutDate = null,
+                CheckOutDate = null
             };
         }
 
@@ -74,9 +74,9 @@ namespace IntegrationTests
         {
             var data = grouping.First();
 
-            var attendances = grouping.Select(g => MapAttendance(g, locations));
+            var attendances = grouping.Select(selector: g => MapAttendance(data: g, locations: locations));
             
-            return new Person()
+            return new Person
             {
                 PeopleId = data.PeopleId,
                 FistName = data.PeopleFirstName ?? data.CheckInFirstName,

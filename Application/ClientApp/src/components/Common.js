@@ -3,8 +3,8 @@ import Select from 'react-select'
 import React from 'react'
 import DatePicker from 'reactstrap-date-picker'
 
-export async function fetchLocations() {
-	const response = await fetch('configuration/locations')
+export async function fetchLocationGroups() {
+	const response = await fetch('configuration/location-groups')
 
 	return await response.json()
 }

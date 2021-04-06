@@ -89,7 +89,7 @@ namespace CheckInsExtension.CheckInUpdateJobs.Update
 
         public void DeactivateTask() => _taskIsActive = false;
 
-        public bool IsTaskActive() => _taskIsActive;
+        //public bool IsTaskActive() => _taskIsActive;
 
         public int GetExecutionCount() => _executionCount;
     }

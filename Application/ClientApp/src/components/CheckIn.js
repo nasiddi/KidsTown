@@ -5,7 +5,7 @@ import Checkbox from '@material-ui/core/Checkbox'
 import 'bootstrap/dist/css/bootstrap.css'
 import { Grid, MuiThemeProvider } from '@material-ui/core'
 import {
-	fetchLocations,
+	fetchLocationGroups,
 	getSelectedEventFromStorage,
 	getSelectedOptionsFromStorage,
 	getStateFromLocalStorage,
@@ -101,7 +101,7 @@ class CheckIn extends Component {
 	}
 
 	async componentDidMount() {
-		const locations = await fetchLocations()
+		const locations = await fetchLocationGroups()
 		this.setState({ locations: locations, loading: false })
 	}
 

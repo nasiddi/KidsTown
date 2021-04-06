@@ -95,7 +95,7 @@ namespace IntegrationTests.Mocks
         {
             return TestDataFactory.GetTestData()
                 .Where(predicate: d => d.PeopleId.HasValue)
-                .GroupBy(d => d.PeopleId)
+                .GroupBy(keySelector: d => d.PeopleId)
                 .Select(selector: d =>
                     {
                         var person = d.First();
@@ -191,7 +191,7 @@ namespace IntegrationTests.Mocks
                 .SelectMany(selector: d => d.FieldData)
                 .ToImmutableList();
 
-            return fieldData.GroupBy(f => f.FieldOptionId)
+            return fieldData.GroupBy(keySelector: f => f.FieldOptionId)
                 .Select(selector: f =>
                     {
                         var field = f.Last();

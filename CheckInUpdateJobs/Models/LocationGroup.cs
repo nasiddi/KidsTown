@@ -1,16 +1,14 @@
 namespace CheckInsExtension.CheckInUpdateJobs.Models
 {
-    public class Location
+    public class LocationGroup
     {
         public readonly int Id;
         public readonly string Name;
-        public readonly int LocationGroupId;
 
-        public Location(int id, string name, int locationGroupId)
+        public LocationGroup(int id, string name)
         {
             Id = id;
             Name = name;
-            LocationGroupId = locationGroupId;
         }
     }
 }

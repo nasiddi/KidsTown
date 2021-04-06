@@ -1,7 +1,7 @@
 import React, { Component } from 'react'
 import { Grid } from '@material-ui/core'
 import {
-	fetchLocations,
+	fetchLocationGroups,
 	getSelectedEventFromStorage,
 	getStringFromSession,
 	getSelectedOptionsFromStorage,
@@ -24,7 +24,7 @@ class OverViewHeadCounts extends Component {
 	}
 
 	async componentDidMount() {
-		const locations = await fetchLocations()
+		const locations = await fetchLocationGroups()
 		this.setState({ locations: locations })
 		await this.fetchData()
 		this.setState({ loading: false })

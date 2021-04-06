@@ -1,7 +1,7 @@
 import React, { Component } from 'react'
 import { Grid } from '@material-ui/core'
 import {
-	fetchLocations,
+	fetchLocationGroups,
 	getFormattedDate,
 	getSelectedEventFromStorage,
 	getSelectedOptionsFromStorage,
@@ -10,31 +10,41 @@ import {
 import { Table } from 'reactstrap'
 import { withAuth } from '../auth/MsalAuthProvider'
 
+const _ = require('lodash')
+
 class Statistic extends Component {
 	static displayName = Statistic.name
-
 	repeat
 
 	constructor(props) {
 		super(props)
 
-		this.updateOptions = this.updateOptions.bind(this)
+		this.updateSelectedLocationGroups = this.updateSelectedLocationGroups.bind(
+			this
+		)
 
 		this.state = {
-			locations: [],
-			statisticLocations: getSelectedOptionsFromStorage(
-				'statisticLocations',
+			locationGroups: [],
+			statisticLocationGroups: getSelectedOptionsFromStorage(
+				'statisticLocationGroups',
 				[]
 			),
+			singleLocations: [],
+			multiLocations: [],
+			statisticLocations: [],
 			attendees: {},
+			renderLocationSelect: false,
 			loading: true,
 		}
 	}
 
 	async componentDidMount() {
-		const locations = await fetchLocations()
-		this.setState({ locations: locations })
-		await this.fetchData()
+		const locationGroups = await fetchLocationGroups()
+		this.setState({ locationGroups: locationGroups })
+		await this.setLocations(this.state.statisticLocationGroups)
+		this.setState({
+			attendees: await this.fetchData(this.state.statisticLocations),
+		})
 		this.setState({ loading: false })
 	}
 
@@ -42,7 +52,29 @@ class Statistic extends Component {
 		clearTimeout(this.repeat)
 	}
 
-	renderOptions() {
+	renderLocationGroupSelect() {
+		return (
+			<div>
+				<Grid
+					container
+					spacing={3}
+					justify="space-between"
+					alignItems="center"
+				>
+					<Grid item xs={12}>
+						<MultiSelect
+							name={'statisticLocationGroups'}
+							onChange={this.updateSelectedLocationGroups}
+							options={this.state.locationGroups}
+							defaultOptions={this.state.statisticLocationGroups}
+						/>
+					</Grid>
+				</Grid>
+			</div>
+		)
+	}
+
+	renderLocationSelect() {
 		return (
 			<div>
 				<Grid
@@ -54,8 +86,8 @@ class Statistic extends Component {
 					<Grid item xs={12}>
 						<MultiSelect
 							name={'statisticLocations'}
-							onChange={this.updateOptions}
-							options={this.state.locations}
+							onChange={this.updateSelectedLocations}
+							options={this.state.multiLocations}
 							defaultOptions={this.state.statisticLocations}
 						/>
 					</Grid>
@@ -106,6 +138,11 @@ class Statistic extends Component {
 			return <div />
 		}
 
+		let locationSelect = <div />
+		if (this.state.renderLocationSelect) {
+			locationSelect = this.renderLocationSelect()
+		}
+
 		return (
 			<div>
 				<Grid
@@ -115,7 +152,10 @@ class Statistic extends Component {
 					alignItems="flex-start"
 				>
 					<Grid item xs={12}>
-						{this.renderOptions()}
+						{this.renderLocationGroupSelect()}
+					</Grid>
+					<Grid item xs={12}>
+						{locationSelect}
 					</Grid>
 					<Grid item xs={12}>
 						{this.renderCounts()}
@@ -125,13 +165,13 @@ class Statistic extends Component {
 		)
 	}
 
-	async fetchData() {
-		await fetch(
+	async fetchData(multiLocations) {
+		const locations = multiLocations.concat(this.state.singleLocations)
+
+		return await fetch(
 			`overview/event/${await getSelectedEventFromStorage()}/attendees/history`,
 			{
-				body: JSON.stringify(
-					this.state.statisticLocations.map((l) => l.value)
-				),
+				body: JSON.stringify(locations.map((l) => l.value)),
 				method: 'POST',
 				headers: {
 					'Content-Type': 'application/json',
@@ -140,14 +180,67 @@ class Statistic extends Component {
 		)
 			.then((r) => r.json())
 			.then((j) => {
-				this.setState({ attendees: j })
+				return j
 			})
 	}
 
-	updateOptions = async (options, key) => {
+	async fetchLocations(locationsGroups) {
+		return await fetch(
+			`configuration/events/${await getSelectedEventFromStorage()}/locations`,
+			{
+				body: JSON.stringify(locationsGroups.map((l) => l.value)),
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json',
+				},
+			}
+		)
+			.then((r) => r.json())
+			.then((j) => {
+				return j
+			})
+	}
+
+	updateSelectedLocationGroups = async (options, key) => {
 		localStorage.setItem(key.name, JSON.stringify(options))
-		this.setState({ [key.name]: options })
-		await this.fetchData()
+		await this.setLocations(options)
+
+		await this.setState({
+			[key.name]: options,
+			attendees: await this.fetchData(this.state.statisticLocations),
+		})
+	}
+
+	updateSelectedLocations = async (options, key) => {
+		await this.setState({
+			[key.name]: options,
+			attendees: await this.fetchData(options),
+		})
+	}
+
+	setLocations = async (locationGroups) => {
+		const locations = await this.fetchLocations(locationGroups)
+
+		const singleLocations = _.filter(locations, function (l) {
+			return l['optionCount'] === 1
+		})
+
+		const multiLocations = _.filter(locations, function (l) {
+			return l['optionCount'] > 1
+		})
+
+		this.setState({
+			renderLocationSelect: multiLocations.length > 0,
+			statisticLocations: _.flatMap(multiLocations, function (l) {
+				return l.options
+			}),
+			singleLocations: _.flatMap(singleLocations, function (l) {
+				return l.options
+			}),
+			multiLocations: _.flatMap(multiLocations, function (l) {
+				return l.options
+			}),
+		})
 	}
 }
 

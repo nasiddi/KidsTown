@@ -24,13 +24,32 @@ namespace Application.Controllers
         }
 
         [HttpGet]
-        [Route(template: "locations")]
+        [Route(template: "location-groups")]
         [Produces(contentType: "application/json")]
-        public async Task<ImmutableList<Options>> GetLocations()
+        public async Task<ImmutableList<SelectOption>> GetLocationGroups()
         {
             _updateTask.ActivateTask();
-            var locations = await _configurationService.GetActiveLocations().ConfigureAwait(continueOnCapturedContext: false);
+            var locations = await _configurationService.GetActiveLocationGroups().ConfigureAwait(continueOnCapturedContext: false);
             return locations.Select(selector: MapOptions).ToImmutableList();
+        }
+        
+        [HttpPost]
+        [Route(template: "events/{eventId}/locations")]
+        [Produces(contentType: "application/json")]
+        public async Task<ImmutableList<GroupedSelectOptions>> GetLocations(
+            [FromRoute] long eventId,
+            [FromBody] IImmutableList<int> selectedLocationGroups)
+        {
+            var locations = await _configurationService.GetLocations(eventId: eventId, selectedLocationGroups: selectedLocationGroups)
+                .ConfigureAwait(continueOnCapturedContext: false);
+
+            return locations.GroupBy(keySelector: l => l.LocationGroupId)
+                .Select(selector: g => new GroupedSelectOptions
+                {
+                    GroupId = g.Key,
+                    Options = g.Select(selector: MapOptions).ToImmutableList(),
+                    OptionCount = g.Count()
+                }).ToImmutableList();
         }
 
         [HttpGet]
@@ -52,7 +71,16 @@ namespace Application.Controllers
             };
         }
         
-        private static Options MapOptions(Location location)
+        private static SelectOption MapOptions(LocationGroup locationGroup)
+        {
+            return new()
+            {
+                Value = locationGroup.Id,
+                Label = locationGroup.Name
+            };
+        }
+        
+        private static SelectOption MapOptions(Location location)
         {
             return new()
             {

@@ -12,12 +12,12 @@ namespace CheckInsExtension.CheckInUpdateJobs.People
 
         Task<ImmutableList<HeadCounts>> GetSummedUpHeadCounts(
             long eventId,
-            IImmutableList<int> selectedLocationGroups,
+            IImmutableList<int> selectedLocations,
             DateTime startDate);
 
         Task<ImmutableList<LiveHeadCounts>> GetHeadCountsByLocations(
             long eventId,
-            IImmutableList<int> selectedLocations,
+            IImmutableList<int> selectedLocationGroups,
             DateTime startDate,
             DateTime endDate
         );

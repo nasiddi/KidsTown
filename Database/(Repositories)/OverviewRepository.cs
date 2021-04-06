@@ -43,10 +43,12 @@ namespace ChekInsExtension.Database
             }
         }
 
-        public async Task<ImmutableList<Attendee>> GetAttendanceHistory(IImmutableList<int> selectedLocationGroups,
+        public async Task<ImmutableList<Attendee>> GetAttendanceHistory(
             long eventId,
             DateTime startDate,
-            DateTime endDate)
+            DateTime endDate,
+            IImmutableList<int> selectedLocations = null!,
+            IImmutableList<int> selectedLocationGroups = null!)
         {
             await using (var db = _serviceScopeFactory.CreateScope().ServiceProvider.GetRequiredService<CheckInsExtensionContext>())
             {
@@ -57,7 +59,8 @@ namespace ChekInsExtension.Database
                             on a.AttendanceTypeId equals at.Id
                         join l in db.Locations
                             on a.LocationId equals l.Id
-                        where selectedLocationGroups.Contains(l.LocationGroupId)
+                        where (selectedLocations != null && selectedLocations.Contains(l.Id) 
+                               || selectedLocationGroups != null && selectedLocationGroups.Contains(l.LocationGroupId))
                               && l.EventId == eventId
                               && a.InsertDate >= startDate.Date
                               && a.InsertDate <= endDate.Date.AddDays(1)
