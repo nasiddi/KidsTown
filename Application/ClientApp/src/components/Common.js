@@ -2,6 +2,8 @@ import { createMuiTheme } from '@material-ui/core'
 import Select from 'react-select'
 import React from 'react'
 import DatePicker from 'reactstrap-date-picker'
+import { loadCSS } from 'fg-loadcss'
+import Icon from '@material-ui/core/Icon'
 
 export async function fetchLocationGroups() {
 	const response = await fetch('configuration/location-groups')
@@ -95,4 +97,19 @@ export function DatePick(props) {
 			onChange={props['onChange']}
 		/>
 	)
+}
+
+export function FontAwesomeIcon(props) {
+	React.useEffect(() => {
+		const node = loadCSS(
+			'https://use.fontawesome.com/releases/v5.12.0/css/all.css',
+			document.querySelector('#font-awesome-css')
+		)
+
+		return () => {
+			node.parentNode.removeChild(node)
+		}
+	}, [])
+
+	return <Icon className={props['name']} />
 }

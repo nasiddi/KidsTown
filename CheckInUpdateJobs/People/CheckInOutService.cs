@@ -27,5 +27,10 @@ namespace CheckInsExtension.CheckInUpdateJobs.People
         {
             return await _checkInOutRepository.CheckOutPeople(checkInIds: checkInIds).ConfigureAwait(continueOnCapturedContext: false);
         }
+
+        public Task<bool> UndoAction(CheckState revertedCheckState, ImmutableList<int> checkinIds)
+        {
+            return _checkInOutRepository.SetCheckState(revertedCheckState: revertedCheckState, checkInIds: checkinIds);
+        }
     }
 }

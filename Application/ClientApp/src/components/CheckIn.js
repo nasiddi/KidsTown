@@ -10,11 +10,19 @@ import {
 	getSelectedOptionsFromStorage,
 	getStateFromLocalStorage,
 	MultiSelect,
+	FontAwesomeIcon,
 	theme,
 } from './Common'
 import { Alert, Button, ButtonGroup } from 'reactstrap'
 import { withAuth } from '../auth/MsalAuthProvider'
 
+function UndoButton(props) {
+	return (
+		<a onClick={props['callback']} className="alert-link">
+			<FontAwesomeIcon name={'fas fa-undo-alt'} />
+		</a>
+	)
+}
 function CheckToggle(props) {
 	return (
 		<Grid item md={3} xs={12}>
@@ -83,6 +91,7 @@ class CheckIn extends Component {
 		this.checkInOutSingle = this.checkInOutSingle.bind(this)
 		this.checkInOutMultiple = this.checkInOutMultiple.bind(this)
 		this.invertSelectCandidate = this.invertSelectCandidate.bind(this)
+		this.undoAction = this.undoAction.bind(this)
 
 		this.state = {
 			locations: [],
@@ -97,6 +106,7 @@ class CheckIn extends Component {
 			alert: { text: '', level: 1 },
 			checkType: localStorage.getItem('checkType') ?? 'CheckIn',
 			loading: true,
+			lastActionAttendanceIds: [],
 		}
 	}
 
@@ -201,10 +211,30 @@ class CheckIn extends Component {
 	}
 
 	renderAlert() {
+		const undoLink =
+			this.state.lastActionAttendanceIds.length > 0 ? (
+				<UndoButton callback={this.undoAction} />
+			) : (
+				<div />
+			)
+
 		return (
 			<Grid item xs={12}>
 				<Alert color={this.state.alert.level.toLowerCase()}>
-					{this.state.alert.text}
+					<Grid
+						container
+						direction="row"
+						justify="space-between"
+						alignItems="center"
+						spacing={1}
+					>
+						<Grid item xs={11}>
+							{this.state.alert.text}
+						</Grid>
+						<Grid item xs={1}>
+							{undoLink}
+						</Grid>
+					</Grid>
 				</Alert>
 			</Grid>
 		)
@@ -348,6 +378,7 @@ class CheckIn extends Component {
 			.then((j) => {
 				this.setState({
 					alert: { level: j['alertLevel'], text: j['text'] },
+					lastActionAttendanceIds: j['attendanceIds'] ?? [],
 				})
 				if (j['successfulFastCheckout'] === true) {
 					this.resetView(false)
@@ -385,6 +416,7 @@ class CheckIn extends Component {
 			.then((j) => {
 				this.setState({
 					alert: { level: j['alertLevel'], text: j['text'] },
+					lastActionAttendanceIds: j['attendanceIds'] ?? [],
 				})
 				this.resetView(false)
 			})
@@ -408,8 +440,26 @@ class CheckIn extends Component {
 			.then((j) => {
 				this.setState({
 					alert: { level: j['alertLevel'], text: j['text'] },
+					lastActionAttendanceIds: j['attendanceIds'] ?? [],
 				})
 				this.resetView(false)
+			})
+	}
+
+	async undoAction() {
+		await fetch(`checkinout/undo/${this.state.checkType}`, {
+			body: JSON.stringify(this.state.lastActionAttendanceIds),
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json',
+			},
+		})
+			.then((r) => r.json())
+			.then((j) => {
+				this.setState({
+					alert: { level: j['alertLevel'], text: j['text'] },
+					lastActionAttendanceIds: [],
+				})
 			})
 	}
 

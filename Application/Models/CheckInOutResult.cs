@@ -8,6 +8,7 @@ namespace Application.Models
         public string Text { get; init; } = string.Empty;
         public AlertLevel AlertLevel { get; init; } = AlertLevel.Info;
         public bool SuccessfulFastCheckout { get; init; }
-        public ImmutableList<CheckInOutCandidate> CheckInOutCandidates { get; init; } = ImmutableList.Create<CheckInOutCandidate>();
+        public ImmutableList<CheckInOutCandidate> CheckInOutCandidates { get; init; } = ImmutableList<CheckInOutCandidate>.Empty;
+        public ImmutableList<int> AttendanceIds { get; init; } = ImmutableList<int>.Empty;
     }
 }

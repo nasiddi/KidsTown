@@ -43,7 +43,8 @@ namespace Application.Controllers
                 return Ok(value: new CheckInOutResult
                 {
                     Text = $"{request.CheckType.ToString()} für {string.Join(separator: ", ", values: names)} war erfolgreich.",
-                    AlertLevel = AlertLevel.Success
+                    AlertLevel = AlertLevel.Success,
+                    AttendanceIds = checkInIds
                 });
             }
 
@@ -99,7 +100,8 @@ namespace Application.Controllers
                     {
                         Text = $"{request.CheckType.ToString()} für {person.FirstName} {person.LastName} war erfolgreich.",
                         AlertLevel = AlertLevel.Success,
-                        SuccessfulFastCheckout = true
+                        SuccessfulFastCheckout = true,
+                        AttendanceIds = ImmutableList.Create(item: person.CheckInId)
                     });
                 }
             }
@@ -120,6 +122,37 @@ namespace Application.Controllers
                 AlertLevel = level,
                 CheckInOutCandidates = checkInOutCandidates
             });
+        }
+        
+        [HttpPost]
+        [Route(template: "undo/{checkType}")]
+        [Produces(contentType: "application/json")]
+        public async Task<IActionResult> Undo([FromRoute] CheckType checkType, [FromBody] ImmutableList<int> checkinIds)
+        {
+            var checkState = checkType switch
+            {
+                CheckType.CheckIn => CheckState.PreCheckedIn,
+                CheckType.CheckOut => CheckState.CheckedIn,
+                _ => throw new ArgumentOutOfRangeException(paramName: nameof(checkType), actualValue: checkType, message: null)
+            };
+               
+            var success = await _checkInOutService.UndoAction(revertedCheckState: checkState, checkinIds: checkinIds);
+
+            if (success)
+            {
+                return Ok(value: new CheckInOutResult
+                {
+                    Text = $"Der {checkType} wurde erfolgreich rückgänig gemacht.",
+                    AlertLevel = AlertLevel.Info,
+                });    
+            }
+            
+            return Ok(value: new CheckInOutResult
+            {
+                Text = "Rückgänig machen ist fehlgeschlagen",
+                AlertLevel = AlertLevel.Danger,
+            }); 
+            
         }
 
         private static string GetCandidateAlert(CheckInOutRequest request, ImmutableList<CheckInOutCandidate> checkInOutCandidates,

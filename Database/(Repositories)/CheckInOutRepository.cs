@@ -62,6 +62,31 @@ namespace ChekInsExtension.Database
             }
         }
 
+        public async Task<bool> SetCheckState(CheckState revertedCheckState, ImmutableList<int> checkInIds)
+        {
+            await using (var db = _serviceScopeFactory.CreateScope().ServiceProvider.GetRequiredService<CheckInsExtensionContext>())
+            {
+                var checkIns = await GetCheckIns(checkinIds: checkInIds, db: db).ConfigureAwait(continueOnCapturedContext: false);
+
+                switch (revertedCheckState)
+                {
+                    case CheckState.PreCheckedIn:
+                        checkIns.ForEach(action: c => c.CheckInDate = null);
+                        break;
+                    case CheckState.CheckedIn:
+                        checkIns.ForEach(action: c => c.CheckOutDate = null);
+                        break;
+                    case CheckState.CheckedOut:
+                        break;
+                    default:
+                        throw new ArgumentOutOfRangeException(paramName: nameof(revertedCheckState), actualValue: revertedCheckState, message: null);
+                }
+
+                var result = await db.SaveChangesAsync();
+                return result > 0;
+            }
+        }
+
         private static async Task<List<Attendance>> GetCheckIns(
             IImmutableList<int> checkinIds,
             CheckInsExtensionContext db)
