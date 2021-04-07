@@ -15,14 +15,14 @@ namespace KidsTown.IntegrationTests
     {
         public static async Task CleanDatabase(IServiceProvider serviceProvider)
         {
-            await using (var db = serviceProvider!.GetRequiredService<CheckInsExtensionContext>())
+            await using (var db = serviceProvider!.GetRequiredService<KidsTownContext>())
             {
                 while (!await db.Database.CanConnectAsync())
                 {
                     await Task.Delay(millisecondsDelay: 100);
                 }
                 
-                var attendances = await db.Attendances.Where(predicate: a => a.CheckInId < 100).ToListAsync();
+                var attendances = await db.Attendances.Where(predicate: a => a.CheckInsId < 100).ToListAsync();
                 var people = await db.People.Where(predicate: p => attendances.Select(a => a.PersonId)
                     .Contains(p.Id)).ToListAsync();
                 
@@ -34,7 +34,7 @@ namespace KidsTown.IntegrationTests
 
         public static async Task InsertTestData(ServiceProvider serviceProvider)
         {
-            await using (var db = serviceProvider!.GetRequiredService<CheckInsExtensionContext>())
+            await using (var db = serviceProvider!.GetRequiredService<KidsTownContext>())
             {
                 while (!await db.Database.CanConnectAsync())
                 {
@@ -61,7 +61,7 @@ namespace KidsTown.IntegrationTests
 
             return new Attendance
             {
-                CheckInId = data.CheckInId,
+                CheckInsId = data.CheckInsId,
                 LocationId = location.Id,
                 SecurityCode = data.SecurityCode,
                 AttendanceTypeId = (int) data.AttendanceType + 1,
@@ -80,8 +80,8 @@ namespace KidsTown.IntegrationTests
             return new Person
             {
                 PeopleId = data.PeopleId,
-                FistName = data.PeopleFirstName ?? data.CheckInFirstName,
-                LastName = data.PeopleLastName ?? data.CheckInLastName,
+                FistName = data.PeopleFirstName ?? data.CheckInsFirstName,
+                LastName = data.PeopleLastName ?? data.CheckInsLastName,
                 MayLeaveAlone = data.ExpectedMayLeaveAlone ?? true,
                 HasPeopleWithoutPickupPermission = data.ExpectedHasPeopleWithoutPickupPermission ?? false,
                 Attendances = attendances.ToList()

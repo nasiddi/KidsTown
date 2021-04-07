@@ -4,7 +4,7 @@ using System.Globalization;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 
-namespace KidsTown.PlanningCenterApiClient.Models.CheckInResult
+namespace KidsTown.PlanningCenterApiClient.Models.CheckInsResult
 {
     public class CheckIns : IPlanningCenterResponse
     {
@@ -93,7 +93,7 @@ namespace KidsTown.PlanningCenterApiClient.Models.CheckInResult
      public class AttendeeRelationships
      {
          [JsonProperty(propertyName: "locations")]
-         public Locations? Locations { get; set; }
+         public CheckInsLocations? Locations { get; set; }
 
          [JsonProperty(propertyName: "person")]
          public Relationship? Person { get; set; }
@@ -127,7 +127,7 @@ namespace KidsTown.PlanningCenterApiClient.Models.CheckInResult
 //         public Uri Related { get; set; }
 //     }
 
-     public class Locations
+     public class CheckInsLocations
      {
 //         [JsonProperty("links")]
 //         public EventLinks Links { get; set; }

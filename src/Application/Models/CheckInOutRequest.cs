@@ -1,4 +1,5 @@
 using System.Collections.Immutable;
+using KidsTown.KidsTown.Models;
 
 // ReSharper disable UnusedAutoPropertyAccessor.Global
 // ReSharper disable AutoPropertyCanBeMadeGetOnly.Global

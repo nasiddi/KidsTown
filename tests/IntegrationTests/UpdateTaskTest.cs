@@ -11,7 +11,7 @@ using KidsTown.Database;
 using KidsTown.IntegrationTests.Mocks;
 using KidsTown.KidsTown.Models;
 using KidsTown.PlanningCenterApiClient;
-using KidsTown.PlanningCenterApiClient.Models.CheckInResult;
+using KidsTown.PlanningCenterApiClient.Models.CheckInsResult;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -102,7 +102,7 @@ namespace KidsTown.IntegrationTests
             services.AddSingleton<IUpdateRepository, UpdateRepository>();
             services.AddSingleton<ILoggerFactory, LoggerFactory>();
             services.AddSingleton(serviceType: typeof(ILogger), implementationType: typeof(Logger<UpdateTask>));
-            services.AddDbContext<CheckInsExtensionContext>(
+            services.AddDbContext<KidsTownContext>(
                 contextLifetime: ServiceLifetime.Transient,
                 optionsAction: o
                 => o.UseSqlServer(connectionString: configuration.GetConnectionString(name: "Database")));
@@ -115,14 +115,14 @@ namespace KidsTown.IntegrationTests
             var serviceScopeFactory = _serviceProvider.GetService<IServiceScopeFactory>();
             
             await using (var db = serviceScopeFactory!.CreateScope().ServiceProvider
-                .GetRequiredService<CheckInsExtensionContext>())
+                .GetRequiredService<KidsTownContext>())
             {
                 var people = await (from a in db.Attendances
                         join p in db.People
                             on a.PersonId equals p.Id
                         join l in db.Locations
                             on a.LocationId equals l.Id
-                        where a.CheckInId < 100
+                        where a.CheckInsId < 100
                         select MapData(a, p, l))
                     .ToListAsync().ConfigureAwait(continueOnCapturedContext: false);
 
@@ -137,7 +137,7 @@ namespace KidsTown.IntegrationTests
 
             expectedData.ForEach(action: e => AssertAttendance(
                 expected: e,
-                actual: actualData.SingleOrDefault(predicate: a => a.CheckInId == e.CheckInId)));
+                actual: actualData.SingleOrDefault(predicate: a => a.CheckInsId == e.CheckInsId)));
 
         }
 
@@ -152,7 +152,7 @@ namespace KidsTown.IntegrationTests
             return new(
                 firstName: person.FistName,
                 lastName: person.LastName,
-                checkInId: attendance.CheckInId,
+                checkInsId: attendance.CheckInsId,
                 peopleId: person.PeopleId,
                 attendanceType: (AttendanceTypes) attendance.AttendanceTypeId,
                 testLocation: location.CheckInsLocationId!.Value,
@@ -173,7 +173,7 @@ namespace KidsTown.IntegrationTests
                 return new Data(
                     firstName: person?.FirstName ?? a.FirstName,
                     lastName: person?.LastName ?? a.LastName,
-                    checkInId: a.CheckInId,
+                    checkInsId: a.CheckInsId,
                     peopleId: a.PeopleId,
                     attendanceType: MapAttendanceType(attendeeType: a.AttendanceType),
                     testLocation: (int) a.TestLocation,
@@ -199,7 +199,7 @@ namespace KidsTown.IntegrationTests
         {
             public readonly string FirstName;
             public readonly string LastName;
-            public readonly long CheckInId;
+            public readonly long CheckInsId;
             public readonly long? PeopleId;
             public readonly AttendanceTypes AttendanceType;
             public readonly long TestLocation;
@@ -209,7 +209,7 @@ namespace KidsTown.IntegrationTests
             public Data(
                 string firstName,
                 string lastName,
-                long checkInId,
+                long checkInsId,
                 long? peopleId,
                 AttendanceTypes attendanceType,
                 long testLocation,
@@ -219,7 +219,7 @@ namespace KidsTown.IntegrationTests
             {
                 FirstName = firstName;
                 LastName = lastName;
-                CheckInId = checkInId;
+                CheckInsId = checkInsId;
                 PeopleId = peopleId;
                 AttendanceType = attendanceType;
                 TestLocation = testLocation;

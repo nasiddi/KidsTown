@@ -24,7 +24,7 @@ namespace KidsTown.Database
         public async Task<ImmutableList<Attendee>> GetActiveAttendees(IImmutableList<int> selectedLocationGroups,
             long eventId, DateTime date)
         {
-            await using (var db = _serviceScopeFactory.CreateScope().ServiceProvider.GetRequiredService<CheckInsExtensionContext>())
+            await using (var db = _serviceScopeFactory.CreateScope().ServiceProvider.GetRequiredService<KidsTownContext>())
             {
                 var people = await (from a in db.Attendances
                         join p in db.People
@@ -50,7 +50,7 @@ namespace KidsTown.Database
             IImmutableList<int> selectedLocations = null!,
             IImmutableList<int> selectedLocationGroups = null!)
         {
-            await using (var db = _serviceScopeFactory.CreateScope().ServiceProvider.GetRequiredService<CheckInsExtensionContext>())
+            await using (var db = _serviceScopeFactory.CreateScope().ServiceProvider.GetRequiredService<KidsTownContext>())
             {
                 var attendees = await (from a in db.Attendances
                         join p in db.People
@@ -81,7 +81,7 @@ namespace KidsTown.Database
 
             return new Attendee
             {
-                CheckInId = attendance.CheckInId,
+                AttendanceId = attendance.Id,
                 FirstName = person.FistName,
                 LastName = person.LastName,
                 AttendanceType = (AttendanceTypes) attendanceType.Id,

@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Immutable;
 using System.Threading.Tasks;
 using KidsTown.KidsTown.Models;
@@ -18,19 +19,19 @@ namespace KidsTown.KidsTown
             return await _checkInOutRepository.GetPeople(peopleSearchParameters: searchParameters).ConfigureAwait(continueOnCapturedContext: false);
         }
 
-        public async Task<bool> CheckInPeople(IImmutableList<int> checkInIds)
+        public async Task<bool> CheckInOutPeople(CheckType checkType, IImmutableList<int> attendanceIds)
         {
-            return await _checkInOutRepository.CheckInPeople(checkInIds: checkInIds).ConfigureAwait(continueOnCapturedContext: false);
+            return checkType switch
+            {
+                CheckType.CheckIn => await CheckInPeople(attendanceIds: attendanceIds).ConfigureAwait(continueOnCapturedContext: false),
+                CheckType.CheckOut => await CheckOutPeople(attendanceIds: attendanceIds).ConfigureAwait(continueOnCapturedContext: false),
+                _ => throw new ArgumentException(message: $"CheckType unknown: {checkType}", paramName: nameof(checkType))
+            };   
         }
 
-        public async Task<bool> CheckOutPeople(IImmutableList<int> checkInIds)
+        public Task<bool> UndoAction(CheckState revertedCheckState, ImmutableList<int> attendanceIds)
         {
-            return await _checkInOutRepository.CheckOutPeople(checkInIds: checkInIds).ConfigureAwait(continueOnCapturedContext: false);
-        }
-
-        public Task<bool> UndoAction(CheckState revertedCheckState, ImmutableList<int> checkinIds)
-        {
-            return _checkInOutRepository.SetCheckState(revertedCheckState: revertedCheckState, checkInIds: checkinIds);
+            return _checkInOutRepository.SetCheckState(revertedCheckState: revertedCheckState, attendanceIds: attendanceIds);
         }
 
         public async Task<int?> CheckInGuest(int locationId, string securityCode, string firstName, string lastName)
@@ -41,9 +42,19 @@ namespace KidsTown.KidsTown
                 firstName: firstName,
                 lastName: lastName);
             
-            var success = await CheckInPeople(checkInIds: ImmutableList.Create(item: attendanceId));
+            var success = await CheckInPeople(attendanceIds: ImmutableList.Create(item: attendanceId));
 
             return success ? attendanceId : null;
+        }
+        
+        private async Task<bool> CheckInPeople(IImmutableList<int> attendanceIds)
+        {
+            return await _checkInOutRepository.CheckInPeople(attendanceIds: attendanceIds).ConfigureAwait(continueOnCapturedContext: false);
+        }
+
+        private async Task<bool> CheckOutPeople(IImmutableList<int> attendanceIds)
+        {
+            return await _checkInOutRepository.CheckOutPeople(attendanceIds: attendanceIds).ConfigureAwait(continueOnCapturedContext: false);
         }
     }
 }

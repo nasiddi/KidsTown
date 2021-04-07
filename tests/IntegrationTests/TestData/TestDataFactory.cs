@@ -1,5 +1,5 @@
 using System.Collections.Immutable;
-using KidsTown.PlanningCenterApiClient.Models.CheckInResult;
+using KidsTown.PlanningCenterApiClient.Models.CheckInsResult;
 
 namespace KidsTown.IntegrationTests.TestData
 {
@@ -9,11 +9,11 @@ namespace KidsTown.IntegrationTests.TestData
         {
             return ImmutableList.Create(
                 new TestData(
-                    checkInFirstName: "Hanna",
-                    checkInLastName: "Hase",
+                    checkInsFirstName: "Hanna",
+                    checkInsLastName: "Hase",
                     peopleFirstName: "Hanna",
                     peopleLastName: "Osterhase",
-                    checkInId: 1,
+                    checkInsId: 1,
                     peopleId: 1,
                     attendanceType: AttendeeType.Regular,
                     testLocation: TestLocationIds.Haesli,
@@ -22,17 +22,17 @@ namespace KidsTown.IntegrationTests.TestData
                     expectedHasPeopleWithoutPickupPermission: false
                 ),
                 new TestData(
-                    checkInFirstName: "Sarah",
-                    checkInLastName: "Schaf",
-                    checkInId: 2,
+                    checkInsFirstName: "Sarah",
+                    checkInsLastName: "Schaf",
+                    checkInsId: 2,
                     peopleId: null,
                     attendanceType: AttendeeType.Guest,
                     testLocation: TestLocationIds.Schoefli
                 ),
                 new TestData(
-                    checkInFirstName: "Frida",
-                    checkInLastName: "Fuchs",
-                    checkInId: 3,
+                    checkInsFirstName: "Frida",
+                    checkInsLastName: "Fuchs",
+                    checkInsId: 3,
                     peopleId: 3,
                     attendanceType: AttendeeType.Volunteer,
                     testLocation: TestLocationIds.Fuechsli,
@@ -47,9 +47,9 @@ namespace KidsTown.IntegrationTests.TestData
                     expectedHasPeopleWithoutPickupPermission: false
                 ),
                 new TestData(
-                    checkInFirstName: "Hans",
-                    checkInLastName: "Hase",
-                    checkInId: 4,
+                    checkInsFirstName: "Hans",
+                    checkInsLastName: "Hase",
+                    checkInsId: 4,
                     peopleId: 4,
                     attendanceType: AttendeeType.Regular,
                     testLocation: TestLocationIds.Haesli,
@@ -64,9 +64,9 @@ namespace KidsTown.IntegrationTests.TestData
                     expectedHasPeopleWithoutPickupPermission: false
                 ),
                 new TestData(
-                    checkInFirstName: "Sandro",
-                    checkInLastName: "Schaf",
-                    checkInId: 5,
+                    checkInsFirstName: "Sandro",
+                    checkInsLastName: "Schaf",
+                    checkInsId: 5,
                     peopleId: 5,
                     attendanceType: AttendeeType.Regular,
                     testLocation: TestLocationIds.Schoefli,
@@ -81,9 +81,9 @@ namespace KidsTown.IntegrationTests.TestData
                     expectedHasPeopleWithoutPickupPermission: true
                 ),
                 new TestData(
-                    checkInFirstName: "Franz",
-                    checkInLastName: "Fox",
-                    checkInId: 6,
+                    checkInsFirstName: "Franz",
+                    checkInsLastName: "Fox",
+                    checkInsId: 6,
                     peopleId: 6,
                     attendanceType: AttendeeType.Regular,
                     testLocation: TestLocationIds.Fuechsli,
@@ -102,9 +102,9 @@ namespace KidsTown.IntegrationTests.TestData
                     expectedHasPeopleWithoutPickupPermission: true
                 ),
                 new TestData(
-                    checkInFirstName: "Henry",
-                    checkInLastName: "Hasenfuss",
-                    checkInId: 7,
+                    checkInsFirstName: "Henry",
+                    checkInsLastName: "Hasenfuss",
+                    checkInsId: 7,
                     peopleId: 7,
                     attendanceType: AttendeeType.Regular,
                     testLocation: TestLocationIds.Haesli,
@@ -123,9 +123,9 @@ namespace KidsTown.IntegrationTests.TestData
                     expectedHasPeopleWithoutPickupPermission: false
                 ),
                 new TestData(
-                    checkInFirstName: "Henry",
-                    checkInLastName: "Hasenfuss",
-                    checkInId: 8,
+                    checkInsFirstName: "Henry",
+                    checkInsLastName: "Hasenfuss",
+                    checkInsId: 8,
                     peopleId: 7,
                     attendanceType: AttendeeType.Regular,
                     testLocation: TestLocationIds.Haesli,
@@ -144,9 +144,9 @@ namespace KidsTown.IntegrationTests.TestData
                     expectedHasPeopleWithoutPickupPermission: false
                 ),
                 new TestData(
-                    checkInFirstName: "Ernst",
-                    checkInLastName: "Erster",
-                    checkInId: 9,
+                    checkInsFirstName: "Ernst",
+                    checkInsLastName: "Erster",
+                    checkInsId: 9,
                     peopleId: 9,
                     attendanceType: AttendeeType.Regular,
                     testLocation: TestLocationIds.KidsChurch1St,
@@ -157,9 +157,9 @@ namespace KidsTown.IntegrationTests.TestData
                     expectedHasPeopleWithoutPickupPermission: false
                 ),
                 new TestData(
-                    checkInFirstName: "Zara",
-                    checkInLastName: "Zweiter",
-                    checkInId: 10,
+                    checkInsFirstName: "Zara",
+                    checkInsLastName: "Zweiter",
+                    checkInsId: 10,
                     peopleId: 10,
                     attendanceType: AttendeeType.Regular,
                     testLocation: TestLocationIds.KidsChurch2Nd,
@@ -171,9 +171,9 @@ namespace KidsTown.IntegrationTests.TestData
                     expectedHasPeopleWithoutPickupPermission: false
                 ),
                 new TestData(
-                    checkInFirstName: "Daniel",
-                    checkInLastName: "Dritter",
-                    checkInId: 11,
+                    checkInsFirstName: "Daniel",
+                    checkInsLastName: "Dritter",
+                    checkInsId: 11,
                     peopleId: 11,
                     attendanceType: AttendeeType.Regular,
                     testLocation: TestLocationIds.KidsChurch3Rd,
@@ -184,9 +184,9 @@ namespace KidsTown.IntegrationTests.TestData
                     expectedHasPeopleWithoutPickupPermission: false
                 ),
                 new TestData(
-                    checkInFirstName: "Vreni",
-                    checkInLastName: "Vierter",
-                    checkInId: 12,
+                    checkInsFirstName: "Vreni",
+                    checkInsLastName: "Vierter",
+                    checkInsId: 12,
                     peopleId: 12,
                     attendanceType: AttendeeType.Regular,
                     testLocation: TestLocationIds.KidsChurch4Th,
@@ -197,9 +197,9 @@ namespace KidsTown.IntegrationTests.TestData
                     expectedHasPeopleWithoutPickupPermission: false
                 ),
                 new TestData(
-                    checkInFirstName: "Freddie",
-                    checkInLastName: "Fünfter",
-                    checkInId: 13,
+                    checkInsFirstName: "Freddie",
+                    checkInsLastName: "Fünfter",
+                    checkInsId: 13,
                     peopleId: 13,
                     attendanceType: AttendeeType.Regular,
                     testLocation: TestLocationIds.KidsChurch5Th,

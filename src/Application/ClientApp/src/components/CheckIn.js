@@ -244,9 +244,9 @@ class CheckIn extends Component {
 
 	renderSingleCheckout(checkInOutCandidates) {
 		const candidates = checkInOutCandidates.map((c) => (
-			<Grid item xs={12} key={c['checkInId']}>
+			<Grid item xs={12} key={c['attendanceId']}>
 				<LargeButton
-					id={c['checkInId']}
+					id={c['attendanceId']}
 					name={c['name']}
 					color={this.getNameButtonColor(c)}
 					onClick={this.checkInOutSingle}
@@ -268,9 +268,9 @@ class CheckIn extends Component {
 
 	renderMultiCheckout(checkInOutCandidates) {
 		const candidates = checkInOutCandidates.map((c) => (
-			<Grid item xs={12} key={c['checkInId']}>
+			<Grid item xs={12} key={c['attendanceId']}>
 				<LargeButton
-					id={c['checkInId']}
+					id={c['attendanceId']}
 					name={c['name']}
 					color={this.getNameButtonColor(c)}
 					onClick={this.invertSelectCandidate}
@@ -369,7 +369,7 @@ class CheckIn extends Component {
 				selectedLocationIds: selectedLocationIds,
 				isFastCheckInOut: this.state.fastCheckInOut ?? false,
 				checkType: this.state.checkType,
-				checkInIds: [],
+				attendanceIds: [],
 			}),
 			method: 'POST',
 			headers: {
@@ -405,7 +405,8 @@ class CheckIn extends Component {
 				checkType: this.state.checkType,
 				checkInOutCandidates: [
 					this.state.checkInOutCandidates.find(
-						(c) => c['checkInId'] === parseInt(event.target.id, 10)
+						(c) =>
+							c['attendanceId'] === parseInt(event.target.id, 10)
 					),
 				],
 			}),
@@ -476,7 +477,7 @@ class CheckIn extends Component {
 
 	invertSelectCandidate(event) {
 		const candidate = this.state.checkInOutCandidates.find(
-			(c) => c['checkInId'] === parseInt(event.target.id, 10)
+			(c) => c['attendanceId'] === parseInt(event.target.id, 10)
 		)
 		candidate.isSelected = !candidate.isSelected
 		this.setState({ checkInOutCandidates: this.state.checkInOutCandidates })

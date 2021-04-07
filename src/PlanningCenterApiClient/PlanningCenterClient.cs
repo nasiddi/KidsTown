@@ -5,7 +5,7 @@ using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 using KidsTown.PlanningCenterApiClient.Models;
-using KidsTown.PlanningCenterApiClient.Models.CheckInResult;
+using KidsTown.PlanningCenterApiClient.Models.CheckInsResult;
 using KidsTown.PlanningCenterApiClient.Models.EventResult;
 using KidsTown.PlanningCenterApiClient.Models.PeopleResult;
 using Microsoft.Extensions.Configuration;

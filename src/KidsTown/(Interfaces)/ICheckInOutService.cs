@@ -8,9 +8,8 @@ namespace KidsTown.KidsTown
     public interface ICheckInOutService
     {
         Task<IImmutableList<Person>> SearchForPeople(PeopleSearchParameters searchParameters);
-        Task<bool> CheckInPeople(IImmutableList<int> checkInIds);
-        Task<bool> CheckOutPeople(IImmutableList<int> checkInIds);
-        Task<bool> UndoAction(CheckState revertedCheckState, ImmutableList<int> checkinIds);
+        Task<bool> CheckInOutPeople(CheckType checkType, IImmutableList<int> attendanceIds);
+        Task<bool> UndoAction(CheckState revertedCheckState, ImmutableList<int> attendanceIds);
         Task<int?> CheckInGuest(int locationId, string securityCode, string firstName, string lastName);
     }
 }

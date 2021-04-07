@@ -5,7 +5,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using KidsTown.BackgroundTasks.Models;
 using KidsTown.PlanningCenterApiClient;
-using KidsTown.PlanningCenterApiClient.Models.CheckInResult;
+using KidsTown.PlanningCenterApiClient.Models.CheckInsResult;
 using KidsTown.PlanningCenterApiClient.Models.PeopleResult;
 using Peoples = KidsTown.PlanningCenterApiClient.Models.PeopleResult.People;
 using Included = KidsTown.PlanningCenterApiClient.Models.PeopleResult.Included;
@@ -49,7 +49,7 @@ namespace KidsTown.BackgroundTasks.PlanningCenter
         {
             var locations = checkIns.SelectMany(selector: c
                 => c.Included?.Where(predicate: i => i.Type == IncludeType.Location).ToImmutableList() ??
-                   ImmutableList<PlanningCenterApiClient.Models.CheckInResult.Included>.Empty);
+                   ImmutableList<PlanningCenterApiClient.Models.CheckInsResult.Included>.Empty);
             
             
             var persistedLocations = await _updateRepository.GetPersistedLocations().ConfigureAwait(continueOnCapturedContext: false);
@@ -89,12 +89,12 @@ namespace KidsTown.BackgroundTasks.PlanningCenter
             await _updateRepository.UpdatePersons(peoples: peoples).ConfigureAwait(continueOnCapturedContext: false);
         }
 
-        private async Task InsertNewPreCheckIns(IImmutableList<CheckInUpdate> preCheckIns)
+        private async Task InsertNewPreCheckIns(IImmutableList<CheckInsUpdate> preCheckIns)
         {
-            var existingCheckInIds = await _updateRepository.GetExistingCheckInIds(
-                checkinIds: preCheckIns.Select(selector: i => i.CheckInId).ToImmutableList()).ConfigureAwait(continueOnCapturedContext: false);
+            var existingChecksInIds = await _updateRepository.GetExistingCheckInsIds(
+                checkinsIds: preCheckIns.Select(selector: i => i.CheckInsId).ToImmutableList()).ConfigureAwait(continueOnCapturedContext: false);
 
-            var newCheckins = preCheckIns.Where(predicate: p => !existingCheckInIds.Contains(value: p.CheckInId)).ToImmutableList();
+            var newCheckins = preCheckIns.Where(predicate: p => !existingChecksInIds.Contains(value: p.CheckInsId)).ToImmutableList();
 
             await _updateRepository.InsertPreCheckIns(preCheckIns: newCheckins).ConfigureAwait(continueOnCapturedContext: false);
         }
@@ -138,7 +138,7 @@ namespace KidsTown.BackgroundTasks.PlanningCenter
             };
         }
 
-        private async Task<IImmutableList<CheckInUpdate>> FilterAndMapToPreCheckIns(ImmutableList<CheckIns> checkIns)
+        private async Task<IImmutableList<CheckInsUpdate>> FilterAndMapToPreCheckIns(ImmutableList<CheckIns> checkIns)
         {
             var persistedLocations = await _updateRepository.GetPersistedLocations().ConfigureAwait(continueOnCapturedContext: false);
             var locationIdsByCheckInsLocationId =
@@ -154,7 +154,7 @@ namespace KidsTown.BackgroundTasks.PlanningCenter
             return attendees;
         }
         
-        private static CheckInUpdate MapPreCheckIn(Attendee attendee, ImmutableDictionary<long, int> locationIdsByCheckInsLocationId)
+        private static CheckInsUpdate MapPreCheckIn(Attendee attendee, ImmutableDictionary<long, int> locationIdsByCheckInsLocationId)
         {
             var attributes = attendee.Attributes;
             var checkInsLocationId = attendee.Relationships?.Locations?.Data?.SingleOrDefault()?.Id;
@@ -169,8 +169,8 @@ namespace KidsTown.BackgroundTasks.PlanningCenter
                 ? locationIdsByCheckInsLocationId[key: checkInsLocationId.Value] 
                 : 30;
                 
-            return new CheckInUpdate(
-                checkInId: attendee.Id,
+            return new CheckInsUpdate(
+                checkInsId: attendee.Id,
                 peopleId: peopleId,
                 attendeeType: attributes?.Kind ?? AttendeeType.Regular,
                 securityCode: attributes?.SecurityCode ?? string.Empty,
@@ -194,7 +194,7 @@ namespace KidsTown.BackgroundTasks.PlanningCenter
                 hasPeopleWithoutPickupPermission: hasPeopleWithoutPickupPermission);
         }
 
-        private static LocationUpdate MapLocationUpdate(PlanningCenterApiClient.Models.CheckInResult.Included location, ImmutableList<Attendee> attendees)
+        private static LocationUpdate MapLocationUpdate(PlanningCenterApiClient.Models.CheckInsResult.Included location, ImmutableList<Attendee> attendees)
         {
             var attendee = attendees.FirstOrDefault(predicate: a => a.Relationships?.Locations?.Data?.SingleOrDefault()?.Id == location.Id);
             return new LocationUpdate(
@@ -203,7 +203,7 @@ namespace KidsTown.BackgroundTasks.PlanningCenter
                 eventId: attendee?.Relationships?.Event?.Data?.Id ?? 0);
         }
 
-        private static bool IsNewLocation(ImmutableList<PersistedLocation> persistedLocations, PlanningCenterApiClient.Models.CheckInResult.Included location)
+        private static bool IsNewLocation(ImmutableList<PersistedLocation> persistedLocations, PlanningCenterApiClient.Models.CheckInsResult.Included location)
         {
             return !persistedLocations.Select(selector: p => p.CheckInsLocationId).Contains(value: location.Id);
         }

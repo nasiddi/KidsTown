@@ -28,13 +28,8 @@ namespace KidsTown.Application.Controllers
         [Produces(contentType: "application/json")]
         public async Task<IActionResult> ManualCheckIn([FromBody] CheckInOutRequest request)
         {
-            var checkInIds = request.CheckInOutCandidates.Select(selector: c => c.CheckInId).ToImmutableList();
-            var success = request.CheckType switch
-            {
-                CheckType.CheckIn => await _checkInOutService.CheckInPeople(checkInIds: checkInIds).ConfigureAwait(continueOnCapturedContext: false),
-                CheckType.CheckOut => await _checkInOutService.CheckOutPeople(checkInIds: checkInIds).ConfigureAwait(continueOnCapturedContext: false),
-                _ => throw new ArgumentException(message: $"CheckType unknown: {request.CheckType}", paramName: nameof(request))
-            };
+            var attendanceIds = request.CheckInOutCandidates.Select(selector: c => c.AttendanceId).ToImmutableList();
+            var success = await _checkInOutService.CheckInOutPeople(request.CheckType, attendanceIds);
             
             var names = request.CheckInOutCandidates.Select(selector: c => c.Name).ToImmutableList();
 
@@ -44,7 +39,7 @@ namespace KidsTown.Application.Controllers
                 {
                     Text = $"{request.CheckType.ToString()} für {string.Join(separator: ", ", values: names)} war erfolgreich.",
                     AlertLevel = AlertLevel.Success,
-                    AttendanceIds = checkInIds
+                    AttendanceIds = attendanceIds
                 });
             }
 
@@ -101,14 +96,14 @@ namespace KidsTown.Application.Controllers
                         Text = $"{request.CheckType.ToString()} für {person.FirstName} {person.LastName} war erfolgreich.",
                         AlertLevel = AlertLevel.Success,
                         SuccessfulFastCheckout = true,
-                        AttendanceIds = ImmutableList.Create(item: person.CheckInId)
+                        AttendanceIds = ImmutableList.Create(item: person.AttendanceId)
                     });
                 }
             }
 
             var checkInOutCandidates = peopleReadyForProcessing.Select(selector: p => new CheckInOutCandidate
             {
-                CheckInId = p.CheckInId,
+                AttendanceId = p.AttendanceId,
                 Name = $"{p.FirstName} {p.LastName}",
                 MayLeaveAlone = p.MayLeaveAlone,
                 HasPeopleWithoutPickupPermission = p.HasPeopleWithoutPickupPermission
@@ -127,7 +122,7 @@ namespace KidsTown.Application.Controllers
         [HttpPost]
         [Route(template: "undo/{checkType}")]
         [Produces(contentType: "application/json")]
-        public async Task<IActionResult> Undo([FromRoute] CheckType checkType, [FromBody] ImmutableList<int> checkinIds)
+        public async Task<IActionResult> Undo([FromRoute] CheckType checkType, [FromBody] ImmutableList<int> attendanceIds)
         {
             var checkState = checkType switch
             {
@@ -137,7 +132,7 @@ namespace KidsTown.Application.Controllers
                 _ => throw new ArgumentOutOfRangeException(paramName: nameof(checkType), actualValue: checkType, message: null)
             };
                
-            var success = await _checkInOutService.UndoAction(revertedCheckState: checkState, checkinIds: checkinIds);
+            var success = await _checkInOutService.UndoAction(revertedCheckState: checkState, attendanceIds: attendanceIds);
 
             if (success)
             {
@@ -214,27 +209,17 @@ namespace KidsTown.Application.Controllers
 
         private async Task<Person?> TryFastCheckInOut(IImmutableList<Person> people, CheckType checkType)
         {
-            switch (checkType)
+            if (people.Count != 1)
             {
-                case CheckType.CheckIn:
-                    if (people.Count == 1)
-                    {
-                        var success = await _checkInOutService.CheckInPeople(checkInIds: people.Select(selector: p => p.CheckInId).ToImmutableList()).ConfigureAwait(continueOnCapturedContext: false);
-                        return success ? people.Single() : null;
-                    }
-                    break;
-                case CheckType.CheckOut:
-                    if (people.Count == 1)
-                    {
-                        var success = await _checkInOutService.CheckOutPeople(checkInIds: people.Select(selector: p => p.CheckInId).ToImmutableList()).ConfigureAwait(continueOnCapturedContext: false);
-                        return success ? people.Single() : null;
-                    }
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException(paramName: nameof(checkType), actualValue: checkType, message: null);
+                return null;
             }
+            
+            var success = await _checkInOutService
+                .CheckInOutPeople(checkType, people.Select(selector: p => p.AttendanceId).ToImmutableList())
+                .ConfigureAwait(false);
+                
+            return success ? people.Single() : null;
 
-            return null;
         }
 
         private static ImmutableList<Person> GetPeopleInRequestedState(IImmutableList<Person> people, CheckType checkType)

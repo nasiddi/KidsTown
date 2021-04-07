@@ -1,11 +1,11 @@
 ﻿using System;
-using KidsTown.PlanningCenterApiClient.Models.CheckInResult;
+using KidsTown.PlanningCenterApiClient.Models.CheckInsResult;
 
 namespace KidsTown.BackgroundTasks.Models
 {
-    public class CheckInUpdate
+    public class CheckInsUpdate
     {
-        public readonly long CheckInId;
+        public readonly long CheckInsId;
         public readonly long? PeopleId;
         public readonly AttendeeType AttendeeType;
         public readonly string SecurityCode;
@@ -13,8 +13,8 @@ namespace KidsTown.BackgroundTasks.Models
         public readonly DateTime CreationDate;
         public readonly PeopleUpdate Person;
 
-        public CheckInUpdate(
-            long checkInId, 
+        public CheckInsUpdate(
+            long checkInsId, 
             long? peopleId, 
             AttendeeType attendeeType,
             string securityCode,
@@ -22,7 +22,7 @@ namespace KidsTown.BackgroundTasks.Models
             DateTime creationDate,
             PeopleUpdate person)
         {
-            CheckInId = checkInId;
+            CheckInsId = checkInsId;
             PeopleId = peopleId;
             SecurityCode = securityCode;
 

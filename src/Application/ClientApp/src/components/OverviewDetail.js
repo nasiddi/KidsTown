@@ -86,7 +86,7 @@ class Detail extends Component {
 					</thead>
 					<tbody>
 						{kids.map((row) => (
-							<tr key={row['checkInId']}>
+							<tr key={row['attendanceId']}>
 								<td>{row['firstName']}</td>
 								<td>{row['lastName']}</td>
 								<td>{row['checkState']}</td>
@@ -112,7 +112,7 @@ class Detail extends Component {
 					</thead>
 					<tbody>
 						{volunteers.map((row) => (
-							<tr key={row['checkInId']}>
+							<tr key={row['attendanceId']}>
 								<td>{row['firstName']}</td>
 								<td>{row['lastName']}</td>
 							</tr>

@@ -5,6 +5,7 @@ using KidsTown.Application.Models;
 using KidsTown.BackgroundTasks.PlanningCenter;
 using KidsTown.Database;
 using KidsTown.KidsTown;
+using KidsTown.KidsTown.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -66,7 +67,7 @@ namespace KidsTown.IntegrationTests
             services.AddScoped<IConfigurationRepository, ConfigurationRepository>();
             services.AddScoped<IOverviewRepository, OverviewRepository>();
 
-            services.AddDbContext<CheckInsExtensionContext>(
+            services.AddDbContext<KidsTownContext>(
                 contextLifetime: ServiceLifetime.Transient,
                 optionsAction: o
                     => o.UseSqlServer(connectionString: configuration.GetConnectionString(name: "Database")));

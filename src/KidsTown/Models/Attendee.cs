@@ -6,7 +6,7 @@ namespace KidsTown.KidsTown.Models
 {
     public class Attendee
     {
-        public long CheckInId { get; init; }
+        public long AttendanceId { get; init; }
         public string FirstName { get; init; } = string.Empty;
         public string LastName { get; init; } = string.Empty;
         public AttendanceTypes AttendanceType { get; init; }

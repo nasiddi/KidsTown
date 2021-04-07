@@ -1,6 +1,6 @@
 ﻿using System.Collections.Immutable;
 using System.Threading.Tasks;
-using KidsTown.PlanningCenterApiClient.Models.CheckInResult;
+using KidsTown.PlanningCenterApiClient.Models.CheckInsResult;
 using KidsTown.PlanningCenterApiClient.Models.EventResult;
 using KidsTown.PlanningCenterApiClient.Models.PeopleResult;
 

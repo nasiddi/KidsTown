@@ -1,17 +1,21 @@
-USE CheckInsExtension;
+IF NOT EXISTS(SELECT * FROM sys.databases WHERE name = 'KidsTown')
+    BEGIN
+        CREATE DATABASE [KidsTown]
+    END 
+
+use [KidsTown]
 
 IF NOT EXISTS ( SELECT  *
                 FROM    sys.schemas
-                WHERE   name = N'cie' )
-    EXEC('CREATE SCHEMA [cie]');
+                WHERE   name = N'kt' )
+    EXEC('CREATE SCHEMA [kt]');
 GO
 
-IF OBJECT_ID('[cie].[Attendance]') IS NULL
+IF OBJECT_ID('[kt].[Attendance]') IS NULL
     BEGIN
-        CREATE TABLE [cie].[Attendance](
+        CREATE TABLE [kt].[Attendance](
                                         [Id] [int] IDENTITY(1, 1) NOT NULL,
-                                        [CheckInId] [bigint] NOT NULL,
-                                        [EventId] [bigint] NOT NULL,
+                                        [CheckInsId] [bigint] NOT NULL,
                                         [PersonId] [int] NOT NULL,
                                         [LocationId] [int] NOT NULL,
                                         [SecurityCode] varchar(10) NOT NULL,
@@ -22,9 +26,9 @@ IF OBJECT_ID('[cie].[Attendance]') IS NULL
         )
     END;
 
-IF OBJECT_ID('[cie].[Person]') IS NULL
+IF OBJECT_ID('[kt].[Person]') IS NULL
     BEGIN
-        CREATE TABLE [cie].[Person](
+        CREATE TABLE [kt].[Person](
                                        [Id] [int] IDENTITY(1, 1) NOT NULL,
                                        [PeopleId] [bigint] NULL,
                                        [FistName] varchar(50) NOT NULL,
@@ -34,108 +38,97 @@ IF OBJECT_ID('[cie].[Person]') IS NULL
         )
     END;
 
-IF OBJECT_ID('[cie].[AttendanceType]') IS NULL
+IF OBJECT_ID('[kt].[AttendanceType]') IS NULL
     BEGIN
-        CREATE TABLE [cie].[AttendanceType](
+        CREATE TABLE [kt].[AttendanceType](
                                              [Id] [int] IDENTITY(1, 1) NOT NULL,
                                              [Name] varchar(50) NOT NULL,
         )
     END;
 
-IF OBJECT_ID('[cie].[Location]') IS NULL
+IF OBJECT_ID('[kt].[Location]') IS NULL
     BEGIN
-        CREATE TABLE [cie].[Location](
+        CREATE TABLE [kt].[Location](
                                          [Id] [int] IDENTITY(1, 1) NOT NULL,
                                          [Name] varchar(50) NOT NULL,
-                                         [IsEnabled] [bit] NOT NULL
         )
     END;
 
 
 
-IF OBJECT_ID('cie.[PK_Attendance]', 'PK') IS NULL
+IF OBJECT_ID('kt.[PK_Attendance]', 'PK') IS NULL
     BEGIN
-        ALTER TABLE [cie].[Attendance] ADD CONSTRAINT [PK_Attendance] PRIMARY KEY CLUSTERED ( [Id] ASC )
+        ALTER TABLE [kt].[Attendance] ADD CONSTRAINT [PK_Attendance] PRIMARY KEY CLUSTERED ( [Id] ASC )
             WITH (DATA_COMPRESSION=ROW)
     END;
 
-IF OBJECT_ID('cie.[PK_Person]', 'PK') IS NULL
+IF OBJECT_ID('kt.[PK_Person]', 'PK') IS NULL
     BEGIN
-        ALTER TABLE [cie].[Person] ADD CONSTRAINT [PK_Person] PRIMARY KEY CLUSTERED ( [Id] ASC )
+        ALTER TABLE [kt].[Person] ADD CONSTRAINT [PK_Person] PRIMARY KEY CLUSTERED ( [Id] ASC )
             WITH (DATA_COMPRESSION=ROW)
     END;
 
-IF OBJECT_ID('cie.[PK_AttendanceType]', 'PK') IS NULL
+IF OBJECT_ID('kt.[PK_AttendanceType]', 'PK') IS NULL
     BEGIN
-        ALTER TABLE [cie].[AttendanceType] ADD CONSTRAINT [PK_AttendanceType] PRIMARY KEY CLUSTERED ( [Id] ASC )
+        ALTER TABLE [kt].[AttendanceType] ADD CONSTRAINT [PK_AttendanceType] PRIMARY KEY CLUSTERED ( [Id] ASC )
             WITH (DATA_COMPRESSION=ROW)
     END;
 
-IF OBJECT_ID('cie.[PK_Location]', 'PK') IS NULL
+IF OBJECT_ID('kt.[PK_Location]', 'PK') IS NULL
     BEGIN
-        ALTER TABLE [cie].[Location] ADD CONSTRAINT [PK_Location] PRIMARY KEY CLUSTERED ( [Id] ASC )
+        ALTER TABLE [kt].[Location] ADD CONSTRAINT [PK_Location] PRIMARY KEY CLUSTERED ( [Id] ASC )
             WITH (DATA_COMPRESSION=ROW)
     END;
 
-IF OBJECT_ID('[cie].[FK_Attendance_PersonId]', 'F') IS NULL
+IF OBJECT_ID('[kt].[FK_Attendance_PersonId]', 'F') IS NULL
     BEGIN
-        ALTER TABLE [cie].[Attendance] ADD CONSTRAINT [FK_Attendance_PersonId]
+        ALTER TABLE [kt].[Attendance] ADD CONSTRAINT [FK_Attendance_PersonId]
             FOREIGN KEY ([PersonId])
-                REFERENCES [cie].[Person] ([Id])
+                REFERENCES [kt].[Person] ([Id])
     END;
 
-IF OBJECT_ID('[cie].[FK_Attendance_AttendanceTypeId]', 'F') IS NULL
+IF OBJECT_ID('[kt].[FK_Attendance_AttendanceTypeId]', 'F') IS NULL
     BEGIN
-        ALTER TABLE [cie].[Attendance] ADD CONSTRAINT [FK_Attendance_AttendanceTypeId]
+        ALTER TABLE [kt].[Attendance] ADD CONSTRAINT [FK_Attendance_AttendanceTypeId]
             FOREIGN KEY ([AttendanceTypeId])
-                REFERENCES [cie].[AttendanceType] ([Id])
+                REFERENCES [kt].[AttendanceType] ([Id])
     END;
 
-IF OBJECT_ID('[cie].[FK_Attendance_LocationId]', 'F') IS NULL
+IF OBJECT_ID('[kt].[FK_Attendance_LocationId]', 'F') IS NULL
     BEGIN
-        ALTER TABLE [cie].[Attendance] ADD CONSTRAINT [FK_Attendance_LocationId]
+        ALTER TABLE [kt].[Attendance] ADD CONSTRAINT [FK_Attendance_LocationId]
             FOREIGN KEY ([LocationId])
-                REFERENCES [cie].[Location] ([Id])
+                REFERENCES [kt].[Location] ([Id])
     END;
 
-IF NOT EXISTS( SELECT 1 FROM [cie].[Location] WHERE Name In (N'Häsli', N'Schöfli', N'Füchsli', 'KidsChurch'))
-    BEGIN
-        INSERT INTO [cie].[Location] (Name, IsEnabled)
-        VALUES
-        (N'Häsli', 1),
-        (N'Schöfli', 1),
-        (N'Füchsli', 1),
-        ('KidsChurch', 1)
-    END;
+SET IDENTITY_INSERT kt.AttendanceType ON
 
-SET IDENTITY_INSERT cie.AttendanceType ON
-
-IF NOT EXISTS( SELECT 1 FROM [cie].[AttendanceType] WHERE Id = 1)
+IF NOT EXISTS( SELECT 1 FROM [kt].[AttendanceType] WHERE Id = 1)
     BEGIN
-        INSERT INTO [cie].[AttendanceType] (Id, Name)
+        INSERT INTO [kt].[AttendanceType] (Id, Name)
         VALUES
         (1, 'Regular')
     END;
 
-IF NOT EXISTS( SELECT 1 FROM [cie].[AttendanceType] WHERE Id = 2)
+IF NOT EXISTS( SELECT 1 FROM [kt].[AttendanceType] WHERE Id = 2)
     BEGIN
-        INSERT INTO [cie].[AttendanceType] (Id, Name)
+        INSERT INTO [kt].[AttendanceType] (Id, Name)
         VALUES
         (2, 'Guest')
     END;
 
-IF NOT EXISTS( SELECT 1 FROM [cie].[AttendanceType] WHERE Id = 3)
+IF NOT EXISTS( SELECT 1 FROM [kt].[AttendanceType] WHERE Id = 3)
     BEGIN
-        INSERT INTO [cie].[AttendanceType] (Id, Name)
+        INSERT INTO [kt].[AttendanceType] (Id, Name)
         VALUES
         (3, 'Volunteer')
     END;
 
-SET IDENTITY_INSERT cie.AttendanceType OFF
+SET IDENTITY_INSERT kt.AttendanceType OFF
 
-IF INDEXPROPERTY(OBJECT_ID('cie.Person'), 'UQ_Person_PeopleId', 'IndexId') IS NULL
+IF INDEXPROPERTY(OBJECT_ID('kt.Person'), 'UQ_Person_PeopleId', 'IndexId') IS NULL
     BEGIN
-        CREATE UNIQUE NONCLUSTERED INDEX [UQ_Person_PeopleId] ON [cie].[Person]
+        CREATE UNIQUE NONCLUSTERED INDEX [UQ_Person_PeopleId] ON [kt].[Person]
             (
              [PeopleId] ASC
                 )
@@ -143,8 +136,56 @@ IF INDEXPROPERTY(OBJECT_ID('cie.Person'), 'UQ_Person_PeopleId', 'IndexId') IS NU
             WITH (DATA_COMPRESSION=ROW, SORT_IN_TEMPDB=ON, ONLINE=OFF)
     END;
 
+IF OBJECT_ID('[kt].[LocationGroup]') IS NULL
+    BEGIN
+        CREATE TABLE [kt].[LocationGroup](
+                                             [Id] [int] IDENTITY(1, 1) NOT NULL,
+                                             [Name] varchar(50) NOT NULL,
+                                             [IsEnabled] [bit] NOT NULL
+        )
+    END;
 
--- dotnet ef dbcontext scaffold "Server=skyship.space;Database=CheckInsExtension;User Id=sa;Password=Sherlock69" Microsoft.EntityFrameworkCore.SqlServer -f
+IF NOT EXISTS( SELECT 1 FROM [kt].[LocationGroup] WHERE Name In (N'Häsli', N'Schöfli', N'Füchsli', 'Kids Church', 'Unbekannt'))
+    BEGIN
+        INSERT INTO [kt].[LocationGroup] (Name, IsEnabled)
+        VALUES
+        (N'Häsli', 1),
+        (N'Schöfli', 1),
+        (N'Füchsli', 1),
+        ('Kids Church', 1),
+        ('Unbekannt', 1)
+    END;
+
+IF OBJECT_ID('kt.[PK_LocationGroup]', 'PK') IS NULL
+    BEGIN
+        ALTER TABLE [kt].[LocationGroup] ADD CONSTRAINT [PK_LocationGroup] PRIMARY KEY CLUSTERED ( [Id] ASC )
+            WITH (DATA_COMPRESSION=ROW)
+    END;
+
+IF COL_LENGTH('kt.Location','LocationGroupId') IS NULL
+    BEGIN
+        ALTER TABLE kt.Location ADD LocationGroupId int NOT NULL default 5
+    END
+
+IF COL_LENGTH('kt.Location','CheckInsLocationId') IS NULL
+    BEGIN
+        ALTER TABLE kt.Location ADD CheckInsLocationId bigint NULL
+    END
+
+IF COL_LENGTH('kt.Location','EventId') IS NULL
+    BEGIN
+        ALTER TABLE kt.Location ADD EventId bigint NOT NULL DEFAULT 0
+    END
+
+IF OBJECT_ID('[kt].[FK_Location_LocationGroupId]', 'F') IS NULL
+    BEGIN
+        ALTER TABLE [kt].[Location] ADD CONSTRAINT [FK_Location_LocationGroupId]
+            FOREIGN KEY ([LocationGroupId])
+                REFERENCES [kt].[LocationGroup] ([Id])
+    END;
+
+
+-- dotnet ef dbcontext scaffold "Server=skyship.space;Database=KidsTown;User Id=sa;Password=Sherlock69" Microsoft.EntityFrameworkCore.SqlServer -f
     
 
     

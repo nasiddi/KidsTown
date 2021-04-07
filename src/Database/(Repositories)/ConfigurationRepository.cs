@@ -20,7 +20,7 @@ namespace KidsTown.Database
         
         public async Task<ImmutableList<KidsTown.Models.LocationGroup>> GetActiveLocationGroups()
         {
-            await using (var db = _serviceScopeFactory.CreateScope().ServiceProvider.GetRequiredService<CheckInsExtensionContext>())
+            await using (var db = _serviceScopeFactory.CreateScope().ServiceProvider.GetRequiredService<KidsTownContext>())
             {
                 var locations = await db.LocationGroups
                     .Where(predicate: l => l.IsEnabled)
@@ -37,7 +37,7 @@ namespace KidsTown.Database
             IImmutableList<int>? selectedLocationGroups
         )
         {
-            await using (var db = _serviceScopeFactory.CreateScope().ServiceProvider.GetRequiredService<CheckInsExtensionContext>())
+            await using (var db = _serviceScopeFactory.CreateScope().ServiceProvider.GetRequiredService<KidsTownContext>())
             {
                 var locations = await db.Locations
                     .Where(predicate: l => l.EventId == eventId 

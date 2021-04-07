@@ -6,7 +6,7 @@ namespace KidsTown.KidsTown.Models
 {
     public class Person
     {
-        public int CheckInId { get; init; }
+        public int AttendanceId { get; init; }
         public string SecurityCode { get; init; } = string.Empty;
         public string Location { get; init; } = string.Empty;
         public string FirstName { get; init; } = string.Empty;

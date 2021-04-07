@@ -39,7 +39,7 @@ namespace KidsTown.Application
             services.AddSingleton<IUpdateService, UpdateService>();
             services.AddSingleton<IUpdateRepository, UpdateRepository>();
 
-            services.AddDbContext<CheckInsExtensionContext>(optionsAction: o 
+            services.AddDbContext<KidsTownContext>(optionsAction: o 
                 => o.UseSqlServer(connectionString: Configuration.GetConnectionString(name: "Database")));
 
             services.AddScoped<ICheckInOutService, CheckInOutService>();

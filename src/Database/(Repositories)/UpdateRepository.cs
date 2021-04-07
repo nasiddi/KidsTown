@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using KidsTown.BackgroundTasks.Models;
 using KidsTown.BackgroundTasks.PlanningCenter;
 using KidsTown.KidsTown.Models;
-using KidsTown.PlanningCenterApiClient.Models.CheckInResult;
+using KidsTown.PlanningCenterApiClient.Models.CheckInsResult;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -23,23 +23,23 @@ namespace KidsTown.Database
             _serviceScopeFactory = serviceScopeFactory;
         }
 
-        public async Task<IImmutableList<long>> GetExistingCheckInIds(IImmutableList<long> checkinIds)
+        public async Task<IImmutableList<long>> GetExistingCheckInsIds(IImmutableList<long> checkinsIds)
         {
             await using (var db = _serviceScopeFactory.CreateScope().ServiceProvider
-                .GetRequiredService<CheckInsExtensionContext>())
+                .GetRequiredService<KidsTownContext>())
             {
-                var existingCheckInIds = await db.Attendances.Where(predicate: i => checkinIds.Contains(i.CheckInId))
-                    .Select(selector: i => i.CheckInId)
+                var existingCheckInsIds = await db.Attendances.Where(predicate: i => checkinsIds.Contains(i.CheckInsId))
+                    .Select(selector: i => i.CheckInsId)
                     .ToListAsync().ConfigureAwait(continueOnCapturedContext: false);
 
-                return existingCheckInIds.ToImmutableList();
+                return existingCheckInsIds.ToImmutableList();
             }
         }
 
         public async Task<ImmutableList<long>> GetCurrentPeopleIds(int daysLookBack)
         {
             await using (var db = _serviceScopeFactory.CreateScope().ServiceProvider
-                .GetRequiredService<CheckInsExtensionContext>())
+                .GetRequiredService<KidsTownContext>())
             {
                 var peopleIds = await db.Attendances
                     .Where(predicate: i => i.InsertDate >= DateTime.Today.AddDays(-daysLookBack) && i.Person.PeopleId.HasValue)
@@ -54,7 +54,7 @@ namespace KidsTown.Database
         public async Task UpdatePersons(ImmutableList<PeopleUpdate> peoples)
         {
             await using (var db = _serviceScopeFactory.CreateScope().ServiceProvider
-                .GetRequiredService<CheckInsExtensionContext>())
+                .GetRequiredService<KidsTownContext>())
             {
                 var existingPersons =
                     await GetPersonsByPeopleIds(db: db, peopleIds: peoples.Select(selector: p => p.PeopleId!.Value).ToImmutableList()).ConfigureAwait(continueOnCapturedContext: false);
@@ -66,7 +66,7 @@ namespace KidsTown.Database
         public async Task AutoCheckInVolunteers()
         {
             await using (var db = _serviceScopeFactory.CreateScope().ServiceProvider
-                .GetRequiredService<CheckInsExtensionContext>())
+                .GetRequiredService<KidsTownContext>())
             {
                 var volunteers = await db.Attendances
                     .Where(predicate: a => 
@@ -82,7 +82,7 @@ namespace KidsTown.Database
         public async Task AutoCheckoutEveryoneByEndOfDay()
         {
             await using (var db = _serviceScopeFactory.CreateScope().ServiceProvider
-                .GetRequiredService<CheckInsExtensionContext>())
+                .GetRequiredService<KidsTownContext>())
             {
                 var attendances = await db.Attendances
                     .Where(predicate: a => 
@@ -96,10 +96,10 @@ namespace KidsTown.Database
             }
         }
 
-        public async Task InsertPreCheckIns(IImmutableList<CheckInUpdate> preCheckIns)
+        public async Task InsertPreCheckIns(IImmutableList<CheckInsUpdate> preCheckIns)
         {
             await using (var db = _serviceScopeFactory.CreateScope().ServiceProvider
-                .GetRequiredService<CheckInsExtensionContext>())
+                .GetRequiredService<KidsTownContext>())
             {
                 var guests = preCheckIns.Where(predicate: c => c.PeopleId == null).ToImmutableList();
                 await PreCheckInGuests(guests: guests, db: db).ConfigureAwait(continueOnCapturedContext: false);
@@ -112,7 +112,7 @@ namespace KidsTown.Database
         public async Task<ImmutableList<PersistedLocation>> GetPersistedLocations()
         {
             await using (var db = _serviceScopeFactory.CreateScope().ServiceProvider
-                .GetRequiredService<CheckInsExtensionContext>())
+                .GetRequiredService<KidsTownContext>())
             {
                 var locations = await db.Locations.Where(predicate: l => l.CheckInsLocationId.HasValue)
                     .ToListAsync().ConfigureAwait(continueOnCapturedContext: false);
@@ -123,7 +123,7 @@ namespace KidsTown.Database
         public async Task UpdateLocations(ImmutableList<LocationUpdate> locationUpdates)
         {
             await using (var db = _serviceScopeFactory.CreateScope().ServiceProvider
-                .GetRequiredService<CheckInsExtensionContext>())
+                .GetRequiredService<KidsTownContext>())
             {
                 var locations = locationUpdates.Select(selector: MapLocation);
                 await db.AddRangeAsync(entities: locations).ConfigureAwait(continueOnCapturedContext: false);
@@ -134,7 +134,7 @@ namespace KidsTown.Database
         public async Task EnableUnknownLocationGroup()
         {
             await using (var db = _serviceScopeFactory.CreateScope().ServiceProvider
-                .GetRequiredService<CheckInsExtensionContext>())
+                .GetRequiredService<KidsTownContext>())
             {
                 var locationGroups = await db.LocationGroups.Where(predicate: l => l.Id == (int) LocationGroups.Unknown)
                     .ToListAsync().ConfigureAwait(continueOnCapturedContext: false);
@@ -156,7 +156,7 @@ namespace KidsTown.Database
 
         }
 
-        private static async Task PreCheckInRegulars(ImmutableList<CheckInUpdate> regularPreCheckIns, CheckInsExtensionContext db)
+        private static async Task PreCheckInRegulars(ImmutableList<CheckInsUpdate> regularPreCheckIns, KidsTownContext db)
         {
             var persons = regularPreCheckIns
                 .Select(selector: c => c.Person)
@@ -178,16 +178,16 @@ namespace KidsTown.Database
             var insertedPersons = await InsertPersons(db: db, personToInsert: personInserts).ConfigureAwait(continueOnCapturedContext: false);
 
             var checkIns = regularPreCheckIns
-                .Select(selector: c => MapToAttendance(checkInUpdate: c, persons: existingPersons.Union(second: insertedPersons).ToImmutableList()))
+                .Select(selector: c => MapToAttendance(checkInsUpdate: c, persons: existingPersons.Union(second: insertedPersons).ToImmutableList()))
                 .ToImmutableList();
             await db.AddRangeAsync(entities: checkIns).ConfigureAwait(continueOnCapturedContext: false);
             await db.SaveChangesAsync().ConfigureAwait(continueOnCapturedContext: false);
         }
 
-        private async Task PreCheckInGuests(ImmutableList<CheckInUpdate> guests, DbContext db)
+        private async Task PreCheckInGuests(ImmutableList<CheckInsUpdate> guests, DbContext db)
         {
-            var existingCheckInIds = await GetExistingCheckInIds(checkinIds: guests.Select(selector: g => g.CheckInId).ToImmutableList()).ConfigureAwait(continueOnCapturedContext: false);
-            var newGuests = guests.Where(predicate: g => !existingCheckInIds.Contains(value: g.CheckInId)).ToImmutableList();
+            var existingCheckInsIds = await GetExistingCheckInsIds(checkinsIds: guests.Select(selector: g => g.CheckInsId).ToImmutableList()).ConfigureAwait(continueOnCapturedContext: false);
+            var newGuests = guests.Where(predicate: g => !existingCheckInsIds.Contains(value: g.CheckInsId)).ToImmutableList();
 
             var guestAttendances = newGuests.Select(selector: MapGuestAttendance).ToImmutableList();
             
@@ -195,13 +195,13 @@ namespace KidsTown.Database
             await db.SaveChangesAsync().ConfigureAwait(continueOnCapturedContext: false);
         }
 
-        private static Attendance MapGuestAttendance(CheckInUpdate guest)
+        private static Attendance MapGuestAttendance(CheckInsUpdate guest)
         {
             var person = MapPerson(peopleUpdate: guest.Person);
-            return MapToAttendance(checkInUpdate: guest, persons: ImmutableList.Create(item: person));
+            return MapToAttendance(checkInsUpdate: guest, persons: ImmutableList.Create(item: person));
         }
 
-        private static async Task<List<Person>> InsertPersons(CheckInsExtensionContext db,
+        private static async Task<List<Person>> InsertPersons(KidsTownContext db,
             IImmutableList<PeopleUpdate> personToInsert)
         {
             var persons = personToInsert.Select(selector: MapPerson).ToImmutableList();
@@ -248,7 +248,7 @@ namespace KidsTown.Database
         }
 
         private static async Task<List<Person>> GetPersonsByPeopleIds(
-            CheckInsExtensionContext db,
+            KidsTownContext db,
             IImmutableList<long> peopleIds)
         {
             var people = await db.People.Where(predicate: p => p.PeopleId.HasValue && peopleIds.Contains(p.PeopleId.Value))
@@ -256,18 +256,18 @@ namespace KidsTown.Database
             return people;
         }
 
-        private static Attendance MapToAttendance(CheckInUpdate checkInUpdate, ImmutableList<Person> persons)
+        private static Attendance MapToAttendance(CheckInsUpdate checkInsUpdate, ImmutableList<Person> persons)
         {
-            var person = persons.SingleOrDefault(predicate: p => p.PeopleId == checkInUpdate.PeopleId);
+            var person = persons.SingleOrDefault(predicate: p => p.PeopleId == checkInsUpdate.PeopleId);
 
             return new Attendance
             {
-                CheckInId = checkInUpdate.CheckInId,
-                LocationId = checkInUpdate.LocationId,
-                SecurityCode = checkInUpdate.SecurityCode,
-                InsertDate = checkInUpdate.CreationDate,
+                CheckInsId = checkInsUpdate.CheckInsId,
+                LocationId = checkInsUpdate.LocationId,
+                SecurityCode = checkInsUpdate.SecurityCode,
+                InsertDate = checkInsUpdate.CreationDate,
                 Person = person,
-                AttendanceTypeId = MapAttendeeType(attendeeType: checkInUpdate.AttendeeType)
+                AttendanceTypeId = MapAttendeeType(attendeeType: checkInsUpdate.AttendeeType)
             };
         }
 

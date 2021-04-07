@@ -1,15 +1,15 @@
 using System.Collections.Immutable;
-using KidsTown.PlanningCenterApiClient.Models.CheckInResult;
+using KidsTown.PlanningCenterApiClient.Models.CheckInsResult;
 
 namespace KidsTown.IntegrationTests.TestData
 {
     public class TestData
     {
-        public readonly string CheckInFirstName;
-        public readonly string CheckInLastName;
+        public readonly string CheckInsFirstName;
+        public readonly string CheckInsLastName;
         public readonly string? PeopleFirstName;
         public readonly string? PeopleLastName;
-        public readonly long CheckInId;
+        public readonly long CheckInsId;
         public readonly long? PeopleId;
         public readonly AttendeeType AttendanceType;
         public readonly TestLocationIds TestLocation;
@@ -17,14 +17,14 @@ namespace KidsTown.IntegrationTests.TestData
         public readonly bool? ExpectedMayLeaveAlone;
         public readonly bool? ExpectedHasPeopleWithoutPickupPermission;
 
-        public string SecurityCode => $"{TestLocation.ToString().Substring(startIndex: 0, length: 1)}{CheckInId}{AttendanceType.ToString().Substring(startIndex: 0, length: 1)}{PeopleId ?? 0}";
+        public string SecurityCode => $"{TestLocation.ToString().Substring(startIndex: 0, length: 1)}{CheckInsId}{AttendanceType.ToString().Substring(startIndex: 0, length: 1)}{PeopleId ?? 0}";
         
         public TestData(
-            string checkInFirstName,
-            string checkInLastName,
+            string checkInsFirstName,
+            string checkInsLastName,
             string peopleFirstName,
             string peopleLastName,
-            long checkInId,
+            long checkInsId,
             long? peopleId,
             AttendeeType attendanceType,
             TestLocationIds testLocation,
@@ -33,11 +33,11 @@ namespace KidsTown.IntegrationTests.TestData
             bool expectedHasPeopleWithoutPickupPermission
         )
         {
-            CheckInFirstName = checkInFirstName;
-            CheckInLastName = checkInLastName;
+            CheckInsFirstName = checkInsFirstName;
+            CheckInsLastName = checkInsLastName;
             PeopleFirstName = peopleFirstName;
             PeopleLastName = peopleLastName;
-            CheckInId = checkInId;
+            CheckInsId = checkInsId;
             PeopleId = peopleId;
             AttendanceType = attendanceType;
             TestLocation = testLocation;
@@ -47,17 +47,17 @@ namespace KidsTown.IntegrationTests.TestData
         }
         
         public TestData(
-            string checkInFirstName,
-            string checkInLastName,
-            long checkInId,
+            string checkInsFirstName,
+            string checkInsLastName,
+            long checkInsId,
             long? peopleId,
             AttendeeType attendanceType,
             TestLocationIds testLocation
         )
         {
-            CheckInFirstName = checkInFirstName;
-            CheckInLastName = checkInLastName;
-            CheckInId = checkInId;
+            CheckInsFirstName = checkInsFirstName;
+            CheckInsLastName = checkInsLastName;
+            CheckInsId = checkInsId;
             PeopleId = peopleId;
             AttendanceType = attendanceType;
             TestLocation = testLocation;

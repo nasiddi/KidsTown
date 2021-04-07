@@ -24,7 +24,7 @@ namespace KidsTown.Database
         public async Task<ImmutableList<KidsTown.Models.Person>> GetPeople(
             PeopleSearchParameters peopleSearchParameters)
         {
-            await using (var db = _serviceScopeFactory.CreateScope().ServiceProvider.GetRequiredService<CheckInsExtensionContext>())
+            await using (var db = _serviceScopeFactory.CreateScope().ServiceProvider.GetRequiredService<KidsTownContext>())
             {
                 var people = await (from a in db.Attendances
                     join p in db.People
@@ -42,45 +42,45 @@ namespace KidsTown.Database
             }
         }
 
-        public async Task<bool> CheckInPeople(IImmutableList<int> checkInIds)
+        public async Task<bool> CheckInPeople(IImmutableList<int> attendanceIds)
         {
-            await using (var db = _serviceScopeFactory.CreateScope().ServiceProvider.GetRequiredService<CheckInsExtensionContext>())
+            await using (var db = _serviceScopeFactory.CreateScope().ServiceProvider.GetRequiredService<KidsTownContext>())
             {
-                var checkIns = await GetCheckIns(checkinIds: checkInIds, db: db).ConfigureAwait(continueOnCapturedContext: false);
-                checkIns.ForEach(action: c => c.CheckInDate = DateTime.UtcNow);
+                var attendances = await GetAttendances(attendanceIds: attendanceIds, db: db).ConfigureAwait(continueOnCapturedContext: false);
+                attendances.ForEach(action: a => a.CheckInDate = DateTime.UtcNow);
                 var result = await db.SaveChangesAsync();
                 return result > 0;            }
         }
         
-        public async Task<bool> CheckOutPeople(IImmutableList<int> checkInIds)
+        public async Task<bool> CheckOutPeople(IImmutableList<int> attendanceIds)
         {
-            await using (var db = _serviceScopeFactory.CreateScope().ServiceProvider.GetRequiredService<CheckInsExtensionContext>())
+            await using (var db = _serviceScopeFactory.CreateScope().ServiceProvider.GetRequiredService<KidsTownContext>())
             {
-                var checkIns = await GetCheckIns(checkinIds: checkInIds, db: db).ConfigureAwait(continueOnCapturedContext: false);
-                checkIns.ForEach(action: c => c.CheckOutDate = DateTime.UtcNow);
+                var attendances = await GetAttendances(attendanceIds: attendanceIds, db: db).ConfigureAwait(continueOnCapturedContext: false);
+                attendances.ForEach(action: a => a.CheckOutDate = DateTime.UtcNow);
                 var result = await db.SaveChangesAsync();
                 return result > 0;
             }
         }
 
-        public async Task<bool> SetCheckState(CheckState revertedCheckState, ImmutableList<int> checkInIds)
+        public async Task<bool> SetCheckState(CheckState revertedCheckState, ImmutableList<int> attendanceIds)
         {
-            await using (var db = _serviceScopeFactory.CreateScope().ServiceProvider.GetRequiredService<CheckInsExtensionContext>())
+            await using (var db = _serviceScopeFactory.CreateScope().ServiceProvider.GetRequiredService<KidsTownContext>())
             {
-                var checkIns = await GetCheckIns(checkinIds: checkInIds, db: db).ConfigureAwait(continueOnCapturedContext: false);
+                var attendances = await GetAttendances(attendanceIds: attendanceIds, db: db).ConfigureAwait(continueOnCapturedContext: false);
 
                 switch (revertedCheckState)
                 {
                     case CheckState.None:
-                        var people = await db.People.Where(p => checkIns.Select(c => c.PersonId).Contains(p.Id)).ToListAsync();
-                        db.RemoveRange(checkIns);
+                        var people = await db.People.Where(p => attendances.Select(a => a.PersonId).Contains(p.Id)).ToListAsync();
+                        db.RemoveRange(attendances);
                         db.RemoveRange(people);
                         break;
                     case CheckState.PreCheckedIn:
-                        checkIns.ForEach(action: c => c.CheckInDate = null);
+                        attendances.ForEach(action: c => c.CheckInDate = null);
                         break;
                     case CheckState.CheckedIn:
-                        checkIns.ForEach(action: c => c.CheckOutDate = null);
+                        attendances.ForEach(action: c => c.CheckOutDate = null);
                         break;
                     case CheckState.CheckedOut:
                         break;
@@ -95,7 +95,7 @@ namespace KidsTown.Database
 
         public async Task<int> CreateGuest(int locationId, string securityCode, string firstName, string lastName)
         {
-            await using (var db = _serviceScopeFactory.CreateScope().ServiceProvider.GetRequiredService<CheckInsExtensionContext>())
+            await using (var db = _serviceScopeFactory.CreateScope().ServiceProvider.GetRequiredService<KidsTownContext>())
             {
                 var person = new Person
                 {
@@ -107,7 +107,7 @@ namespace KidsTown.Database
 
                 var attendance = new Attendance
                 {
-                    CheckInId = 0,
+                    CheckInsId = 0,
                     LocationId = locationId,
                     SecurityCode = securityCode,
                     AttendanceTypeId = (int) AttendanceTypes.Guest,
@@ -121,13 +121,13 @@ namespace KidsTown.Database
             }
         }
 
-        private static async Task<List<Attendance>> GetCheckIns(
-            IImmutableList<int> checkinIds,
-            CheckInsExtensionContext db)
+        private static async Task<List<Attendance>> GetAttendances(
+            IImmutableList<int> attendanceIds,
+            KidsTownContext db)
         {
-            var checkIns = await db.Attendances.Where(predicate: a => 
-                checkinIds.Contains(a.Id)).ToListAsync().ConfigureAwait(continueOnCapturedContext: false);
-            return checkIns;
+            var attendances = await db.Attendances.Where(predicate: a => 
+                attendanceIds.Contains(a.Id)).ToListAsync().ConfigureAwait(continueOnCapturedContext: false);
+            return attendances;
         }
 
         private static KidsTown.Models.Person MapPerson(Attendance attendance, Person person,
@@ -137,7 +137,7 @@ namespace KidsTown.Database
 
             return new KidsTown.Models.Person
             {
-                CheckInId = attendance.Id,
+                AttendanceId = attendance.Id,
                 SecurityCode = attendance.SecurityCode,
                 Location = location.Name,
                 FirstName = person.FistName,

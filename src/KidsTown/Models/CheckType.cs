@@ -2,7 +2,7 @@ using System.Runtime.Serialization;
 using System.Text.Json.Serialization;
 using Newtonsoft.Json.Converters;
 
-namespace KidsTown.Application.Models
+namespace KidsTown.KidsTown.Models
 {
     [JsonConverter(converterType: typeof(StringEnumConverter))]
     public enum CheckType

@@ -5,15 +5,15 @@ using System.Linq;
 using System.Threading.Tasks;
 using KidsTown.IntegrationTests.TestData;
 using KidsTown.PlanningCenterApiClient;
-using KidsTown.PlanningCenterApiClient.Models.CheckInResult;
+using KidsTown.PlanningCenterApiClient.Models.CheckInsResult;
 using KidsTown.PlanningCenterApiClient.Models.EventResult;
 using KidsTown.PlanningCenterApiClient.Models.PeopleResult;
-using Attendee = KidsTown.PlanningCenterApiClient.Models.CheckInResult.Attendee;
+using Attendee = KidsTown.PlanningCenterApiClient.Models.CheckInsResult.Attendee;
 using Datum = KidsTown.PlanningCenterApiClient.Models.PeopleResult.Datum;
-using Included = KidsTown.PlanningCenterApiClient.Models.CheckInResult.Included;
-using IncludedAttributes = KidsTown.PlanningCenterApiClient.Models.CheckInResult.IncludedAttributes;
+using Included = KidsTown.PlanningCenterApiClient.Models.CheckInsResult.Included;
+using IncludedAttributes = KidsTown.PlanningCenterApiClient.Models.CheckInsResult.IncludedAttributes;
 using Parent = KidsTown.PlanningCenterApiClient.Models.PeopleResult.Parent;
-using Relationship = KidsTown.PlanningCenterApiClient.Models.CheckInResult.Relationship;
+using Relationship = KidsTown.PlanningCenterApiClient.Models.CheckInsResult.Relationship;
 
 namespace KidsTown.IntegrationTests.Mocks
 {
@@ -23,7 +23,7 @@ namespace KidsTown.IntegrationTests.Mocks
         {
             public readonly string FirstName;
             public readonly string LastName;
-            public readonly long CheckInId;
+            public readonly long CheckInsId;
             public readonly long? PeopleId;
             public readonly AttendeeType AttendanceType;
             public readonly TestLocationIds TestLocation;
@@ -32,7 +32,7 @@ namespace KidsTown.IntegrationTests.Mocks
             public AttendanceData(
                 string firstName,
                 string lastName,
-                long checkInId,
+                long checkInsId,
                 long? peopleId,
                 AttendeeType attendanceType,
                 TestLocationIds testLocation,
@@ -41,7 +41,7 @@ namespace KidsTown.IntegrationTests.Mocks
             {
                 FirstName = firstName;
                 LastName = lastName;
-                CheckInId = checkInId;
+                CheckInsId = checkInsId;
                 PeopleId = peopleId;
                 AttendanceType = attendanceType;
                 TestLocation = testLocation;
@@ -80,9 +80,9 @@ namespace KidsTown.IntegrationTests.Mocks
         {
             return TestDataFactory.GetTestData().Select(selector: d =>
                 new AttendanceData(
-                    firstName: d.CheckInFirstName,
-                    lastName: d.CheckInLastName,
-                    checkInId: d.CheckInId,
+                    firstName: d.CheckInsFirstName,
+                    lastName: d.CheckInsLastName,
+                    checkInsId: d.CheckInsId,
                     peopleId: d.PeopleId,
                     attendanceType: d.AttendanceType,
                     testLocation: d.TestLocation,
@@ -117,7 +117,7 @@ namespace KidsTown.IntegrationTests.Mocks
                 item: new CheckIns
                 {
                     Attendees = GetAttendees(data: data),
-                    Included = GetCheckInIncluded()
+                    Included = GetCheckInsIncluded()
                 }));
         }
 
@@ -226,7 +226,7 @@ namespace KidsTown.IntegrationTests.Mocks
 
             return data.Select(selector: d => new Attendee
             {
-                Id = d.CheckInId,
+                Id = d.CheckInsId,
                 Attributes = new AttendeeAttributes
                 {
                     CreatedAt = createdAt,
@@ -244,7 +244,7 @@ namespace KidsTown.IntegrationTests.Mocks
             }).ToList();
         }
 
-        private static Locations GetLocationParent(TestLocationIds testLocation) =>
+        private static CheckInsLocations GetLocationParent(TestLocationIds testLocation) =>
             new()
             {
                 Data = new List<ParentElement>
@@ -274,7 +274,7 @@ namespace KidsTown.IntegrationTests.Mocks
                 }
             };
 
-        private static List<Included> GetCheckInIncluded()
+        private static List<Included> GetCheckInsIncluded()
         {
             return new()
             {
