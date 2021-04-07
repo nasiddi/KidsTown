@@ -1,0 +1,67 @@
+{
+  "name": "application",
+  "version": "0.1.0",
+  "private": true,
+  "dependencies": {
+    "@material-ui/core": "^4.11.3",
+    "@material-ui/icons": "^4.11.2",
+    "@material-ui/lab": "^4.0.0-alpha.57",
+    "@microsoft/microsoft-graph-client": "^2.2.1",
+    "bootstrap": "^4.6.0",
+    "fg-loadcss": "^3.1.0",
+    "jquery": "^3.6.0",
+    "lodash": "^4.17.21",
+    "merge": "^2.1.1",
+    "msal": "^1.4.8",
+    "oidc-client": "^1.11.5",
+    "prop-types": "^15.7.2",
+    "qs": "^6.9.6",
+    "react": "^17.0.1",
+    "react-bootstrap": "^1.5.2",
+    "react-dom": "^17.0.1",
+    "react-router": "^5.2.0",
+    "react-router-bootstrap": "^0.25.0",
+    "react-router-dom": "^5.2.0",
+    "react-scripts": "^4.0.3",
+    "react-select": "^4.2.1",
+    "reactstrap": "^8.9.0",
+    "reactstrap-date-picker": "^0.0.11",
+    "rimraf": "^3.0.2"
+  },
+  "devDependencies": {
+    "ajv": "^6.12.6",
+    "cross-env": "^7.0.3",
+    "eslint": "^7.22.0",
+    "eslint-config-prettier": "^8.1.0",
+    "eslint-config-react-app": "^6.0.0",
+    "eslint-plugin-flowtype": "^5.4.0",
+    "eslint-plugin-import": "^2.22.1",
+    "eslint-plugin-jsx-a11y": "^6.4.1",
+    "eslint-plugin-prettier": "^3.3.1",
+    "eslint-plugin-react": "^7.22.0",
+    "nan": "^2.14.2",
+    "typescript": "^4.2.3"
+  },
+  "eslintConfig": {
+    "extends": "react-app"
+  },
+  "scripts": {
+    "start": "rimraf ./build && react-scripts start",
+    "build": "react-scripts build",
+    "test": "cross-env CI=true react-scripts test --env=jsdom",
+    "eject": "react-scripts eject",
+    "lint": "eslint ./src/"
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  }
+}
