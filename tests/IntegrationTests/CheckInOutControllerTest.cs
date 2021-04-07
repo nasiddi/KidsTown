@@ -1,17 +1,17 @@
 using System.Collections.Immutable;
 using System.Threading.Tasks;
-using Application.Controllers;
-using Application.Models;
-using CheckInsExtension.CheckInUpdateJobs.People;
-using CheckInsExtension.CheckInUpdateJobs.Update;
-using ChekInsExtension.Database;
+using KidsTown.Application.Controllers;
+using KidsTown.Application.Models;
+using KidsTown.BackgroundTasks.PlanningCenter;
+using KidsTown.Database;
+using KidsTown.KidsTown;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
 using NUnit.Framework;
 
-namespace IntegrationTests
+namespace KidsTown.IntegrationTests
 {
     public class CheckInOutControllerTest
     {

@@ -2,13 +2,14 @@ using System;
 using System.Collections.Immutable;
 using System.Linq;
 using System.Threading.Tasks;
-using ChekInsExtension.Database;
-using IntegrationTests.TestData;
+using KidsTown.Database;
+using KidsTown.IntegrationTests.TestData;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+
 // ReSharper disable ConvertToUsingDeclaration
 
-namespace IntegrationTests
+namespace KidsTown.IntegrationTests
 {
     public static class TestHelper
     {

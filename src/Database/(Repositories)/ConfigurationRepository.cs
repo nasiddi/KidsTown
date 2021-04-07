@@ -1,13 +1,13 @@
 using System.Collections.Immutable;
 using System.Linq;
 using System.Threading.Tasks;
-using CheckInsExtension.CheckInUpdateJobs.Models;
-using CheckInsExtension.CheckInUpdateJobs.People;
+using KidsTown.KidsTown;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+
 // ReSharper disable ConvertToUsingDeclaration
 
-namespace ChekInsExtension.Database
+namespace KidsTown.Database
 {
     public class ConfigurationRepository : IConfigurationRepository
     {
@@ -18,7 +18,7 @@ namespace ChekInsExtension.Database
             _serviceScopeFactory = serviceScopeFactory;
         }
         
-        public async Task<ImmutableList<CheckInsExtension.CheckInUpdateJobs.Models.LocationGroup>> GetActiveLocationGroups()
+        public async Task<ImmutableList<KidsTown.Models.LocationGroup>> GetActiveLocationGroups()
         {
             await using (var db = _serviceScopeFactory.CreateScope().ServiceProvider.GetRequiredService<CheckInsExtensionContext>())
             {
@@ -27,12 +27,12 @@ namespace ChekInsExtension.Database
                     .ToListAsync()
                     .ConfigureAwait(continueOnCapturedContext: false);
                 
-                return locations.Select(selector: l => new CheckInsExtension.CheckInUpdateJobs.Models.LocationGroup(id: l.Id, name: l.Name))
+                return locations.Select(selector: l => new KidsTown.Models.LocationGroup(id: l.Id, name: l.Name))
                     .ToImmutableList();
             }
         }
 
-        public async Task<ImmutableList<CheckInsExtension.CheckInUpdateJobs.Models.Location>> GetLocations(
+        public async Task<ImmutableList<KidsTown.Models.Location>> GetLocations(
             long eventId,
             IImmutableList<int>? selectedLocationGroups
         )
@@ -50,7 +50,7 @@ namespace ChekInsExtension.Database
             }
         }
 
-        private static CheckInsExtension.CheckInUpdateJobs.Models.Location MapLocation(Location location)
+        private static KidsTown.Models.Location MapLocation(Location location)
         {
             return new(
                 id: location.Id,

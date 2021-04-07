@@ -1,11 +1,9 @@
-﻿using System;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Metadata;
+﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 
 #nullable disable
 
-namespace ChekInsExtension.Database
+namespace KidsTown.Database
 {
     public partial class CheckInsExtensionContext : DbContext
     {

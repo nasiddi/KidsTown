@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <TargetFramework>net5.0</TargetFramework>
-    <RootNamespace>CheckInsExtension.PlanningCenterApiClient</RootNamespace>
+    <RootNamespace>KidsTown.PlanningCenterApiClient</RootNamespace>
     <Nullable>enable</Nullable>
   </PropertyGroup>
   <ItemGroup>

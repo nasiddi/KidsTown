@@ -1,8 +1,8 @@
 using System.Text.Json.Serialization;
-using CheckInsExtension.CheckInUpdateJobs.People;
-using CheckInsExtension.CheckInUpdateJobs.Update;
-using CheckInsExtension.PlanningCenterAPIClient;
-using ChekInsExtension.Database;
+using KidsTown.BackgroundTasks.PlanningCenter;
+using KidsTown.Database;
+using KidsTown.KidsTown;
+using KidsTown.PlanningCenterApiClient;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.SpaServices.ReactDevelopmentServer;
@@ -11,7 +11,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
-namespace Application
+namespace KidsTown.Application
 {
     public class Startup
     {

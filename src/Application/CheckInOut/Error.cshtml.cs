@@ -1,8 +1,9 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+
 // ReSharper disable MemberCanBePrivate.Global
 
-namespace Application.CheckInOut
+namespace KidsTown.Application.CheckInOut
 {
     [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
     public class ErrorModel : PageModel

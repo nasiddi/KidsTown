@@ -1,10 +1,10 @@
 ﻿using System.Collections.Immutable;
 using System.Threading.Tasks;
-using CheckInsExtension.PlanningCenterAPIClient.Models.CheckInResult;
-using CheckInsExtension.PlanningCenterAPIClient.Models.EventResult;
-using CheckInsExtension.PlanningCenterAPIClient.Models.PeopleResult;
+using KidsTown.PlanningCenterApiClient.Models.CheckInResult;
+using KidsTown.PlanningCenterApiClient.Models.EventResult;
+using KidsTown.PlanningCenterApiClient.Models.PeopleResult;
 
-namespace CheckInsExtension.PlanningCenterAPIClient
+namespace KidsTown.PlanningCenterApiClient
 {
     public interface IPlanningCenterClient
     {

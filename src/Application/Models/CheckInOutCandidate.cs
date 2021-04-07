@@ -1,4 +1,4 @@
-namespace Application.Models
+namespace KidsTown.Application.Models
 {
     public class CheckInOutCandidate
     {

@@ -2,13 +2,13 @@
 using System.Collections.Immutable;
 using System.Linq;
 using System.Threading.Tasks;
-using Application.Models;
-using CheckInsExtension.CheckInUpdateJobs.Models;
-using CheckInsExtension.CheckInUpdateJobs.People;
-using CheckInsExtension.CheckInUpdateJobs.Update;
+using KidsTown.Application.Models;
+using KidsTown.BackgroundTasks.PlanningCenter;
+using KidsTown.KidsTown;
+using KidsTown.KidsTown.Models;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Application.Controllers
+namespace KidsTown.Application.Controllers
 {
     [ApiController]
     [Route(template: "[controller]")]

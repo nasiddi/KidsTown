@@ -2,15 +2,15 @@ using System;
 using System.Collections.Immutable;
 using System.Linq;
 using System.Threading.Tasks;
-using CheckInsExtension.CheckInUpdateJobs.Models;
-using CheckInsExtension.CheckInUpdateJobs.People;
+using KidsTown.KidsTown;
+using KidsTown.KidsTown.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using Attendee = CheckInsExtension.CheckInUpdateJobs.Models.Attendee;
+using Attendee = KidsTown.KidsTown.Models.Attendee;
 
 // ReSharper disable ConvertToUsingDeclaration
 
-namespace ChekInsExtension.Database
+namespace KidsTown.Database
 {
     public class OverviewRepository : IOverviewRepository
     {

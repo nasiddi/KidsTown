@@ -3,13 +3,14 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using System.Threading.Tasks;
-using CheckInsExtension.CheckInUpdateJobs.Models;
-using CheckInsExtension.CheckInUpdateJobs.People;
+using KidsTown.KidsTown;
+using KidsTown.KidsTown.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+
 // ReSharper disable ConvertToUsingDeclaration
 
-namespace ChekInsExtension.Database
+namespace KidsTown.Database
 {
     public class CheckInOutRepository : ICheckInOutRepository
     {
@@ -20,7 +21,7 @@ namespace ChekInsExtension.Database
             _serviceScopeFactory = serviceScopeFactory;
         }
         
-        public async Task<ImmutableList<CheckInsExtension.CheckInUpdateJobs.Models.Person>> GetPeople(
+        public async Task<ImmutableList<KidsTown.Models.Person>> GetPeople(
             PeopleSearchParameters peopleSearchParameters)
         {
             await using (var db = _serviceScopeFactory.CreateScope().ServiceProvider.GetRequiredService<CheckInsExtensionContext>())
@@ -129,12 +130,12 @@ namespace ChekInsExtension.Database
             return checkIns;
         }
 
-        private static CheckInsExtension.CheckInUpdateJobs.Models.Person MapPerson(Attendance attendance, Person person,
+        private static KidsTown.Models.Person MapPerson(Attendance attendance, Person person,
             Location location)
         {
             var checkState = MappingService.GetCheckState(attendance: attendance);
 
-            return new CheckInsExtension.CheckInUpdateJobs.Models.Person
+            return new KidsTown.Models.Person
             {
                 CheckInId = attendance.Id,
                 SecurityCode = attendance.SecurityCode,

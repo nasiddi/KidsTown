@@ -4,7 +4,7 @@ using System.Globalization;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 
-namespace CheckInsExtension.PlanningCenterAPIClient.Models.PeopleResult
+namespace KidsTown.PlanningCenterApiClient.Models.PeopleResult
 {
      public class People : IPlanningCenterResponse
      {

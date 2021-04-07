@@ -4,14 +4,14 @@ using System.Collections.Immutable;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
-using CheckInsExtension.PlanningCenterAPIClient.Models;
-using CheckInsExtension.PlanningCenterAPIClient.Models.CheckInResult;
-using CheckInsExtension.PlanningCenterAPIClient.Models.EventResult;
-using CheckInsExtension.PlanningCenterAPIClient.Models.PeopleResult;
+using KidsTown.PlanningCenterApiClient.Models;
+using KidsTown.PlanningCenterApiClient.Models.CheckInResult;
+using KidsTown.PlanningCenterApiClient.Models.EventResult;
+using KidsTown.PlanningCenterApiClient.Models.PeopleResult;
 using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
 
-namespace CheckInsExtension.PlanningCenterAPIClient
+namespace KidsTown.PlanningCenterApiClient
 {
     public class PlanningCenterClient : IPlanningCenterClient
     {

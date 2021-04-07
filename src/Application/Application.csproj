@@ -4,6 +4,7 @@
         <TargetFramework>net5.0</TargetFramework>
         <TypeScriptCompileBlocked>true</TypeScriptCompileBlocked>
         <TypeScriptToolsVersion>Latest</TypeScriptToolsVersion>
+        <RootNamespace>KidsTown.Application</RootNamespace>
         <IsPackable>false</IsPackable>
         <SpaRoot>ClientApp\</SpaRoot>
         <DefaultItemExcludes>$(DefaultItemExcludes);$(SpaRoot)node_modules\**</DefaultItemExcludes>
@@ -31,6 +32,7 @@
     <ItemGroup>
       <ProjectReference Include="..\BackgroundTasks\BackgroundTasks.csproj" />
       <ProjectReference Include="..\Database\Database.csproj" />
+      <ProjectReference Include="..\KidsTown\KidsTown.csproj" />
     </ItemGroup>
 
     <ItemGroup>

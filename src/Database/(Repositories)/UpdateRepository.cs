@@ -3,15 +3,16 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using System.Threading.Tasks;
-using CheckInsExtension.CheckInUpdateJobs.Models;
-using CheckInsExtension.CheckInUpdateJobs.Update;
-using CheckInsExtension.PlanningCenterAPIClient.Models.CheckInResult;
+using KidsTown.BackgroundTasks.Models;
+using KidsTown.BackgroundTasks.PlanningCenter;
+using KidsTown.KidsTown.Models;
+using KidsTown.PlanningCenterApiClient.Models.CheckInResult;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 
 // ReSharper disable ConvertToUsingDeclaration
 
-namespace ChekInsExtension.Database
+namespace KidsTown.Database
 {
     public class UpdateRepository : IUpdateRepository
     {

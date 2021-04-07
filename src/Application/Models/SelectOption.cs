@@ -1,5 +1,5 @@
 // ReSharper disable UnusedAutoPropertyAccessor.Global
-namespace Application.Models
+namespace KidsTown.Application.Models
 {
     public class SelectOption
     {

@@ -1,8 +1,9 @@
 using System.Collections.Immutable;
+
 // ReSharper disable UnusedAutoPropertyAccessor.Global
 // ReSharper disable AutoPropertyCanBeMadeGetOnly.Global
 
-namespace Application.Models
+namespace KidsTown.Application.Models
 {
     public class CheckInOutRequest
     {

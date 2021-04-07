@@ -2,11 +2,11 @@
 using System.Collections.Immutable;
 using System.Linq;
 using System.Threading.Tasks;
-using CheckInsExtension.CheckInUpdateJobs.Models;
-using CheckInsExtension.CheckInUpdateJobs.People;
+using KidsTown.KidsTown;
+using KidsTown.KidsTown.Models;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Application.Controllers
+namespace KidsTown.Application.Controllers
 {
     [ApiController]
     [Route(template: "[controller]")]

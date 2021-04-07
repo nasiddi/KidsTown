@@ -2,7 +2,7 @@
 
     <PropertyGroup>
         <TargetFramework>net5.0</TargetFramework>
-        <RootNamespace>ChekInsExtension.Database</RootNamespace>
+        <RootNamespace>KidsTown.Database</RootNamespace>
         <Nullable>enable</Nullable>
   </PropertyGroup>
 
@@ -16,6 +16,7 @@
 
     <ItemGroup>
       <ProjectReference Include="..\BackgroundTasks\BackgroundTasks.csproj" />
+      <ProjectReference Include="..\KidsTown\KidsTown.csproj" />
     </ItemGroup>
 
 </Project>

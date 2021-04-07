@@ -1,9 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 
 #nullable disable
 
-namespace ChekInsExtension.Database
+namespace KidsTown.Database
 {
     public partial class LocationGroup
     {

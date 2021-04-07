@@ -1,6 +1,6 @@
 using System;
 
-namespace CheckInsExtension.PlanningCenterAPIClient.Models
+namespace KidsTown.PlanningCenterApiClient.Models
 {
     public interface IPlanningCenterResponse
     {

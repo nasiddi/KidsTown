@@ -1,5 +1,5 @@
 // ReSharper disable UnusedMember.Global
-namespace ChekInsExtension.Database
+namespace KidsTown.Database
 {
     public enum LocationGroups
     {

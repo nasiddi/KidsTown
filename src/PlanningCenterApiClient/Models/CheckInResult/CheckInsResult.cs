@@ -1,12 +1,11 @@
-﻿namespace CheckInsExtension.PlanningCenterAPIClient.Models.CheckInResult
+﻿using System;
+using System.Collections.Generic;
+using System.Globalization;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
+
+namespace KidsTown.PlanningCenterApiClient.Models.CheckInResult
 {
-    using System;
-    using System.Collections.Generic;
-
-    using System.Globalization;
-    using Newtonsoft.Json;
-    using Newtonsoft.Json.Converters;
-
     public class CheckIns : IPlanningCenterResponse
     {
          [JsonProperty(propertyName: "links")]

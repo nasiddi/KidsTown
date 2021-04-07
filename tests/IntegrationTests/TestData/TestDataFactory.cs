@@ -1,7 +1,7 @@
 using System.Collections.Immutable;
-using CheckInsExtension.PlanningCenterAPIClient.Models.CheckInResult;
+using KidsTown.PlanningCenterApiClient.Models.CheckInResult;
 
-namespace IntegrationTests.TestData
+namespace KidsTown.IntegrationTests.TestData
 {
     public static class TestDataFactory
     {

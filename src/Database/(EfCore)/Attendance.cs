@@ -2,7 +2,7 @@
 
 #nullable disable
 
-namespace ChekInsExtension.Database
+namespace KidsTown.Database
 {
     public partial class Attendance
     {

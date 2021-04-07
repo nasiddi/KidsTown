@@ -1,6 +1,6 @@
-using CheckInsExtension.CheckInUpdateJobs.Models;
+using KidsTown.KidsTown.Models;
 
-namespace ChekInsExtension.Database
+namespace KidsTown.Database
 {
     public static class MappingService
     {

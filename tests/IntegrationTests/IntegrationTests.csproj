@@ -2,6 +2,7 @@
 
     <PropertyGroup>
         <TargetFramework>net5.0</TargetFramework>
+        <RootNamespace>KidsTown.IntegrationTests</RootNamespace>
 
         <IsPackable>false</IsPackable>
 
@@ -37,6 +38,7 @@
     <ItemGroup>
       <ProjectReference Include="..\..\src\Application\Application.csproj" />
       <ProjectReference Include="..\..\src\BackgroundTasks\BackgroundTasks.csproj" />
+      <ProjectReference Include="..\..\src\KidsTown\KidsTown.csproj" />
       <ProjectReference Include="..\..\src\PlanningCenterApiClient\PlanningCenterApiClient.csproj" />
     </ItemGroup>
 </Project>

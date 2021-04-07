@@ -3,19 +3,19 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using System.Threading.Tasks;
-using CheckInsExtension.PlanningCenterAPIClient;
-using CheckInsExtension.PlanningCenterAPIClient.Models.CheckInResult;
-using CheckInsExtension.PlanningCenterAPIClient.Models.EventResult;
-using CheckInsExtension.PlanningCenterAPIClient.Models.PeopleResult;
-using IntegrationTests.TestData;
-using Attendee = CheckInsExtension.PlanningCenterAPIClient.Models.CheckInResult.Attendee;
-using Datum = CheckInsExtension.PlanningCenterAPIClient.Models.PeopleResult.Datum;
-using Included = CheckInsExtension.PlanningCenterAPIClient.Models.CheckInResult.Included;
-using IncludedAttributes = CheckInsExtension.PlanningCenterAPIClient.Models.CheckInResult.IncludedAttributes;
-using Parent = CheckInsExtension.PlanningCenterAPIClient.Models.PeopleResult.Parent;
-using Relationship = CheckInsExtension.PlanningCenterAPIClient.Models.CheckInResult.Relationship;
+using KidsTown.IntegrationTests.TestData;
+using KidsTown.PlanningCenterApiClient;
+using KidsTown.PlanningCenterApiClient.Models.CheckInResult;
+using KidsTown.PlanningCenterApiClient.Models.EventResult;
+using KidsTown.PlanningCenterApiClient.Models.PeopleResult;
+using Attendee = KidsTown.PlanningCenterApiClient.Models.CheckInResult.Attendee;
+using Datum = KidsTown.PlanningCenterApiClient.Models.PeopleResult.Datum;
+using Included = KidsTown.PlanningCenterApiClient.Models.CheckInResult.Included;
+using IncludedAttributes = KidsTown.PlanningCenterApiClient.Models.CheckInResult.IncludedAttributes;
+using Parent = KidsTown.PlanningCenterApiClient.Models.PeopleResult.Parent;
+using Relationship = KidsTown.PlanningCenterApiClient.Models.CheckInResult.Relationship;
 
-namespace IntegrationTests.Mocks
+namespace KidsTown.IntegrationTests.Mocks
 {
     public class PlanningCenterClientMock : IPlanningCenterClient
     {
@@ -141,11 +141,11 @@ namespace IntegrationTests.Mocks
             });
         }
 
-        private static List<CheckInsExtension.PlanningCenterAPIClient.Models.EventResult.Datum> GetEventData()
+        private static List<PlanningCenterApiClient.Models.EventResult.Datum> GetEventData()
         {
             return new()
             {
-                new CheckInsExtension.PlanningCenterAPIClient.Models.EventResult.Datum
+                new PlanningCenterApiClient.Models.EventResult.Datum
                 {
                     Id = 0,
                     Attributes = new Attributes
@@ -184,7 +184,7 @@ namespace IntegrationTests.Mocks
             }).ToList();
         }
 
-        private static List<CheckInsExtension.PlanningCenterAPIClient.Models.PeopleResult.Included> GetPeopleIncluded()
+        private static List<PlanningCenterApiClient.Models.PeopleResult.Included> GetPeopleIncluded()
         {
             var fieldData = TestDataFactory.GetTestData()
                 .Where(predicate: d => d.PeopleId.HasValue)
@@ -195,19 +195,19 @@ namespace IntegrationTests.Mocks
                 .Select(selector: f =>
                     {
                         var field = f.Last();
-                        return new CheckInsExtension.PlanningCenterAPIClient.Models.PeopleResult.Included
+                        return new PlanningCenterApiClient.Models.PeopleResult.Included
                         {
                             PeopleIncludedType = PeopleIncludedType.FieldDatum,
                             Id = field.FieldOptionId,
                             Attributes =
-                                new CheckInsExtension.PlanningCenterAPIClient.Models.PeopleResult.IncludedAttributes
+                                new PlanningCenterApiClient.Models.PeopleResult.IncludedAttributes
                                 {
                                     Value = field.Value
                                 },
                             Relationships = new IncludedRelationships
                             {
                                 FieldDefinition =
-                                    new CheckInsExtension.PlanningCenterAPIClient.Models.PeopleResult.Relationship
+                                    new PlanningCenterApiClient.Models.PeopleResult.Relationship
                                     {
                                         Data = new Parent
                                         {

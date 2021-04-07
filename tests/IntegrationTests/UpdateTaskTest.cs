@@ -5,13 +5,13 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using CheckInsExtension.CheckInUpdateJobs.Models;
-using CheckInsExtension.CheckInUpdateJobs.Update;
-using CheckInsExtension.PlanningCenterAPIClient;
-using CheckInsExtension.PlanningCenterAPIClient.Models.CheckInResult;
-using ChekInsExtension.Database;
 using FluentAssertions;
-using IntegrationTests.Mocks;
+using KidsTown.BackgroundTasks.PlanningCenter;
+using KidsTown.Database;
+using KidsTown.IntegrationTests.Mocks;
+using KidsTown.KidsTown.Models;
+using KidsTown.PlanningCenterApiClient;
+using KidsTown.PlanningCenterApiClient.Models.CheckInResult;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -19,12 +19,12 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using NUnit.Framework;
-using Location = ChekInsExtension.Database.Location;
-using Person = ChekInsExtension.Database.Person;
+using Location = KidsTown.Database.Location;
+using Person = KidsTown.Database.Person;
 
 // ReSharper disable ConvertToUsingDeclaration
 
-namespace IntegrationTests
+namespace KidsTown.IntegrationTests
 {
     public class UpdateTaskTest
     {
