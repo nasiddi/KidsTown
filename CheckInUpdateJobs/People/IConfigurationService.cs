@@ -9,6 +9,6 @@ namespace CheckInsExtension.CheckInUpdateJobs.People
         Task<ImmutableList<LocationGroup>> GetActiveLocationGroups();
         long GetDefaultEventId();
         Task<ImmutableList<CheckInsEvent>> GetAvailableEvents();
-        Task<ImmutableList<Location>> GetLocations(long eventId, IImmutableList<int> selectedLocationGroups);
+        Task<ImmutableList<Location>> GetLocations(long eventId, IImmutableList<int>? selectedLocationGroups);
     }
 }

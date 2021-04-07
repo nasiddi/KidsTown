@@ -5,7 +5,7 @@ import {
 	getFormattedDate,
 	getSelectedEventFromStorage,
 	getSelectedOptionsFromStorage,
-	MultiSelect,
+	LocationSelect,
 } from './Common'
 import { Table } from 'reactstrap'
 import { withAuth } from '../auth/MsalAuthProvider'
@@ -62,11 +62,13 @@ class Statistic extends Component {
 					alignItems="center"
 				>
 					<Grid item xs={12}>
-						<MultiSelect
+						<LocationSelect
 							name={'statisticLocationGroups'}
+							isMulti={true}
 							onChange={this.updateSelectedLocationGroups}
 							options={this.state.locationGroups}
 							defaultOptions={this.state.statisticLocationGroups}
+							minHeight={0}
 						/>
 					</Grid>
 				</Grid>
@@ -84,11 +86,13 @@ class Statistic extends Component {
 					alignItems="center"
 				>
 					<Grid item xs={12}>
-						<MultiSelect
+						<LocationSelect
 							name={'statisticLocations'}
+							isMulti={true}
 							onChange={this.updateSelectedLocations}
 							options={this.state.multiLocations}
 							defaultOptions={this.state.statisticLocations}
+							minHeight={0}
 						/>
 					</Grid>
 				</Grid>
@@ -186,7 +190,7 @@ class Statistic extends Component {
 
 	async fetchLocations(locationsGroups) {
 		return await fetch(
-			`configuration/events/${await getSelectedEventFromStorage()}/locations`,
+			`configuration/events/${await getSelectedEventFromStorage()}/location-groups/locations`,
 			{
 				body: JSON.stringify(locationsGroups.map((l) => l.value)),
 				method: 'POST',

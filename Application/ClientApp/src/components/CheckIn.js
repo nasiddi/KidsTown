@@ -9,7 +9,7 @@ import {
 	getSelectedEventFromStorage,
 	getSelectedOptionsFromStorage,
 	getStateFromLocalStorage,
-	MultiSelect,
+	LocationSelect,
 	FontAwesomeIcon,
 	theme,
 } from './Common'
@@ -175,11 +175,13 @@ class CheckIn extends Component {
 						</MuiThemeProvider>
 					</Grid>
 					<Grid item md={3} xs={12}>
-						<MultiSelect
+						<LocationSelect
 							name={'checkInOutLocations'}
 							onChange={this.updateOptions}
+							isMulti={true}
 							options={this.state.locations}
 							defaultOptions={this.state.checkInOutLocations}
+							minHeight={44}
 						/>
 					</Grid>
 					<Grid item md={10} xs={12}>

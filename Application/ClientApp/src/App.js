@@ -4,6 +4,7 @@ import { CheckInLayout, OverviewLayout } from './components/Layout'
 
 import './custom.css'
 import { CheckInOut } from './components/CheckIn'
+import { GuestCheckIn } from './components/GuestCheckIn'
 import { Statistics } from './components/Statistic'
 import { Settings } from './components/Settings'
 import { OverviewOptions } from './components/OverviewOptions'
@@ -21,6 +22,7 @@ export const App = () => {
 				<Route path="/overview" component={OverviewOptions} />
 				<Route path="/overview" component={OverviewHeadCount} />
 				<Route path="/checkin" component={CheckInOut} />
+				<Route path="/guest" component={GuestCheckIn} />
 			</CheckInLayout>
 			<OverviewLayout>
 				<Route path="/overview" component={OverviewDetail} />

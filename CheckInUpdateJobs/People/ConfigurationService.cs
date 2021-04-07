@@ -42,7 +42,7 @@ namespace CheckInsExtension.CheckInUpdateJobs.People
 
         public async Task<ImmutableList<Location>> GetLocations(
             long eventId,
-            IImmutableList<int> selectedLocationGroups
+            IImmutableList<int>? selectedLocationGroups
         )
         {
             return await _configurationRepository.GetLocations(eventId: eventId, selectedLocationGroups: selectedLocationGroups);

@@ -131,6 +131,7 @@ namespace Application.Controllers
         {
             var checkState = checkType switch
             {
+                CheckType.GuestCheckIn => CheckState.None,
                 CheckType.CheckIn => CheckState.PreCheckedIn,
                 CheckType.CheckOut => CheckState.CheckedIn,
                 _ => throw new ArgumentOutOfRangeException(paramName: nameof(checkType), actualValue: checkType, message: null)
@@ -155,6 +156,34 @@ namespace Application.Controllers
             
         }
 
+        [HttpPost]
+        [Route(template: "guest")]
+        [Produces(contentType: "application/json")]
+        public async Task<IActionResult> CheckInGuest([FromBody] GuestCheckInRequest request)
+        {
+            var attendanceId = await _checkInOutService.CheckInGuest(
+                locationId: request.LocationId,
+                securityCode: request.SecurityCode,
+                firstName: request.FirstName,
+                lastName: request.LastName);
+            
+            if (attendanceId != null)
+            {
+                return Ok(value: new CheckInOutResult
+                {
+                    Text = $"CheckIn für {request.FirstName} {request.LastName} war erfolgreich.",
+                    AlertLevel = AlertLevel.Success,
+                    AttendanceIds = ImmutableList.Create(attendanceId.Value)
+                });
+            }
+
+            return Ok(value: new CheckInOutResult
+            {
+                Text = $"CheckIn für {request.FirstName} {request.LastName} ist fehlgeschlagen.",
+                AlertLevel = AlertLevel.Danger
+            });
+        }
+        
         private static string GetCandidateAlert(CheckInOutRequest request, ImmutableList<CheckInOutCandidate> checkInOutCandidates,
             out AlertLevel level)
         {

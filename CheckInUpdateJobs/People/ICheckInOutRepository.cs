@@ -10,5 +10,6 @@ namespace CheckInsExtension.CheckInUpdateJobs.People
         Task<bool> CheckInPeople(IImmutableList<int> checkInIds);
         Task<bool> CheckOutPeople(IImmutableList<int> checkInIds);
         Task<bool> SetCheckState(CheckState revertedCheckState, ImmutableList<int> checkInIds);
+        Task<int> CreateGuest(int locationId, string securityCode, string firstName, string lastName);
     }
 }

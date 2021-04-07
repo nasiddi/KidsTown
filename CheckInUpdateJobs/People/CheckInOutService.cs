@@ -32,5 +32,18 @@ namespace CheckInsExtension.CheckInUpdateJobs.People
         {
             return _checkInOutRepository.SetCheckState(revertedCheckState: revertedCheckState, checkInIds: checkinIds);
         }
+
+        public async Task<int?> CheckInGuest(int locationId, string securityCode, string firstName, string lastName)
+        {
+            var attendanceId = await _checkInOutRepository.CreateGuest(
+                locationId: locationId,
+                securityCode: securityCode,
+                firstName: firstName,
+                lastName: lastName);
+            
+            var success = await CheckInPeople(checkInIds: ImmutableList.Create(item: attendanceId));
+
+            return success ? attendanceId : null;
+        }
     }
 }

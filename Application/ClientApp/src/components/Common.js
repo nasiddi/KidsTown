@@ -11,11 +11,18 @@ export async function fetchLocationGroups() {
 	return await response.json()
 }
 
-export const selectStyles = {
-	menu: (base) => ({
-		...base,
-		zIndex: 100,
-	}),
+function selectStyles(minHeight, borderColor) {
+	return {
+		menu: (base) => ({
+			...base,
+			zIndex: 100,
+		}),
+		control: (base) => ({
+			...base,
+			minHeight: minHeight ?? 0,
+			borderColor: borderColor ?? '#bfbfbf',
+		}),
+	}
 }
 
 export function getSelectedOptionsFromStorage(key, fallback) {
@@ -69,11 +76,11 @@ export function getLastSunday() {
 	return t
 }
 
-export function MultiSelect(props) {
+export function LocationSelect(props) {
 	return (
 		<Select
-			styles={selectStyles}
-			isMulti
+			styles={selectStyles(props['minHeight'], props['borderColor'])}
+			isMulti={props['isMulti']}
 			placeholder="Select locations"
 			name={props['name']}
 			options={props['options']}

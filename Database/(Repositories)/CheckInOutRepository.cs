@@ -70,6 +70,11 @@ namespace ChekInsExtension.Database
 
                 switch (revertedCheckState)
                 {
+                    case CheckState.None:
+                        var people = await db.People.Where(p => checkIns.Select(c => c.PersonId).Contains(p.Id)).ToListAsync();
+                        db.RemoveRange(checkIns);
+                        db.RemoveRange(people);
+                        break;
                     case CheckState.PreCheckedIn:
                         checkIns.ForEach(action: c => c.CheckInDate = null);
                         break;
@@ -84,6 +89,34 @@ namespace ChekInsExtension.Database
 
                 var result = await db.SaveChangesAsync();
                 return result > 0;
+            }
+        }
+
+        public async Task<int> CreateGuest(int locationId, string securityCode, string firstName, string lastName)
+        {
+            await using (var db = _serviceScopeFactory.CreateScope().ServiceProvider.GetRequiredService<CheckInsExtensionContext>())
+            {
+                var person = new Person
+                {
+                    FistName = firstName,
+                    LastName = lastName,
+                    MayLeaveAlone = true,
+                    HasPeopleWithoutPickupPermission = false,
+                };
+
+                var attendance = new Attendance
+                {
+                    CheckInId = 0,
+                    LocationId = locationId,
+                    SecurityCode = securityCode,
+                    AttendanceTypeId = (int) AttendanceTypes.Guest,
+                    InsertDate = DateTime.UtcNow,
+                    Person = person
+                };
+
+                var entry = await db.AddAsync(entity: attendance);
+                await db.SaveChangesAsync();
+                return entry.Entity.Id;
             }
         }
 

@@ -5,7 +5,7 @@ import {
 	getStringFromSession,
 	getSelectedOptionsFromStorage,
 	getLastSunday,
-	MultiSelect,
+	LocationSelect,
 	DatePick,
 } from './Common'
 import { withAuth } from '../auth/MsalAuthProvider'
@@ -54,11 +54,13 @@ class Options extends Component {
 					alignItems="center"
 				>
 					<Grid item xs={9}>
-						<MultiSelect
+						<LocationSelect
 							name={'overviewLocations'}
+							isMulti={true}
 							onChange={this.updateOptions}
 							options={this.state.locations}
 							defaultOptions={this.state.overviewLocations}
+							minHeight={0}
 						/>
 					</Grid>
 					<Grid item xs={3}>

@@ -34,20 +34,28 @@ namespace ChekInsExtension.Database
 
         public async Task<ImmutableList<CheckInsExtension.CheckInUpdateJobs.Models.Location>> GetLocations(
             long eventId,
-            IImmutableList<int> selectedLocationGroups
+            IImmutableList<int>? selectedLocationGroups
         )
         {
             await using (var db = _serviceScopeFactory.CreateScope().ServiceProvider.GetRequiredService<CheckInsExtensionContext>())
             {
                 var locations = await db.Locations
                     .Where(predicate: l => l.EventId == eventId 
-                        && selectedLocationGroups.Contains(l.LocationGroupId))
+                        && (selectedLocationGroups == null || selectedLocationGroups.Contains(l.LocationGroupId)))
                     .ToListAsync()
                     .ConfigureAwait(continueOnCapturedContext: false);
                 
-                return locations.Select(selector: l => new CheckInsExtension.CheckInUpdateJobs.Models.Location(id: l.Id, name: l.Name, locationGroupId: l.LocationGroupId))
+                return locations.Select(selector: MapLocation)
                     .ToImmutableList();
             }
+        }
+
+        private static CheckInsExtension.CheckInUpdateJobs.Models.Location MapLocation(Location location)
+        {
+            return new(
+                id: location.Id,
+                name: location.Name,
+                locationGroupId: location.LocationGroupId);
         }
     }
 }

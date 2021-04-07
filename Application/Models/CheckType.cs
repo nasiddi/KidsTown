@@ -7,10 +7,12 @@ namespace Application.Models
     [JsonConverter(converterType: typeof(StringEnumConverter))]
     public enum CheckType
     {
-        [EnumMember(Value = "CheckInUpdateJobs")]
+        [EnumMember(Value = "CheckIn")]
         CheckIn,
         [EnumMember(Value = "CheckOut")]
-        CheckOut
+        CheckOut,
+        [EnumMember(Value = "GuestCheckIn")]
+        GuestCheckIn
 
     }
 }
