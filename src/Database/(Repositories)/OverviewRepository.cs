@@ -54,7 +54,8 @@ namespace KidsTown.Database
                 eventId: eventId,
                 startDate: startDate,
                 endDate: endDate,
-                selectedLocations: selectedLocations);   
+                selectedLocations: selectedLocations)
+                .ConfigureAwait(continueOnCapturedContext: false);   
         }
 
         public async Task<ImmutableList<Attendee>> GetAttendanceHistoryByLocationGroups(
@@ -68,7 +69,8 @@ namespace KidsTown.Database
                 eventId: eventId,
                 startDate: startDate,
                 endDate: endDate,
-                selectedLocationGroups: selectedLocationGroups);
+                selectedLocationGroups: selectedLocationGroups)
+                .ConfigureAwait(continueOnCapturedContext: false);
         }
 
         private async Task<ImmutableList<Attendee>> GetAttendanceHistory(
