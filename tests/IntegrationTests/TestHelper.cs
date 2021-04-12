@@ -38,7 +38,7 @@ namespace KidsTown.IntegrationTests
             {
                 while (!await db.Database.CanConnectAsync())
                 {
-                    await Task.Delay(millisecondsDelay: 100);
+                    await Task.Delay(millisecondsDelay: 100).ConfigureAwait(continueOnCapturedContext: false);
                 }
 
                 var testData = TestDataFactory.GetTestData();

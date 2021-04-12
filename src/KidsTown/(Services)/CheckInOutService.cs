@@ -36,7 +36,8 @@ namespace KidsTown.KidsTown
 
         public async Task<int?> CreateGuest(int locationId, string securityCode, string firstName, string lastName)
         {
-            var securityCodeExists = await _checkInOutRepository.SecurityCodeExists(securityCode: securityCode);
+            var securityCodeExists = await _checkInOutRepository.SecurityCodeExists(securityCode: securityCode)
+                .ConfigureAwait(continueOnCapturedContext: false);
 
             if (securityCodeExists)
             {
@@ -47,7 +48,8 @@ namespace KidsTown.KidsTown
                 locationId: locationId,
                 securityCode: securityCode,
                 firstName: firstName,
-                lastName: lastName);
+                lastName: lastName)
+                .ConfigureAwait(continueOnCapturedContext: false);
         }
         
         private async Task<bool> CheckInPeople(IImmutableList<int> attendanceIds)

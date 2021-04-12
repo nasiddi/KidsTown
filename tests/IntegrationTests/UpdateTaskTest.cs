@@ -33,7 +33,7 @@ namespace KidsTown.IntegrationTests
         [TearDown]
         public async Task TearDown()
         {
-            await TestHelper.CleanDatabase(serviceProvider: _serviceProvider);
+            await TestHelper.CleanDatabase(serviceProvider: _serviceProvider).ConfigureAwait(continueOnCapturedContext: false);
         }
         
         [Test]
@@ -42,7 +42,7 @@ namespace KidsTown.IntegrationTests
             SetupServiceProvider();
             
             var updateTask = _serviceProvider.GetService<IHostedService>() as UpdateTask;
-            await RunTask(updateTask: updateTask!, minExecutionCount: 2);
+            await RunTask(updateTask: updateTask!, minExecutionCount: 2).ConfigureAwait(continueOnCapturedContext: false);
             
             Assert.That(actual: updateTask.GetExecutionCount(), expression: Is.GreaterThan(expected: 1));
 
@@ -52,12 +52,12 @@ namespace KidsTown.IntegrationTests
         public async Task UpdateMockData()
         {
             SetupServiceProvider(mockPlanningCenterClient: true);
-            await TestHelper.CleanDatabase(serviceProvider: _serviceProvider);
+            await TestHelper.CleanDatabase(serviceProvider: _serviceProvider).ConfigureAwait(continueOnCapturedContext: false);
             
             var updateTask = _serviceProvider.GetService<IHostedService>() as UpdateTask;
-            await RunTask(updateTask: updateTask!);
+            await RunTask(updateTask: updateTask!).ConfigureAwait(continueOnCapturedContext: false);
 
-            await AssertUpdateTask();
+            await AssertUpdateTask().ConfigureAwait(continueOnCapturedContext: false);
         }
         
         private static async Task RunTask(UpdateTask updateTask, int minExecutionCount = 1)
@@ -70,7 +70,7 @@ namespace KidsTown.IntegrationTests
             var watch = Stopwatch.StartNew();
             while (minExecutionCount > updateTask.GetExecutionCount() && watch.ElapsedMilliseconds < 60000)
             {
-                await Task.Delay(millisecondsDelay: 100);
+                await Task.Delay(millisecondsDelay: 100).ConfigureAwait(continueOnCapturedContext: false);
             }
             
             updateTask.DeactivateTask();
@@ -133,7 +133,7 @@ namespace KidsTown.IntegrationTests
         private async Task AssertUpdateTask()
         {
             var expectedData = GetExpectedData();
-            var actualData = await GetActualData();
+            var actualData = await GetActualData().ConfigureAwait(continueOnCapturedContext: false);
 
             expectedData.ForEach(action: e => AssertAttendance(
                 expected: e,

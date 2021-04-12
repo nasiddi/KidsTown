@@ -43,7 +43,35 @@ namespace KidsTown.Database
             }
         }
 
-        public async Task<ImmutableList<Attendee>> GetAttendanceHistory(
+        public async Task<ImmutableList<Attendee>> GetAttendanceHistoryByLocations(
+            long eventId,
+            DateTime startDate,
+            DateTime endDate,
+            IImmutableList<int> selectedLocations
+        )
+        {
+            return await GetAttendanceHistory(
+                eventId: eventId,
+                startDate: startDate,
+                endDate: endDate,
+                selectedLocations: selectedLocations);   
+        }
+
+        public async Task<ImmutableList<Attendee>> GetAttendanceHistoryByLocationGroups(
+            long eventId,
+            DateTime startDate,
+            DateTime endDate,
+            IImmutableList<int> selectedLocationGroups
+        )
+        {
+            return await GetAttendanceHistory(
+                eventId: eventId,
+                startDate: startDate,
+                endDate: endDate,
+                selectedLocationGroups: selectedLocationGroups);
+        }
+
+        private async Task<ImmutableList<Attendee>> GetAttendanceHistory(
             long eventId,
             DateTime startDate,
             DateTime endDate,

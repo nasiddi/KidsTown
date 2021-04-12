@@ -37,7 +37,7 @@ namespace KidsTown.KidsTown
             IImmutableList<int> selectedLocations,
             DateTime startDate)
         {
-            var attendees = await _overviewRepository.GetAttendanceHistory(
+            var attendees = await _overviewRepository.GetAttendanceHistoryByLocations(
                     selectedLocations: selectedLocations,
                     eventId: eventId,
                     startDate: startDate,
@@ -56,7 +56,7 @@ namespace KidsTown.KidsTown
             DateTime endDate
         )
         {
-            var attendees = await _overviewRepository.GetAttendanceHistory(
+            var attendees = await _overviewRepository.GetAttendanceHistoryByLocationGroups(
                     selectedLocationGroups: selectedLocationGroups,
                     eventId: eventId,
                     startDate: startDate,
