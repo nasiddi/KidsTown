@@ -72,9 +72,9 @@ namespace KidsTown.Database
                 switch (revertedCheckState)
                 {
                     case CheckState.None:
-                        var people = await db.People.Where(p => attendances.Select(a => a.PersonId).Contains(p.Id)).ToListAsync();
-                        db.RemoveRange(attendances);
-                        db.RemoveRange(people);
+                        var people = await db.People.Where(predicate: p => attendances.Select(a => a.PersonId).Contains(p.Id)).ToListAsync();
+                        db.RemoveRange(entities: attendances);
+                        db.RemoveRange(entities: people);
                         break;
                     case CheckState.PreCheckedIn:
                         attendances.ForEach(action: c => c.CheckInDate = null);
@@ -118,6 +118,17 @@ namespace KidsTown.Database
                 var entry = await db.AddAsync(entity: attendance);
                 await db.SaveChangesAsync();
                 return entry.Entity.Id;
+            }
+        }
+
+        public async Task<bool> SecurityCodeExists(string securityCode)
+        {
+            await using (var db = _serviceScopeFactory.CreateScope().ServiceProvider.GetRequiredService<KidsTownContext>())
+            {
+                var attendanceCount = await db.Attendances
+                    .Where(predicate: a => a.SecurityCode == securityCode
+                                           && a. InsertDate > DateTime.Today).CountAsync();
+                return attendanceCount > 0;
             }
         }
 

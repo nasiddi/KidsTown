@@ -6,7 +6,8 @@ import {
 	getSelectedEventFromStorage,
 	LocationSelect,
 	FontAwesomeIcon,
-	theme,
+	primaryTheme,
+	ToggleButtons,
 } from './Common'
 import { Alert, Button } from 'reactstrap'
 import { withAuth } from '../auth/MsalAuthProvider'
@@ -43,13 +44,15 @@ class CheckInGuest extends Component {
 		this.securityCodeInput = React.createRef()
 
 		this.checkin = this.checkin.bind(this)
+		this.createGuest = this.createGuest.bind(this)
 		this.resetView = this.resetView.bind(this)
 		this.updateOptions = this.updateOptions.bind(this)
 		this.undoAction = this.undoAction.bind(this)
+		this.selectCreateOption = this.selectCreateOption.bind(this)
 
 		this.state = {
 			locations: [],
-			guestCheckInLocation: { label: '', value: 0 },
+			guestCheckInLocation: null,
 			securityCode: '',
 			firstName: '',
 			lastName: '',
@@ -60,6 +63,7 @@ class CheckInGuest extends Component {
 			securityCodeIsValid: true,
 			firstNameIsValid: true,
 			lastNameIsValid: true,
+			createOption: localStorage.getItem('createOption') ?? 'Create',
 		}
 	}
 
@@ -77,12 +81,23 @@ class CheckInGuest extends Component {
 					justify="space-between"
 					alignItems="center"
 				>
+					<Grid item xs={12}>
+						<ToggleButtons
+							isLeftButtonSelected={
+								this.state.createOption === 'Create'
+							}
+							leftButtonLabel={'Create'}
+							rightButtonLabel={'CheckIn'}
+							callback={this.selectCreateOption}
+						/>
+					</Grid>
 					<Grid item md={6} xs={12}>
 						<LocationSelect
 							name={'guestCheckInLocation'}
 							isMulti={false}
 							onChange={this.updateOptions}
 							options={this.state.locations}
+							value={this.state.guestCheckInLocation}
 							minHeight={56}
 							borderColor={
 								this.state.locationIsValid
@@ -92,7 +107,7 @@ class CheckInGuest extends Component {
 						/>
 					</Grid>
 					<Grid item md={6} xs={12}>
-						<MuiThemeProvider theme={theme}>
+						<MuiThemeProvider theme={primaryTheme}>
 							<TextField
 								error={!this.state.securityCodeIsValid}
 								inputRef={this.securityCodeInput}
@@ -105,7 +120,7 @@ class CheckInGuest extends Component {
 						</MuiThemeProvider>
 					</Grid>
 					<Grid item md={6} xs={12}>
-						<MuiThemeProvider theme={theme}>
+						<MuiThemeProvider theme={primaryTheme}>
 							<TextField
 								error={!this.state.firstNameIsValid}
 								label="FirstName"
@@ -117,7 +132,7 @@ class CheckInGuest extends Component {
 						</MuiThemeProvider>
 					</Grid>
 					<Grid item md={6} xs={12}>
-						<MuiThemeProvider theme={theme}>
+						<MuiThemeProvider theme={primaryTheme}>
 							<TextField
 								error={!this.state.lastNameIsValid}
 								inputRef={this.securityCodeInput}
@@ -135,8 +150,16 @@ class CheckInGuest extends Component {
 							block
 							color={'success'}
 							size="lg"
-							name={'CheckIn'}
-							onClick={this.checkin}
+							name={
+								this.state.createOption === 'Create'
+									? 'Create Guest'
+									: 'Create and CheckIn Guest'
+							}
+							onClick={
+								this.state.createOption === 'Create'
+									? this.createGuest
+									: this.checkin
+							}
 						/>
 					</Grid>
 				</Grid>
@@ -219,13 +242,42 @@ class CheckInGuest extends Component {
 	}
 
 	async checkin() {
-		const isValid = this.validateForm()
+		const isValid = await this.validateForm()
 
 		if (!isValid) {
 			return
 		}
 
-		await fetch('checkinout/guest', {
+		await fetch('checkinout/guest/checkin', {
+			body: JSON.stringify({
+				securityCode: this.state.securityCode,
+				locationId: this.state.guestCheckInLocation.value,
+				firstName: this.state.firstName,
+				lastName: this.state.lastName,
+			}),
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json',
+			},
+		})
+			.then((r) => r.json())
+			.then((j) => {
+				this.setState({
+					alert: { level: j['alertLevel'], text: j['text'] },
+					lastActionAttendanceIds: j['attendanceIds'] ?? [],
+				})
+				this.resetView(false)
+			})
+	}
+
+	async createGuest() {
+		const isValid = await this.validateForm()
+
+		if (!isValid) {
+			return
+		}
+
+		await fetch('checkinout/guest/create', {
 			body: JSON.stringify({
 				securityCode: this.state.securityCode,
 				locationId: this.state.guestCheckInLocation.value,
@@ -301,7 +353,7 @@ class CheckInGuest extends Component {
 	resetView(resetAlert = true) {
 		this.setState({
 			securityCode: '',
-			guestCheckInLocation: 0,
+			guestCheckInLocation: null,
 			firstName: '',
 			lastName: '',
 			locationIsValid: true,
@@ -329,6 +381,13 @@ class CheckInGuest extends Component {
 			.then((j) => {
 				return j
 			})
+	}
+
+	selectCreateOption(event) {
+		if (this.state.createOption !== event.target.id) {
+			this.setState({ createOption: event.target.id })
+			localStorage.setItem('createOption', event.target.id)
+		}
 	}
 }
 

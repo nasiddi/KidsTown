@@ -34,17 +34,20 @@ namespace KidsTown.KidsTown
             return _checkInOutRepository.SetCheckState(revertedCheckState: revertedCheckState, attendanceIds: attendanceIds);
         }
 
-        public async Task<int?> CheckInGuest(int locationId, string securityCode, string firstName, string lastName)
+        public async Task<int?> CreateGuest(int locationId, string securityCode, string firstName, string lastName)
         {
-            var attendanceId = await _checkInOutRepository.CreateGuest(
+            var securityCodeExists = await _checkInOutRepository.SecurityCodeExists(securityCode: securityCode);
+
+            if (securityCodeExists)
+            {
+                return null;
+            }
+            
+            return await _checkInOutRepository.CreateGuest(
                 locationId: locationId,
                 securityCode: securityCode,
                 firstName: firstName,
                 lastName: lastName);
-            
-            var success = await CheckInPeople(attendanceIds: ImmutableList.Create(item: attendanceId));
-
-            return success ? attendanceId : null;
         }
         
         private async Task<bool> CheckInPeople(IImmutableList<int> attendanceIds)

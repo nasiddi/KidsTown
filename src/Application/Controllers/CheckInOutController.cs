@@ -29,7 +29,7 @@ namespace KidsTown.Application.Controllers
         public async Task<IActionResult> ManualCheckIn([FromBody] CheckInOutRequest request)
         {
             var attendanceIds = request.CheckInOutCandidates.Select(selector: c => c.AttendanceId).ToImmutableList();
-            var success = await _checkInOutService.CheckInOutPeople(request.CheckType, attendanceIds);
+            var success = await _checkInOutService.CheckInOutPeople(checkType: request.CheckType, attendanceIds: attendanceIds);
             
             var names = request.CheckInOutCandidates.Select(selector: c => c.Name).ToImmutableList();
 
@@ -152,31 +152,64 @@ namespace KidsTown.Application.Controllers
         }
 
         [HttpPost]
-        [Route(template: "guest")]
+        [Route(template: "guest/checkin")]
         [Produces(contentType: "application/json")]
         public async Task<IActionResult> CheckInGuest([FromBody] GuestCheckInRequest request)
         {
-            var attendanceId = await _checkInOutService.CheckInGuest(
+            var attendanceId = await _checkInOutService.CreateGuest(
                 locationId: request.LocationId,
                 securityCode: request.SecurityCode,
                 firstName: request.FirstName,
                 lastName: request.LastName);
-            
-            if (attendanceId != null)
+
+            if (attendanceId == null)
             {
                 return Ok(value: new CheckInOutResult
                 {
-                    Text = $"CheckIn für {request.FirstName} {request.LastName} war erfolgreich.",
-                    AlertLevel = AlertLevel.Success,
-                    AttendanceIds = ImmutableList.Create(attendanceId.Value)
+                    Text = $"Der SecurityCode {request.SecurityCode} existiert bereits.",
+                    AlertLevel = AlertLevel.Danger
                 });
             }
 
+            await _checkInOutService.CheckInOutPeople(
+                checkType: CheckType.CheckIn, 
+                attendanceIds: ImmutableList.Create(item: attendanceId.Value));
+
             return Ok(value: new CheckInOutResult
             {
-                Text = $"CheckIn für {request.FirstName} {request.LastName} ist fehlgeschlagen.",
-                AlertLevel = AlertLevel.Danger
+                Text = $"CheckIn für {request.FirstName} {request.LastName} war erfolgreich.",
+                AlertLevel = AlertLevel.Success,
+                AttendanceIds = ImmutableList.Create(item: attendanceId.Value)
             });
+        }
+        
+        [HttpPost]
+        [Route(template: "guest/create")]
+        [Produces(contentType: "application/json")]
+        public async Task<IActionResult> CreateGuest([FromBody] GuestCheckInRequest request)
+        {
+            var attendanceId = await _checkInOutService.CreateGuest(
+                locationId: request.LocationId,
+                securityCode: request.SecurityCode,
+                firstName: request.FirstName,
+                lastName: request.LastName);
+
+            if (attendanceId == null)
+            {
+                return Ok(value: new CheckInOutResult
+                {
+                    Text = $"Der SecurityCode {request.SecurityCode} existiert bereits.",
+                    AlertLevel = AlertLevel.Danger
+                });
+            }
+            
+            return Ok(value: new CheckInOutResult
+            {
+                Text = $"Erfassen von {request.FirstName} {request.LastName} war erfolgreich.",
+                AlertLevel = AlertLevel.Success,
+                AttendanceIds = ImmutableList.Create(item: attendanceId.Value)
+            });
+
         }
         
         private static string GetCandidateAlert(CheckInOutRequest request, ImmutableList<CheckInOutCandidate> checkInOutCandidates,
@@ -215,8 +248,8 @@ namespace KidsTown.Application.Controllers
             }
             
             var success = await _checkInOutService
-                .CheckInOutPeople(checkType, people.Select(selector: p => p.AttendanceId).ToImmutableList())
-                .ConfigureAwait(false);
+                .CheckInOutPeople(checkType: checkType, attendanceIds: people.Select(selector: p => p.AttendanceId).ToImmutableList())
+                .ConfigureAwait(continueOnCapturedContext: false);
                 
             return success ? people.Single() : null;
 

@@ -10,6 +10,6 @@ namespace KidsTown.KidsTown
         Task<IImmutableList<Person>> SearchForPeople(PeopleSearchParameters searchParameters);
         Task<bool> CheckInOutPeople(CheckType checkType, IImmutableList<int> attendanceIds);
         Task<bool> UndoAction(CheckState revertedCheckState, ImmutableList<int> attendanceIds);
-        Task<int?> CheckInGuest(int locationId, string securityCode, string firstName, string lastName);
+        Task<int?> CreateGuest(int locationId, string securityCode, string firstName, string lastName);
     }
 }

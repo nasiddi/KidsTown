@@ -1,9 +1,12 @@
-import { createMuiTheme } from '@material-ui/core'
+import { createMuiTheme, Grid, MuiThemeProvider } from '@material-ui/core'
 import Select from 'react-select'
 import React from 'react'
 import DatePicker from 'reactstrap-date-picker'
 import { loadCSS } from 'fg-loadcss'
 import Icon from '@material-ui/core/Icon'
+import FormControlLabel from '@material-ui/core/FormControlLabel'
+import Checkbox from '@material-ui/core/Checkbox'
+import { Button, ButtonGroup } from 'reactstrap'
 
 export async function fetchLocationGroups() {
 	const response = await fetch('configuration/location-groups')
@@ -45,7 +48,7 @@ export function getFormattedDate(dateString) {
 	)}-${`0${date.getUTCDate()}`.slice(-2)}`
 }
 
-export const theme = createMuiTheme({
+export const primaryTheme = createMuiTheme({
 	palette: {
 		primary: { main: '#047bff' },
 	},
@@ -80,6 +83,7 @@ export function LocationSelect(props) {
 	return (
 		<Select
 			styles={selectStyles(props['minHeight'], props['borderColor'])}
+			value={props['value']}
 			isMulti={props['isMulti']}
 			placeholder="Select locations"
 			name={props['name']}
@@ -103,6 +107,50 @@ export function DatePick(props) {
 			showClearButton
 			onChange={props['onChange']}
 		/>
+	)
+}
+
+export function PrimaryCheckBox(props) {
+	return (
+		<MuiThemeProvider theme={primaryTheme}>
+			<FormControlLabel
+				control={
+					<Checkbox
+						name={props['name']}
+						color="primary"
+						checked={props['checked']}
+						onChange={props['onChange']}
+					/>
+				}
+				label={props['label']}
+				labelPlacement="end"
+			/>
+		</MuiThemeProvider>
+	)
+}
+
+export function ToggleButtons(props) {
+	return (
+		<Grid item md={3} xs={12}>
+			<ButtonGroup size="medium" color="primary">
+				<Button
+					id={props['leftButtonLabel']}
+					onClick={props['callback']}
+					color="primary"
+					outline={!props['isLeftButtonSelected']}
+				>
+					{props['leftButtonLabel']}
+				</Button>
+				<Button
+					id={props['rightButtonLabel']}
+					onClick={props['callback']}
+					color="primary"
+					outline={props['isLeftButtonSelected']}
+				>
+					{props['rightButtonLabel']}
+				</Button>
+			</ButtonGroup>
+		</Grid>
 	)
 }
 

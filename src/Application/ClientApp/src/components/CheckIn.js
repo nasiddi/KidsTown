@@ -1,7 +1,5 @@
 import React, { Component } from 'react'
 import TextField from '@material-ui/core/TextField'
-import FormControlLabel from '@material-ui/core/FormControlLabel'
-import Checkbox from '@material-ui/core/Checkbox'
 import 'bootstrap/dist/css/bootstrap.css'
 import { Grid, MuiThemeProvider } from '@material-ui/core'
 import {
@@ -11,9 +9,11 @@ import {
 	getStateFromLocalStorage,
 	LocationSelect,
 	FontAwesomeIcon,
-	theme,
+	primaryTheme,
+	PrimaryCheckBox,
+	ToggleButtons,
 } from './Common'
-import { Alert, Button, ButtonGroup } from 'reactstrap'
+import { Alert, Button } from 'reactstrap'
 import { withAuth } from '../auth/MsalAuthProvider'
 
 function UndoButton(props) {
@@ -21,30 +21,6 @@ function UndoButton(props) {
 		<a onClick={props['callback']} className="alert-link">
 			<FontAwesomeIcon name={'fas fa-undo-alt'} />
 		</a>
-	)
-}
-function CheckToggle(props) {
-	return (
-		<Grid item md={3} xs={12}>
-			<ButtonGroup size="medium" color="primary">
-				<Button
-					id={'CheckIn'}
-					onClick={props['callback']}
-					color="primary"
-					outline={!props['isCheckIn']}
-				>
-					CheckIn
-				</Button>
-				<Button
-					id={'CheckOut'}
-					onClick={props['callback']}
-					color="primary"
-					outline={props['isCheckIn']}
-				>
-					CheckOut
-				</Button>
-			</ButtonGroup>
-		</Grid>
 	)
 }
 
@@ -92,6 +68,7 @@ class CheckIn extends Component {
 		this.checkInOutMultiple = this.checkInOutMultiple.bind(this)
 		this.invertSelectCandidate = this.invertSelectCandidate.bind(this)
 		this.undoAction = this.undoAction.bind(this)
+		this.handleChange = this.handleChange.bind(this)
 
 		this.state = {
 			locations: [],
@@ -138,41 +115,29 @@ class CheckIn extends Component {
 					justify="space-between"
 					alignItems="center"
 				>
-					<CheckToggle
-						isCheckIn={this.state.checkType === 'CheckIn'}
+					<ToggleButtons
+						isLeftButtonSelected={
+							this.state.checkType === 'CheckIn'
+						}
+						leftButtonLabel={'CheckIn'}
+						rightButtonLabel={'CheckOut'}
 						callback={this.selectCheckType}
 					/>
 					<Grid item md={3} xs={6}>
-						<MuiThemeProvider theme={theme}>
-							<FormControlLabel
-								control={
-									<Checkbox
-										name="fastCheckInOut"
-										color="primary"
-										checked={this.state.fastCheckInOut}
-										onChange={this.handleChange}
-									/>
-								}
-								label={`Fast ${this.state.checkType}`}
-								labelPlacement="end"
-							/>
-						</MuiThemeProvider>
+						<PrimaryCheckBox
+							name="fastCheckInOut"
+							checked={this.state.fastCheckInOut}
+							onChange={this.handleChange}
+							label={`Fast ${this.state.checkType}`}
+						/>
 					</Grid>
 					<Grid item md={3} xs={6}>
-						<MuiThemeProvider theme={theme}>
-							<FormControlLabel
-								control={
-									<Checkbox
-										name="singleCheckInOut"
-										color="primary"
-										checked={this.state.singleCheckInOut}
-										onChange={this.handleChange}
-									/>
-								}
-								label={`Single ${this.state.checkType}`}
-								labelPlacement="end"
-							/>
-						</MuiThemeProvider>
+						<PrimaryCheckBox
+							name="singleCheckInOut"
+							checked={this.state.singleCheckInOut}
+							onChange={this.handleChange}
+							label={`Single ${this.state.checkType}`}
+						/>
 					</Grid>
 					<Grid item md={3} xs={12}>
 						<LocationSelect
@@ -185,7 +150,7 @@ class CheckIn extends Component {
 						/>
 					</Grid>
 					<Grid item md={10} xs={12}>
-						<MuiThemeProvider theme={theme}>
+						<MuiThemeProvider theme={primaryTheme}>
 							<TextField
 								inputRef={this.securityCodeInput}
 								id="outlined-basic"
