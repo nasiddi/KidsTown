@@ -19,7 +19,7 @@ namespace KidsTown.IntegrationTests
             {
                 while (!await db.Database.CanConnectAsync())
                 {
-                    await Task.Delay(millisecondsDelay: 100);
+                    await Task.Delay(millisecondsDelay: 100).ConfigureAwait(continueOnCapturedContext: false);
                 }
                 
                 var attendances = await db.Attendances.Where(predicate: a => a.CheckInsId < 100).ToListAsync();
