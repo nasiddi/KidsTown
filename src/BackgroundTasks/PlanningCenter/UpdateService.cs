@@ -157,7 +157,7 @@ namespace KidsTown.BackgroundTasks.PlanningCenter
         private static CheckInsUpdate MapPreCheckIn(Attendee attendee, ImmutableDictionary<long, int> locationIdsByCheckInsLocationId)
         {
             var attributes = attendee.Attributes;
-            var checkInsLocationId = attendee.Relationships?.Locations?.Data?.SingleOrDefault()?.Id;
+            var checkInsLocationId = attendee.Relationships?.Locations?.Data?.FirstOrDefault()?.Id;
             var peopleId = attendee.Relationships?.Person?.Data?.Id;
 
             var people = MapPeopleUpdate(

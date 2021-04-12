@@ -1,6 +1,10 @@
 using System;
+using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
+using Aspose.Email;
+using Aspose.Email.Clients;
+using Aspose.Email.Clients.Smtp;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using static System.Threading.Tasks.Task;
@@ -14,6 +18,9 @@ namespace KidsTown.BackgroundTasks.PlanningCenter
 
         private bool _taskIsActive = true;
         private int _executionCount;
+        private DateTime? _emailSent = DateTime.UnixEpoch;
+        private static readonly TimeSpan EmailSendPause = TimeSpan.FromHours(value: 1);
+        private bool _successState = true;
 
         public UpdateTask(IUpdateService updateService, ILoggerFactory loggerFactory)
         {
@@ -57,10 +64,25 @@ namespace KidsTown.BackgroundTasks.PlanningCenter
             {
                 await _updateService.FetchDataFromPlanningCenter().ConfigureAwait(continueOnCapturedContext: false);
                 _executionCount++;
+
+                if (!_successState)
+                {
+                    _successState = true;
+                    SendEmail(
+                        subject: "UpdateTask ran sucessfully", 
+                        body: $"UpdateTask resumed normal operation at {DateTime.UtcNow}");
+                }
             }
             catch (Exception e)
             {
+                _successState = false;
                 logger.LogError(eventId: new EventId(id: 0, name: nameof(UpdateTask)), exception: e, message: e.Message);
+
+                if (_emailSent < DateTime.UtcNow - EmailSendPause)
+                {
+                    SendEmail(subject: $"UpdateTask failed {e.Message}", body: e.Message + e.StackTrace);
+                    _emailSent = DateTime.UtcNow;
+                }
             }
         }
 
@@ -92,5 +114,35 @@ namespace KidsTown.BackgroundTasks.PlanningCenter
         //public bool IsTaskActive() => _taskIsActive;
 
         public int GetExecutionCount() => _executionCount;
+
+        private static void SendEmail(string subject, string body)
+        {
+            MailMessage message = new()
+            {
+                Subject = $"{DateTime.UtcNow} {subject}",
+                Body = body,
+                From = new MailAddress(address: "kidstown@gvc.ch", displayName: "KidsTown", ignoreSmtpCheck: false)
+            };
+
+            message.To.Add(address: new MailAddress(address: "nsiddiqui@gvc.ch", displayName: "Nadina Siddiqui", ignoreSmtpCheck: false));
+
+            SmtpClient client = new()
+            {
+                Host = "smtp.office365.com",
+                Username = "kidstown@gvc.ch",
+                Password = "Jobarena.21",
+                Port = 587,
+                SecurityOptions = SecurityOptions.SSLExplicit
+            };
+
+            try
+            {
+                client.Send(message: message); 
+            }
+            catch (Exception ex)
+            {
+                Trace.WriteLine(message: ex.ToString());
+            }
+        }
     }
 }
