@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Aspose.Email;
 using Aspose.Email.Clients;
 using Aspose.Email.Clients.Smtp;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using static System.Threading.Tasks.Task;
@@ -15,6 +16,7 @@ namespace KidsTown.BackgroundTasks.PlanningCenter
     {
         private readonly IUpdateService _updateService;
         private readonly ILoggerFactory _loggerFactory;
+        private readonly IConfiguration _configuration;
 
         private bool _taskIsActive = true;
         private int _executionCount;
@@ -22,10 +24,11 @@ namespace KidsTown.BackgroundTasks.PlanningCenter
         private static readonly TimeSpan EmailSendPause = TimeSpan.FromHours(value: 1);
         private bool _successState = true;
 
-        public UpdateTask(IUpdateService updateService, ILoggerFactory loggerFactory)
+        public UpdateTask(IUpdateService updateService, ILoggerFactory loggerFactory, IConfiguration configuration)
         {
             _updateService = updateService;
             _loggerFactory = loggerFactory;
+            _configuration = configuration;
         }
         
         public Task StartAsync(CancellationToken cancellationToken)
@@ -115,7 +118,7 @@ namespace KidsTown.BackgroundTasks.PlanningCenter
 
         public int GetExecutionCount() => _executionCount;
 
-        private static void SendEmail(string subject, string body)
+        private void SendEmail(string subject, string body)
         {
             MailMessage message = new()
             {
@@ -125,12 +128,15 @@ namespace KidsTown.BackgroundTasks.PlanningCenter
             };
 
             message.To.Add(address: new MailAddress(address: "nsiddiqui@gvc.ch", displayName: "Nadina Siddiqui", ignoreSmtpCheck: false));
-
+            var username = _configuration.GetValue<string>(key: "MailAccount:Username");
+            var password = _configuration.GetValue<string>(key: "MailAccount:Password");
+            
+            
             SmtpClient client = new()
             {
                 Host = "smtp.office365.com",
-                Username = "kidstown@gvc.ch",
-                Password = "Jobarena.21",
+                Username = username,
+                Password = password,
                 Port = 587,
                 SecurityOptions = SecurityOptions.SSLExplicit
             };
