@@ -32,17 +32,17 @@ namespace KidsTown.IntegrationTests
             }
         }
 
-        public static async Task InsertTestData(ServiceProvider serviceProvider)
+        public static async Task InsertTestData(ServiceProvider serviceProvider, IImmutableList<TestData.TestData>? testData = null)
         {
+            testData ??= TestDataFactory.GetTestData();
+            
             await using (var db = serviceProvider!.GetRequiredService<KidsTownContext>())
             {
                 while (!await db.Database.CanConnectAsync())
                 {
                     await Task.Delay(millisecondsDelay: 100).ConfigureAwait(continueOnCapturedContext: false);
                 }
-
-                var testData = TestDataFactory.GetTestData();
-
+                
                 var locations = await db.Locations.ToListAsync();
 
                 var people = testData

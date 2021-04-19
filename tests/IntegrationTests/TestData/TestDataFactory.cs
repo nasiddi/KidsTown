@@ -27,7 +27,8 @@ namespace KidsTown.IntegrationTests.TestData
                     checkInsId: 2,
                     peopleId: null,
                     attendanceType: AttendeeType.Guest,
-                    testLocation: TestLocationIds.Schoefli
+                    testLocation: TestLocationIds.Schoefli,
+                    securityCode: "2S2S"
                 ),
                 new TestData(
                     checkInsFirstName: "Frida",
@@ -78,7 +79,8 @@ namespace KidsTown.IntegrationTests.TestData
                             fieldOptionId: 5,
                             value: "true")),
                     expectedMayLeaveAlone: true,
-                    expectedHasPeopleWithoutPickupPermission: true
+                    expectedHasPeopleWithoutPickupPermission: true,
+                    securityCode: "2S2S"
                 ),
                 new TestData(
                     checkInsFirstName: "Franz",
@@ -120,7 +122,8 @@ namespace KidsTown.IntegrationTests.TestData
                             fieldOptionId: 9,
                             value: null)),
                     expectedMayLeaveAlone: true,
-                    expectedHasPeopleWithoutPickupPermission: false
+                    expectedHasPeopleWithoutPickupPermission: false,
+                    securityCode: "1H1H"
                 ),
                 new TestData(
                     checkInsFirstName: "Henry",
@@ -141,7 +144,8 @@ namespace KidsTown.IntegrationTests.TestData
                             fieldOptionId: 9,
                             value: null)),
                     expectedMayLeaveAlone: true,
-                    expectedHasPeopleWithoutPickupPermission: false
+                    expectedHasPeopleWithoutPickupPermission: false,
+                    securityCode: "1H1H"
                 ),
                 new TestData(
                     checkInsFirstName: "Ernst",

@@ -18,7 +18,7 @@ namespace KidsTown.BackgroundTasks.PlanningCenter
         private readonly ILoggerFactory _loggerFactory;
         private readonly IConfiguration _configuration;
 
-        private bool _taskIsActive = true;
+        private bool _taskIsActive = false;
         private int _executionCount;
         private DateTime? _emailSent = DateTime.UnixEpoch;
         private static readonly TimeSpan EmailSendPause = TimeSpan.FromHours(value: 1);

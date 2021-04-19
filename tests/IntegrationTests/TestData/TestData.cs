@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Immutable;
 using KidsTown.PlanningCenterApiClient.Models.CheckInsResult;
 
@@ -16,9 +17,9 @@ namespace KidsTown.IntegrationTests.TestData
         public readonly IImmutableList<TestFieldData> FieldData;
         public readonly bool? ExpectedMayLeaveAlone;
         public readonly bool? ExpectedHasPeopleWithoutPickupPermission;
+        public readonly string SecurityCode;
+        public readonly int LocationGroupId;
 
-        public string SecurityCode => $"{TestLocation.ToString().Substring(startIndex: 0, length: 1)}{CheckInsId}{AttendanceType.ToString().Substring(startIndex: 0, length: 1)}{PeopleId ?? 0}";
-        
         public TestData(
             string checkInsFirstName,
             string checkInsLastName,
@@ -30,7 +31,8 @@ namespace KidsTown.IntegrationTests.TestData
             TestLocationIds testLocation,
             IImmutableList<TestFieldData> fieldData,
             bool expectedMayLeaveAlone,
-            bool expectedHasPeopleWithoutPickupPermission
+            bool expectedHasPeopleWithoutPickupPermission,
+            string? securityCode = null
         )
         {
             CheckInsFirstName = checkInsFirstName;
@@ -44,15 +46,19 @@ namespace KidsTown.IntegrationTests.TestData
             ExpectedMayLeaveAlone = expectedMayLeaveAlone;
             ExpectedHasPeopleWithoutPickupPermission = expectedHasPeopleWithoutPickupPermission;
             FieldData = fieldData;
+            SecurityCode = SetSecurityCode(securityCode: securityCode);
+            
+            LocationGroupId = GetLocationGroup(testLocationId: testLocation);
         }
-        
+
         public TestData(
             string checkInsFirstName,
             string checkInsLastName,
             long checkInsId,
             long? peopleId,
             AttendeeType attendanceType,
-            TestLocationIds testLocation
+            TestLocationIds testLocation,
+            string? securityCode = null
         )
         {
             CheckInsFirstName = checkInsFirstName;
@@ -61,7 +67,31 @@ namespace KidsTown.IntegrationTests.TestData
             PeopleId = peopleId;
             AttendanceType = attendanceType;
             TestLocation = testLocation;
+            SecurityCode = SetSecurityCode(securityCode: securityCode);
             FieldData = ImmutableList<TestFieldData>.Empty;
+
+            LocationGroupId = GetLocationGroup(testLocationId: testLocation);
+        }
+        
+        private string SetSecurityCode(string? securityCode)
+        {
+            return securityCode ?? $"{TestLocation.ToString().Substring(startIndex: 0, length: 1)}{CheckInsId}{AttendanceType.ToString().Substring(startIndex: 0, length: 1)}{PeopleId ?? 0}";
+        }
+
+        private int GetLocationGroup(TestLocationIds testLocationId)
+        {
+            return testLocationId switch
+            {
+                TestLocationIds.Haesli => 1,
+                TestLocationIds.Schoefli => 2,
+                TestLocationIds.Fuechsli => 3,
+                TestLocationIds.KidsChurch1St => 4,
+                TestLocationIds.KidsChurch2Nd => 4,
+                TestLocationIds.KidsChurch3Rd => 4,
+                TestLocationIds.KidsChurch4Th => 4,
+                TestLocationIds.KidsChurch5Th => 4,
+                _ => throw new ArgumentOutOfRangeException(paramName: nameof(testLocationId), actualValue: testLocationId, message: null)
+            };
         }
     }
 }
