@@ -25,6 +25,7 @@ namespace KidsTown.KidsTown
             {
                 CheckType.CheckIn => await CheckInPeople(attendanceIds: attendanceIds).ConfigureAwait(continueOnCapturedContext: false),
                 CheckType.CheckOut => await CheckOutPeople(attendanceIds: attendanceIds).ConfigureAwait(continueOnCapturedContext: false),
+                CheckType.GuestCheckIn => throw new ArgumentException(message: $"Unexpected CheckType: {checkType}", paramName: nameof(checkType)),
                 _ => throw new ArgumentException(message: $"CheckType unknown: {checkType}", paramName: nameof(checkType))
             };   
         }

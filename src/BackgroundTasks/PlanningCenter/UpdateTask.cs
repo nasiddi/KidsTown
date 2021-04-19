@@ -18,17 +18,19 @@ namespace KidsTown.BackgroundTasks.PlanningCenter
         private readonly ILoggerFactory _loggerFactory;
         private readonly IConfiguration _configuration;
 
-        private bool _taskIsActive = false;
+        private bool _taskIsActive;
         private int _executionCount;
         private DateTime? _emailSent = DateTime.UnixEpoch;
         private static readonly TimeSpan EmailSendPause = TimeSpan.FromHours(value: 1);
         private bool _successState = true;
+        private readonly string _environment;
 
         public UpdateTask(IUpdateService updateService, ILoggerFactory loggerFactory, IConfiguration configuration)
         {
             _updateService = updateService;
             _loggerFactory = loggerFactory;
             _configuration = configuration;
+            _environment = configuration.GetValue<string>(key: "Environment") ?? "unknown";
         }
         
         public Task StartAsync(CancellationToken cancellationToken)
@@ -65,7 +67,7 @@ namespace KidsTown.BackgroundTasks.PlanningCenter
         {
             try
             {
-                await _updateService.FetchDataFromPlanningCenter().ConfigureAwait(continueOnCapturedContext: false);
+                var updateCount = await _updateService.FetchDataFromPlanningCenter().ConfigureAwait(continueOnCapturedContext: false);
                 _executionCount++;
 
                 if (!_successState)
@@ -75,12 +77,19 @@ namespace KidsTown.BackgroundTasks.PlanningCenter
                         subject: "UpdateTask ran sucessfully", 
                         body: $"UpdateTask resumed normal operation at {DateTime.UtcNow}");
                 }
+
+                if (_executionCount % 10 == 0 || _executionCount == 1)
+                {
+                    _updateService.LogTaskRun(success: true, updateCount: updateCount, environment: _environment);
+                }
             }
             catch (Exception e)
             {
                 _successState = false;
                 logger.LogError(eventId: new EventId(id: 0, name: nameof(UpdateTask)), exception: e, message: e.Message);
 
+                _updateService.LogTaskRun(success: false, updateCount: 0, environment: _environment);
+                
                 if (_emailSent < DateTime.UtcNow - EmailSendPause)
                 {
                     SendEmail(subject: $"UpdateTask failed {e.Message}", body: e.Message + e.StackTrace);

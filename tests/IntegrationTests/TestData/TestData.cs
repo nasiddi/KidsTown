@@ -78,7 +78,7 @@ namespace KidsTown.IntegrationTests.TestData
             return securityCode ?? $"{TestLocation.ToString().Substring(startIndex: 0, length: 1)}{CheckInsId}{AttendanceType.ToString().Substring(startIndex: 0, length: 1)}{PeopleId ?? 0}";
         }
 
-        private int GetLocationGroup(TestLocationIds testLocationId)
+        private static int GetLocationGroup(TestLocationIds testLocationId)
         {
             return testLocationId switch
             {

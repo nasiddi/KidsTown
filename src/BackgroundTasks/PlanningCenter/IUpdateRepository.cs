@@ -15,5 +15,6 @@ namespace KidsTown.BackgroundTasks.PlanningCenter
         Task<ImmutableList<PersistedLocation>> GetPersistedLocations();
         Task UpdateLocations(ImmutableList<LocationUpdate> locationUpdates);
         Task EnableUnknownLocationGroup();
+        Task LogTaskRun(bool success, int updateCount, string environment);
     }
 }

@@ -102,7 +102,7 @@ namespace KidsTown.Database
                     FistName = firstName,
                     LastName = lastName,
                     MayLeaveAlone = true,
-                    HasPeopleWithoutPickupPermission = false,
+                    HasPeopleWithoutPickupPermission = false
                 };
 
                 var attendance = new Attendance

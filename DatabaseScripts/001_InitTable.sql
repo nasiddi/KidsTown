@@ -55,6 +55,18 @@ IF OBJECT_ID('[kt].[Location]') IS NULL
     END;
 
 
+IF OBJECT_ID('[kt].[TaskExecution]') IS NULL
+    BEGIN
+        CREATE TABLE [kt].[TaskExecution](
+                                        [Id] [int] IDENTITY(1, 1) NOT NULL,
+                                        [InsertDate] DATETIME2 NOT NULL,
+                                        [IsSuccess] [bit] NOT NULL,
+                                        [UpdateCount] [int] NOT NULL,
+                                        [Environment] varchar(20) NOT NULL,
+        )
+    END;
+
+
 
 IF OBJECT_ID('kt.[PK_Attendance]', 'PK') IS NULL
     BEGIN
@@ -77,6 +89,12 @@ IF OBJECT_ID('kt.[PK_AttendanceType]', 'PK') IS NULL
 IF OBJECT_ID('kt.[PK_Location]', 'PK') IS NULL
     BEGIN
         ALTER TABLE [kt].[Location] ADD CONSTRAINT [PK_Location] PRIMARY KEY CLUSTERED ( [Id] ASC )
+            WITH (DATA_COMPRESSION=ROW)
+    END;
+
+IF OBJECT_ID('kt.[PK_TaskExecution]', 'PK') IS NULL
+    BEGIN
+        ALTER TABLE [kt].[TaskExecution] ADD CONSTRAINT [PK_TaskExecution] PRIMARY KEY CLUSTERED ( [Id] ASC )
             WITH (DATA_COMPRESSION=ROW)
     END;
 

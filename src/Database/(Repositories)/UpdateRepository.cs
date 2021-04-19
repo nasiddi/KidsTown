@@ -144,6 +144,37 @@ namespace KidsTown.Database
             }
         }
 
+        public async Task LogTaskRun(bool success, int updateCount, string environment)
+        {
+            await using (var db = _serviceScopeFactory.CreateScope().ServiceProvider
+                .GetRequiredService<KidsTownContext>())
+            {
+                var taskExecution = new TaskExecution
+                {
+                    InsertDate = DateTime.UtcNow,
+                    IsSuccess = success,
+                    UpdateCount = updateCount,
+                    Environment = environment
+                };
+
+                var taskExecutionCount = await db.TaskExecutions.CountAsync();
+
+                if (taskExecutionCount >= 500)
+                {
+                    var toBeDeleted = taskExecutionCount - 499;
+
+                    var taskExecutionsToDelete = await db.TaskExecutions.OrderBy(keySelector: t => t.Id)
+                        .Take(count: toBeDeleted).ToListAsync()
+                        .ConfigureAwait(continueOnCapturedContext: false);
+                    
+                    db.RemoveRange(entities: taskExecutionsToDelete);
+                }
+
+                await db.AddAsync(entity: taskExecution).ConfigureAwait(continueOnCapturedContext: false);
+                await db.SaveChangesAsync().ConfigureAwait(continueOnCapturedContext: false);
+            }
+        }
+
         private static Location MapLocation(LocationUpdate locationUpdate)
         {
             return new()

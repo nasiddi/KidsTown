@@ -4,6 +4,7 @@ namespace KidsTown.BackgroundTasks.PlanningCenter
 {
     public interface IUpdateService
     {
-        Task FetchDataFromPlanningCenter();
+        Task<int> FetchDataFromPlanningCenter();
+        void LogTaskRun(bool success, int updateCount, string environment);
     }
 }

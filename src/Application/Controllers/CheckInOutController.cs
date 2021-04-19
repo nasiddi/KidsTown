@@ -139,14 +139,14 @@ namespace KidsTown.Application.Controllers
                 return Ok(value: new CheckInOutResult
                 {
                     Text = $"Der {checkType} wurde erfolgreich rückgänig gemacht.",
-                    AlertLevel = AlertLevel.Info,
+                    AlertLevel = AlertLevel.Info
                 });    
             }
             
             return Ok(value: new CheckInOutResult
             {
                 Text = "Rückgänig machen ist fehlgeschlagen",
-                AlertLevel = AlertLevel.Danger,
+                AlertLevel = AlertLevel.Danger
             }); 
             
         }
@@ -261,6 +261,7 @@ namespace KidsTown.Application.Controllers
             {
                 CheckType.CheckIn => people.Where(predicate: p => p.CheckState == CheckState.PreCheckedIn).ToImmutableList(),
                 CheckType.CheckOut => people.Where(predicate: p => p.CheckState == CheckState.CheckedIn).ToImmutableList(),
+                CheckType.GuestCheckIn => throw new ArgumentException(message: $"Unexpected CheckType: {checkType}", paramName: nameof(checkType)),
                 _ => throw new ArgumentOutOfRangeException(paramName: nameof(checkType), actualValue: checkType, message: null)
             };
         }

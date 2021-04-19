@@ -28,7 +28,7 @@ namespace KidsTown.BackgroundTasks.PlanningCenter
             _updateRepository = updateRepository;
         }
 
-        public async Task FetchDataFromPlanningCenter()
+        public async Task<int> FetchDataFromPlanningCenter()
         {
             var checkIns = await _planningCenterClient.GetCheckedInPeople(daysLookBack: DaysLookBack).ConfigureAwait(continueOnCapturedContext: false);
 
@@ -43,6 +43,13 @@ namespace KidsTown.BackgroundTasks.PlanningCenter
             await AutoCheckInOutVolunteers().ConfigureAwait(continueOnCapturedContext: false);
 
             await _updateRepository.AutoCheckoutEveryoneByEndOfDay().ConfigureAwait(continueOnCapturedContext: false);
+
+            return preCheckIns.Count;
+        }
+
+        public void LogTaskRun(bool success, int updateCount, string environment)
+        {
+            _updateRepository.LogTaskRun(success: success, updateCount: updateCount, environment: environment);
         }
 
         private async Task UpdateLocations(ImmutableList<CheckIns> checkIns)
