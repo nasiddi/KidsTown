@@ -116,6 +116,9 @@ namespace KidsTown.BackgroundTasks.PlanningCenter
 
         public Task StopAsync(CancellationToken cancellationToken)
         {
+            SendEmail(
+                subject: "System Shutdown",
+                body: $"The StopAsync Method was called for UpdateTask at {DateTime.UtcNow}");
             return CompletedTask;        
         }
 
