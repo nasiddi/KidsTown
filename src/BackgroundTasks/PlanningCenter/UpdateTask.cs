@@ -73,7 +73,7 @@ namespace KidsTown.BackgroundTasks.PlanningCenter
                 {
                     _successState = true;
                     SendEmail(
-                        subject: "UpdateTask ran sucessfully", 
+                        subject: $"{_environment}: UpdateTask ran sucessfully", 
                         body: $"UpdateTask resumed normal operation at {DateTime.UtcNow}");
                 }
 
@@ -85,7 +85,7 @@ namespace KidsTown.BackgroundTasks.PlanningCenter
             catch (Exception e)
             {
                 _successState = false;
-                logger.LogError(eventId: new EventId(id: 0, name: nameof(UpdateTask)), exception: e, message: e.Message);
+                logger.LogError(eventId: new EventId(id: 0, name: nameof(UpdateTask)), exception: e, message: $"{_environment}: {e.Message}");
 
                 _updateService.LogTaskRun(success: false, updateCount: 0, environment: _environment);
                 
@@ -101,7 +101,7 @@ namespace KidsTown.BackgroundTasks.PlanningCenter
                         logger.LogError(eventId: new EventId(
                             id: 0, name: nameof(UpdateTask)), 
                             exception: ex, 
-                            message: $"Sending email failed: {ex.Message}");
+                            message: $"{_environment}: Sending email failed: {ex.Message}");
                     }
                 }
             }
@@ -126,7 +126,7 @@ namespace KidsTown.BackgroundTasks.PlanningCenter
         public Task StopAsync(CancellationToken cancellationToken)
         {
             SendEmail(
-                subject: "System Shutdown",
+                subject: $"{_environment}: System Shutdown",
                 body: $"The StopAsync Method was called for UpdateTask at {DateTime.UtcNow}");
             return CompletedTask;        
         }
