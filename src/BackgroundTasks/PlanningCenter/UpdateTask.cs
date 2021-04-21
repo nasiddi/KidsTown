@@ -92,8 +92,18 @@ namespace KidsTown.BackgroundTasks.PlanningCenter
                 
                 if (_emailSent < DateTime.UtcNow - EmailSendPause)
                 {
-                    SendEmail(subject: $"UpdateTask failed {e.Message}", body: e.Message + e.StackTrace);
-                    _emailSent = DateTime.UtcNow;
+                    try
+                    {
+                        SendEmail(subject: $"UpdateTask failed {e.Message}", body: e.Message + e.StackTrace);
+                        _emailSent = DateTime.UtcNow;
+                    }
+                    catch (Exception ex)
+                    {
+                        logger.LogError(eventId: new EventId(
+                            id: 0, name: nameof(UpdateTask)), 
+                            exception: ex, 
+                            message: $"Sending email failed: {ex.Message}");
+                    }
                 }
             }
         }
