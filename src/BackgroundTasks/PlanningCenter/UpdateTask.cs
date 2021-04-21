@@ -1,10 +1,9 @@
 using System;
 using System.Diagnostics;
+using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
-using Aspose.Email;
-using Aspose.Email.Clients;
-using Aspose.Email.Clients.Smtp;
+using System.Net.Mail;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -94,7 +93,7 @@ namespace KidsTown.BackgroundTasks.PlanningCenter
                 {
                     try
                     {
-                        SendEmail(subject: $"UpdateTask failed {e.Message}", body: e.Message + e.StackTrace);
+                        SendEmail(subject: $"UpdateTask failed: {e.Message}", body: e.Message + e.StackTrace);
                         _emailSent = DateTime.UtcNow;
                     }
                     catch (Exception ex)
@@ -146,10 +145,10 @@ namespace KidsTown.BackgroundTasks.PlanningCenter
             {
                 Subject = $"{DateTime.UtcNow} {subject}",
                 Body = body,
-                From = new MailAddress(address: "kidstown@gvc.ch", displayName: "KidsTown", ignoreSmtpCheck: false)
+                From = new MailAddress(address: "kidstown@gvc.ch", displayName: "KidsTown")
             };
 
-            message.To.Add(address: new MailAddress(address: "nsiddiqui@gvc.ch", displayName: "Nadina Siddiqui", ignoreSmtpCheck: false));
+            message.To.Add(new MailAddress(address: "nsiddiqui@gvc.ch", displayName: "Nadina Siddiqui"));
             var username = _configuration.GetValue<string>(key: "MailAccount:Username");
             var password = _configuration.GetValue<string>(key: "MailAccount:Password");
             
@@ -157,10 +156,9 @@ namespace KidsTown.BackgroundTasks.PlanningCenter
             SmtpClient client = new()
             {
                 Host = "smtp.office365.com",
-                Username = username,
-                Password = password,
+                Credentials = new NetworkCredential(username, password),
                 Port = 587,
-                SecurityOptions = SecurityOptions.SSLExplicit
+                EnableSsl = true,
             };
 
             try
