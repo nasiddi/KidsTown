@@ -42,7 +42,8 @@ namespace KidsTown.IntegrationTests
                     securityCode: t.SecurityCode,
                     selectedLocationIds: ImmutableList.Create(item: t.LocationGroupId),
                     isFastCheckInOut: false,
-                    controller: controller);
+                    controller: controller)
+                    .ConfigureAwait(continueOnCapturedContext: false);
                 
                 var candidates = checkInOutResult!.CheckInOutCandidates.Select(selector: c => c.Name).ToArray<object>();
                 Assert.That(actual: $"{t.PeopleFirstName ?? t.CheckInsFirstName} {t.PeopleLastName ?? t.CheckInsLastName}", 
@@ -64,7 +65,8 @@ namespace KidsTown.IntegrationTests
                     securityCode: t.SecurityCode,
                     selectedLocationIds: ImmutableList<int>.Empty,
                     isFastCheckInOut: false,
-                    controller: controller);
+                    controller: controller)
+                    .ConfigureAwait(continueOnCapturedContext: false);
 
                 Assert.That(actual: checkInOutResult?.AlertLevel, expression: Is.EqualTo(expected: AlertLevel.Danger));
             });
@@ -95,7 +97,8 @@ namespace KidsTown.IntegrationTests
                     securityCode: t.SecurityCode,
                     selectedLocationIds: ImmutableList.Create(item: t.LocationGroupId),
                     isFastCheckInOut: true,
-                    controller: controller);
+                    controller: controller)
+                    .ConfigureAwait(continueOnCapturedContext: false);
 
                 Assert.That(actual: checkInOutResult.AlertLevel, expression: Is.EqualTo(expected: AlertLevel.Success));
                 Assert.That(actual: checkInOutResult.SuccessfulFastCheckout, expression: Is.True);

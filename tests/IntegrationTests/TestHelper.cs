@@ -43,7 +43,8 @@ namespace KidsTown.IntegrationTests
         public static async Task InsertDefaultTestData(ServiceProvider serviceProvider)
         {
             var testData = TestDataFactory.GetTestData();
-            await InsertTestData(serviceProvider: serviceProvider, testData: testData);
+            await InsertTestData(serviceProvider: serviceProvider, testData: testData)
+                .ConfigureAwait(continueOnCapturedContext: false);
         }
         
         public static async Task InsertTestData(ServiceProvider serviceProvider, IImmutableList<TestData.TestData> testData)
