@@ -14,52 +14,52 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 
-// ReSharper disable ConvertToUsingDeclaration
-
 namespace KidsTown.IntegrationTests
 {
     public static class TestHelper
     {
         public static async Task CleanDatabase(IServiceProvider serviceProvider)
         {
-            await using (var db = serviceProvider!.GetRequiredService<KidsTownContext>())
+            await using var db = serviceProvider!.GetRequiredService<KidsTownContext>();
+            await EstablishConnectionToDatabase(db: db).ConfigureAwait(continueOnCapturedContext: false);
+                
+            var attendances = await db.Attendances.Where(predicate: a => a.CheckInsId < 100).ToListAsync();
+            var people = await db.People.Where(predicate: p => attendances.Select(a => a.PersonId)
+                .Contains(p.Id)).ToListAsync();
+                
+            db.RemoveRange(entities: attendances);
+            db.RemoveRange(entities: people);
+            await db.SaveChangesAsync();
+        }
+
+        private static async Task EstablishConnectionToDatabase(KidsTownContext db)
+        {
+            while (!await db.Database.CanConnectAsync())
             {
-                while (!await db.Database.CanConnectAsync())
-                {
-                    await Task.Delay(millisecondsDelay: 100).ConfigureAwait(continueOnCapturedContext: false);
-                }
-                
-                var attendances = await db.Attendances.Where(predicate: a => a.CheckInsId < 100).ToListAsync();
-                var people = await db.People.Where(predicate: p => attendances.Select(a => a.PersonId)
-                    .Contains(p.Id)).ToListAsync();
-                
-                db.RemoveRange(entities: attendances);
-                db.RemoveRange(entities: people);
-                await db.SaveChangesAsync();
+                await Task.Delay(millisecondsDelay: 100).ConfigureAwait(continueOnCapturedContext: false);
             }
         }
 
-        public static async Task InsertTestData(ServiceProvider serviceProvider, IImmutableList<TestData.TestData>? testData = null)
+        public static async Task InsertDefaultTestData(ServiceProvider serviceProvider)
         {
-            testData ??= TestDataFactory.GetTestData();
-            
-            await using (var db = serviceProvider!.GetRequiredService<KidsTownContext>())
-            {
-                while (!await db.Database.CanConnectAsync())
-                {
-                    await Task.Delay(millisecondsDelay: 100).ConfigureAwait(continueOnCapturedContext: false);
-                }
-                
-                var locations = await db.Locations.ToListAsync();
+            var testData = TestDataFactory.GetTestData();
+            await InsertTestData(serviceProvider: serviceProvider, testData: testData);
+        }
+        
+        public static async Task InsertTestData(ServiceProvider serviceProvider, IImmutableList<TestData.TestData> testData)
+        {
+            await using var db = serviceProvider!.GetRequiredService<KidsTownContext>();
+            await EstablishConnectionToDatabase(db: db).ConfigureAwait(continueOnCapturedContext: false);
 
-                var people = testData
-                    .GroupBy(keySelector: d => d.PeopleId)
-                    .Select(selector: d => MapPerson(grouping: d, locations: locations.ToImmutableList()))
-                    .ToImmutableList();
+            var locations = await db.Locations.ToListAsync();
 
-                await db.AddRangeAsync(entities: people);
-                await db.SaveChangesAsync();
-            }
+            var people = testData
+                .GroupBy(keySelector: d => d.PeopleId)
+                .Select(selector: d => MapPerson(grouping: d, locations: locations.ToImmutableList()))
+                .ToImmutableList();
+
+            await db.AddRangeAsync(entities: people).ConfigureAwait(continueOnCapturedContext: false);
+            await db.SaveChangesAsync().ConfigureAwait(continueOnCapturedContext: false);
         }
 
         private static Attendance MapAttendance(TestData.TestData data, ImmutableList<Location> locations)
@@ -142,7 +142,7 @@ namespace KidsTown.IntegrationTests
             return services.BuildServiceProvider();
         }
 
-        private static void SetupDatabaseConnection(IServiceCollection services, IConfigurationRoot configuration)
+        private static void SetupDatabaseConnection(IServiceCollection services, IConfiguration configuration)
         {
             services.AddDbContext<KidsTownContext>(
                 contextLifetime: ServiceLifetime.Transient,

@@ -58,7 +58,7 @@ namespace KidsTown.IntegrationTests.TestData
             long? peopleId,
             AttendeeType attendanceType,
             TestLocationIds testLocation,
-            string? securityCode = null
+            string? securityCode
         )
         {
             CheckInsFirstName = checkInsFirstName;

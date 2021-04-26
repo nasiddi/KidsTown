@@ -18,8 +18,6 @@ using NUnit.Framework;
 using Location = KidsTown.Database.Location;
 using Person = KidsTown.Database.Person;
 
-// ReSharper disable ConvertToUsingDeclaration
-
 namespace KidsTown.IntegrationTests
 {
     public class UpdateTaskTest
@@ -76,21 +74,18 @@ namespace KidsTown.IntegrationTests
         private async Task<ImmutableList<Data>> GetActualData()
         {
             var serviceScopeFactory = _serviceProvider.GetService<IServiceScopeFactory>();
-            
-            await using (var db = serviceScopeFactory!.CreateScope().ServiceProvider
-                .GetRequiredService<KidsTownContext>())
-            {
-                var people = await (from a in db.Attendances
-                        join p in db.People
-                            on a.PersonId equals p.Id
-                        join l in db.Locations
-                            on a.LocationId equals l.Id
-                        where a.CheckInsId < 100
-                        select MapData(a, p, l))
-                    .ToListAsync().ConfigureAwait(continueOnCapturedContext: false);
 
-                return people.ToImmutableList();
-            }   
+            await using var db = serviceScopeFactory!.CreateScope().ServiceProvider.GetRequiredService<KidsTownContext>();
+            var people = await (from a in db.Attendances
+                    join p in db.People
+                        on a.PersonId equals p.Id
+                    join l in db.Locations
+                        on a.LocationId equals l.Id
+                    where a.CheckInsId < 100
+                    select MapData(a, p, l))
+                .ToListAsync().ConfigureAwait(continueOnCapturedContext: false);
+
+            return people.ToImmutableList();
         }
 
         private async Task AssertUpdateTask()
