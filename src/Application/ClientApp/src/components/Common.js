@@ -40,6 +40,12 @@ export function getStringFromSession(key, fallback) {
 	return s === null ? fallback : s
 }
 
+export function getSelectedFromSession(key, fallback) {
+	const s = sessionStorage.getItem(key)
+
+	return s === null ? fallback : JSON.parse(s)
+}
+
 export function getFormattedDate(dateString) {
 	const date = new Date(dateString)
 
@@ -130,25 +136,22 @@ export function PrimaryCheckBox(props) {
 }
 
 export function ToggleButtons(props) {
+	const buttons = props['buttons'].map((b) => (
+		<Button
+			key={b['label']}
+			id={b['label']}
+			onClick={b['onClick']}
+			color="primary"
+			outline={!b['isSelected']}
+		>
+			{b['label']}
+		</Button>
+	))
+
 	return (
 		<Grid item md={3} xs={12}>
 			<ButtonGroup size="medium" color="primary">
-				<Button
-					id={props['leftButtonLabel']}
-					onClick={props['callback']}
-					color="primary"
-					outline={!props['isLeftButtonSelected']}
-				>
-					{props['leftButtonLabel']}
-				</Button>
-				<Button
-					id={props['rightButtonLabel']}
-					onClick={props['callback']}
-					color="primary"
-					outline={props['isLeftButtonSelected']}
-				>
-					{props['rightButtonLabel']}
-				</Button>
+				{buttons}
 			</ButtonGroup>
 		</Grid>
 	)

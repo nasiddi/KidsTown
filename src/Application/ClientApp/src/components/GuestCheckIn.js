@@ -73,6 +73,19 @@ class CheckInGuest extends Component {
 	}
 
 	renderForm() {
+		const toggleButtons = [
+			{
+				label: 'Create',
+				onClick: this.selectCreateOption,
+				isSelected: this.state.createOption === 'Create',
+			},
+			{
+				label: 'CheckIn',
+				onClick: this.selectCreateOption,
+				isSelected: this.state.createOption === 'CheckIn',
+			},
+		]
+
 		return (
 			<Grid item xs={12}>
 				<Grid
@@ -82,14 +95,7 @@ class CheckInGuest extends Component {
 					alignItems="center"
 				>
 					<Grid item xs={12}>
-						<ToggleButtons
-							isLeftButtonSelected={
-								this.state.createOption === 'Create'
-							}
-							leftButtonLabel={'Create'}
-							rightButtonLabel={'CheckIn'}
-							callback={this.selectCreateOption}
-						/>
+						<ToggleButtons buttons={toggleButtons} />
 					</Grid>
 					<Grid item md={6} xs={12}>
 						<LocationSelect

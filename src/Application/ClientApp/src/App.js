@@ -9,6 +9,7 @@ import { Statistics } from './components/Statistic'
 import { Settings } from './components/Settings'
 import { OverviewOptions } from './components/OverviewOptions'
 import { OverviewHeadCount } from './components/OverViewHeadCounts'
+import { OverviewFilter } from './components/OverviewFilter'
 import { OverviewDetail } from './components/OverviewDetail'
 import { Documentation } from './components/Documentation'
 
@@ -21,6 +22,7 @@ export const App = () => {
 				<Route path="/settings" component={Settings} />
 				<Route path="/overview" component={OverviewOptions} />
 				<Route path="/overview" component={OverviewHeadCount} />
+				<Route path="/overview" component={OverviewFilter} />
 				<Route path="/checkin" component={CheckInOut} />
 				<Route path="/guest" component={GuestCheckIn} />
 			</CheckInLayout>

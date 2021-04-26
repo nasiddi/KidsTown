@@ -26,7 +26,7 @@ namespace KidsTown.IntegrationTests
         [TearDown]
         public async Task TearDown()
         {
-            await Task.Delay(millisecondsDelay: 500).ConfigureAwait(continueOnCapturedContext: false);
+            await Task.Delay(millisecondsDelay: 1000).ConfigureAwait(continueOnCapturedContext: false);
             await CleanDatabase().ConfigureAwait(continueOnCapturedContext: false);
         }
 

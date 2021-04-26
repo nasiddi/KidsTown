@@ -107,6 +107,19 @@ class CheckIn extends Component {
 	}
 
 	renderOptionsAndInput() {
+		const toggleButtons = [
+			{
+				label: 'CheckIn',
+				onClick: this.selectCheckType,
+				isSelected: this.state.checkType === 'CheckIn',
+			},
+			{
+				label: 'CheckOut',
+				onClick: this.selectCheckType,
+				isSelected: this.state.checkType === 'CheckOut',
+			},
+		]
+
 		return (
 			<Grid item xs={12}>
 				<Grid
@@ -115,14 +128,7 @@ class CheckIn extends Component {
 					justify="space-between"
 					alignItems="center"
 				>
-					<ToggleButtons
-						isLeftButtonSelected={
-							this.state.checkType === 'CheckIn'
-						}
-						leftButtonLabel={'CheckIn'}
-						rightButtonLabel={'CheckOut'}
-						callback={this.selectCheckType}
-					/>
+					<ToggleButtons buttons={toggleButtons} />
 					<Grid item md={3} xs={6}>
 						<PrimaryCheckBox
 							name="fastCheckInOut"

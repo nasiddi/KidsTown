@@ -10,8 +10,9 @@ import {
 	getStringFromSession,
 	getSelectedOptionsFromStorage,
 	getLastSunday,
+	getSelectedFromSession,
 } from './Common'
-import { Table } from 'reactstrap'
+import { Badge, Table } from 'reactstrap'
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore'
 import { withAuth } from '../auth/MsalAuthProvider'
 
@@ -72,6 +73,16 @@ class Detail extends Component {
 	}
 
 	renderKidsTable(kids) {
+		const selectedState = getSelectedFromSession('selectedOverviewStates', [
+			'PreCheckedIn',
+			'CheckedIn',
+			'CheckedOut',
+		])
+
+		const filteredKids = _.filter(kids, (p) =>
+			_.includes(selectedState, p['checkState'])
+		)
+
 		return (
 			<div>
 				<h4>Kinder</h4>
@@ -85,11 +96,11 @@ class Detail extends Component {
 						</tr>
 					</thead>
 					<tbody>
-						{kids.map((row) => (
+						{filteredKids.map((row) => (
 							<tr key={row['attendanceId']}>
 								<td>{row['firstName']}</td>
 								<td>{row['lastName']}</td>
-								<td>{row['checkState']}</td>
+								<td>{this.getStateBadge(row['checkState'])}</td>
 								<td>{row['securityCode']}</td>
 							</tr>
 						))}
@@ -168,6 +179,20 @@ class Detail extends Component {
 			})
 
 		this.repeat = setTimeout(this.fetchData.bind(this), 500)
+	}
+
+	getStateBadge(state) {
+		if (state === 'PreCheckedIn') {
+			return <Badge color="info">{state}</Badge>
+		}
+
+		if (state === 'CheckedIn') {
+			return <Badge color="success">{state}</Badge>
+		}
+
+		if (state === 'CheckedOut') {
+			return <Badge color="primary">{state}</Badge>
+		}
 	}
 }
 

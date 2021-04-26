@@ -111,6 +111,12 @@ class OverViewHeadCounts extends Component {
 					alignItems="flex-start"
 				>
 					<Grid item xs={12}>
+						<h3 />
+					</Grid>
+					<Grid item xs={12}>
+						<h3>CheckedIn</h3>
+					</Grid>
+					<Grid item xs={12}>
 						{this.renderCounts()}
 					</Grid>
 				</Grid>
