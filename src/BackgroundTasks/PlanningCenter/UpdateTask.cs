@@ -1,5 +1,4 @@
 using System;
-using System.Diagnostics;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
@@ -14,22 +13,23 @@ namespace KidsTown.BackgroundTasks.PlanningCenter
     public class UpdateTask : IHostedService, IUpdateTask
     {
         private readonly IUpdateService _updateService;
-        private readonly ILoggerFactory _loggerFactory;
         private readonly IConfiguration _configuration;
 
         private bool _taskIsActive;
-        private int _executionCount;
+        private int _successCount;
+        private int _currentFailedCount;
         private DateTime? _emailSent = DateTime.UnixEpoch;
         private static readonly TimeSpan EmailSendPause = TimeSpan.FromHours(value: 1);
         private bool _successState = true;
         private readonly string _environment;
+        private readonly ILogger<UpdateTask> _logger;
 
         public UpdateTask(IUpdateService updateService, ILoggerFactory loggerFactory, IConfiguration configuration)
         {
             _updateService = updateService;
-            _loggerFactory = loggerFactory;
             _configuration = configuration;
             _environment = configuration.GetValue<string>(key: "Environment") ?? "unknown";
+            _logger = loggerFactory.CreateLogger<UpdateTask>();
         }
         
         public Task StartAsync(CancellationToken cancellationToken)
@@ -40,7 +40,6 @@ namespace KidsTown.BackgroundTasks.PlanningCenter
 
         private async Task ExecuteAsync(CancellationToken cancellationToken)
         {
-            var logger = _loggerFactory.CreateLogger<UpdateTask>();
             var activationTime = _taskIsActive ? DateTime.UtcNow : new DateTime();
 
             while (!cancellationToken.IsCancellationRequested)
@@ -51,7 +50,7 @@ namespace KidsTown.BackgroundTasks.PlanningCenter
                         .ConfigureAwait(continueOnCapturedContext: false);
                 }
 
-                await RunTask(logger: logger).ConfigureAwait(continueOnCapturedContext: false);
+                await RunTask(logger: _logger).ConfigureAwait(continueOnCapturedContext: false);
 
                 await Sleep(cancellationToken: cancellationToken).ConfigureAwait(continueOnCapturedContext: false);
 
@@ -67,42 +66,43 @@ namespace KidsTown.BackgroundTasks.PlanningCenter
             try
             {
                 var updateCount = await _updateService.FetchDataFromPlanningCenter().ConfigureAwait(continueOnCapturedContext: false);
-                _executionCount++;
+                _successCount++;
 
                 if (!_successState)
                 {
                     _successState = true;
-                    SendEmail(
-                        subject: $"{_environment}: UpdateTask ran sucessfully", 
-                        body: $"UpdateTask resumed normal operation at {DateTime.UtcNow}");
+                    if (_currentFailedCount >= 10)
+                    {
+                        SendEmail(
+                            subject: $"{_environment}: UpdateTask ran successfully", 
+                            body: $"UpdateTask resumed normal operation at {DateTime.UtcNow} after {_currentFailedCount} failed executions.",
+                            logger: _logger);
+                    }
+                    
                 }
 
-                if (_executionCount % 10 == 0 || _executionCount == 1)
+                if (_successCount % 10 == 0 || _successCount == 1)
                 {
                     _updateService.LogTaskRun(success: true, updateCount: updateCount, environment: _environment);
                 }
             }
             catch (Exception e)
             {
+                _currentFailedCount = _successState ? 1 : ++_currentFailedCount;
                 _successState = false;
+                
                 logger.LogError(eventId: new EventId(id: 0, name: nameof(UpdateTask)), exception: e, message: $"{_environment}: {e.Message}");
 
                 _updateService.LogTaskRun(success: false, updateCount: 0, environment: _environment);
                 
-                if (_emailSent < DateTime.UtcNow - EmailSendPause)
+                if (_currentFailedCount % 10 == 0 && _emailSent < DateTime.UtcNow - EmailSendPause)
                 {
-                    try
-                    {
-                        SendEmail(subject: $"UpdateTask failed: {e.Message}", body: e.Message + e.StackTrace);
-                        _emailSent = DateTime.UtcNow;
-                    }
-                    catch (Exception ex)
-                    {
-                        logger.LogError(eventId: new EventId(
-                            id: 0, name: nameof(UpdateTask)), 
-                            exception: ex, 
-                            message: $"{_environment}: Sending email failed: {ex.Message}");
-                    }
+                    SendEmail(
+                        subject: $"UpdateTask failed the last {_currentFailedCount} executions: {e.Message}", 
+                        body: e.Message + e.StackTrace, 
+                        logger: _logger);
+                    
+                    _emailSent = DateTime.UtcNow;
                 }
             }
         }
@@ -127,7 +127,8 @@ namespace KidsTown.BackgroundTasks.PlanningCenter
         {
             SendEmail(
                 subject: $"{_environment}: System Shutdown",
-                body: $"The StopAsync Method was called for UpdateTask at {DateTime.UtcNow}");
+                body: $"The StopAsync Method was called for UpdateTask at {DateTime.UtcNow}",
+                logger: _logger);
             return CompletedTask;        
         }
 
@@ -137,37 +138,39 @@ namespace KidsTown.BackgroundTasks.PlanningCenter
 
         //public bool IsTaskActive() => _taskIsActive;
 
-        public int GetExecutionCount() => _executionCount;
+        public int GetExecutionCount() => _successCount;
 
-        private void SendEmail(string subject, string body)
+        private void SendEmail(string subject, string body, ILogger logger)
         {
-            MailMessage message = new()
-            {
-                Subject = $"{DateTime.UtcNow} {subject}",
-                Body = body,
-                From = new MailAddress(address: "kidstown@gvc.ch", displayName: "KidsTown")
-            };
-
-            message.To.Add(new MailAddress(address: "nsiddiqui@gvc.ch", displayName: "Nadina Siddiqui"));
-            var username = _configuration.GetValue<string>(key: "MailAccount:Username");
-            var password = _configuration.GetValue<string>(key: "MailAccount:Password");
-            
-            
-            SmtpClient client = new()
-            {
-                Host = "smtp.office365.com",
-                Credentials = new NetworkCredential(username, password),
-                Port = 587,
-                EnableSsl = true,
-            };
-
             try
             {
-                client.Send(message: message); 
+                MailMessage message = new()
+                {
+                    Subject = $"{DateTime.UtcNow} {subject}",
+                    Body = body,
+                    From = new MailAddress(address: "kidstown@gvc.ch", displayName: "KidsTown")
+                };
+
+                message.To.Add(item: new MailAddress(address: "nsiddiqui@gvc.ch", displayName: "Nadina Siddiqui"));
+                var username = _configuration.GetValue<string>(key: "MailAccount:Username");
+                var password = _configuration.GetValue<string>(key: "MailAccount:Password");
+
+
+                SmtpClient client = new()
+                {
+                    Host = "smtp.office365.com",
+                    Credentials = new NetworkCredential(userName: username, password: password),
+                    Port = 587,
+                    EnableSsl = true
+                };
+                client.Send(message: message);
             }
             catch (Exception ex)
             {
-                Trace.WriteLine(message: ex.ToString());
+                logger.LogError(eventId: new EventId(
+                        id: 0, name: nameof(UpdateTask)), 
+                    exception: ex, 
+                    message: $"{_environment}: Sending email failed: {ex.Message}");
             }
         }
     }
