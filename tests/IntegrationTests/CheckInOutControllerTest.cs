@@ -11,7 +11,6 @@ using KidsTown.KidsTown;
 using KidsTown.KidsTown.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
 using NUnit.Framework;
@@ -33,13 +32,7 @@ namespace KidsTown.IntegrationTests
         [Test]
         public async Task GetPeople_ExistingData_AllFound()
         {
-            SetupServiceProvider();
-            await CleanDatabase();
-            await TestHelper.InsertTestData(serviceProvider: _serviceProvider);
-
-            var checkInOutService = _serviceProvider.GetService<ICheckInOutService>();
-            var updateTaskMock = new Mock<IUpdateTask>();
-            var controller = new CheckInOutController(checkInOutService: checkInOutService!, updateTask: updateTaskMock.Object);
+            var controller = await SetupTestEnvironment().ConfigureAwait(continueOnCapturedContext: false);
 
             var testData = TestDataFactory.GetTestData();
 
@@ -69,13 +62,7 @@ namespace KidsTown.IntegrationTests
         [Test]
         public async Task GetPeople_NoLocationGroupSet_NothingFound()
         {
-            SetupServiceProvider();
-            await CleanDatabase();
-            await TestHelper.InsertTestData(serviceProvider: _serviceProvider);
-
-            var checkInOutService = _serviceProvider.GetService<ICheckInOutService>();
-            var updateTaskMock = new Mock<IUpdateTask>();
-            var controller = new CheckInOutController(checkInOutService: checkInOutService!, updateTask: updateTaskMock.Object);
+            var controller = await SetupTestEnvironment().ConfigureAwait(continueOnCapturedContext: false);
 
             var testData = TestDataFactory.GetTestData();
             
@@ -98,12 +85,11 @@ namespace KidsTown.IntegrationTests
                 Assert.That(actual: checkInOutResult?.AlertLevel, expression: Is.EqualTo(expected: AlertLevel.Danger));
             });
         }
-        
+
         [Test]
-        
         public async Task GetPeople_FastCheckInActive_CheckedIn()
         {
-            SetupServiceProvider();
+            _serviceProvider = TestHelper.SetupServiceProviderWithKidsTownDi();
             await CleanDatabase();
             
             var testData = TestDataFactory.GetTestData().GroupBy(keySelector: t => t.SecurityCode).ToImmutableList();
@@ -137,38 +123,23 @@ namespace KidsTown.IntegrationTests
                 Assert.That(actual: checkInOutResult?.SuccessfulFastCheckout, expression: Is.True);
             });
 
-            var actualData = await GetActualData(checkInsIds: filteredTestData.Select(selector: t => t.CheckInsId).ToImmutableList());
+            var actualData = await GetActualData(checkInsIds: filteredTestData.Select(selector: t => t.CheckInsId).ToImmutableList()).ConfigureAwait(continueOnCapturedContext: false);
             Assert.That(actual: actualData.Count(predicate: a => a.CheckInDate == null), expression: Is.Zero);
             Assert.That(actual: actualData.Count, expression: Is.EqualTo(expected: filteredTestData.Count));
         }
         
-        private void SetupServiceProvider()
+        private async Task<CheckInOutController> SetupTestEnvironment()
         {
-            IServiceCollection services = new ServiceCollection();
-            var configuration = new ConfigurationBuilder()
-                .AddJsonFile(path: "appsettings.json", optional: false)
-                .AddJsonFile(path: "appsettings.Secrets.json", optional: false)
-                .AddJsonFile(path: "appsettings.DevelopementMachine.json", optional: true)
-                .Build();
+            _serviceProvider = TestHelper.SetupServiceProviderWithKidsTownDi();
+            await CleanDatabase().ConfigureAwait(continueOnCapturedContext: false);
+            await TestHelper.InsertTestData(serviceProvider: _serviceProvider).ConfigureAwait(continueOnCapturedContext: false);
 
-            services.AddSingleton<IConfiguration>(implementationFactory: _ => configuration);
-            
-            services.AddScoped<ICheckInOutService, CheckInOutService>();
-            services.AddScoped<IConfigurationService, ConfigurationService>();
-            services.AddScoped<IOverviewService, OverviewService>();
-            
-            services.AddScoped<ICheckInOutRepository, CheckInOutRepository>();
-            services.AddScoped<IConfigurationRepository, ConfigurationRepository>();
-            services.AddScoped<IOverviewRepository, OverviewRepository>();
-
-            services.AddDbContext<KidsTownContext>(
-                contextLifetime: ServiceLifetime.Transient,
-                optionsAction: o
-                    => o.UseSqlServer(connectionString: configuration.GetConnectionString(name: "Database")));
-            
-            _serviceProvider =  services.BuildServiceProvider();
+            var checkInOutService = _serviceProvider.GetService<ICheckInOutService>();
+            var updateTaskMock = new Mock<IUpdateTask>();
+            var controller = new CheckInOutController(checkInOutService: checkInOutService!, updateTask: updateTaskMock.Object);
+            return controller;
         }
-        
+
         private async Task<ImmutableList<Data>> GetActualData(ImmutableList<long> checkInsIds)
         {
             await Task.Delay(millisecondsDelay: 500).ConfigureAwait(continueOnCapturedContext: false);

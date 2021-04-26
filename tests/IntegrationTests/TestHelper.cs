@@ -2,10 +2,17 @@ using System;
 using System.Collections.Immutable;
 using System.Linq;
 using System.Threading.Tasks;
+using KidsTown.BackgroundTasks.PlanningCenter;
 using KidsTown.Database;
+using KidsTown.IntegrationTests.Mocks;
 using KidsTown.IntegrationTests.TestData;
+using KidsTown.KidsTown;
+using KidsTown.PlanningCenterApiClient;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 
 // ReSharper disable ConvertToUsingDeclaration
 
@@ -86,6 +93,104 @@ namespace KidsTown.IntegrationTests
                 HasPeopleWithoutPickupPermission = data.ExpectedHasPeopleWithoutPickupPermission ?? false,
                 Attendances = attendances.ToList()
             };
+        }
+
+        public static ServiceProvider SetupServiceProviderWithKidsTownDi()
+        {
+            return SetupServiceProvider(
+                setupKidsTownDi: true,
+                setupBackgroundTasksDi: false,
+                mockPlanningCenterClient: false);
+        }
+        
+        public static ServiceProvider SetupServiceProviderWithBackgroundTasksDi()
+        {
+            return SetupServiceProvider(
+                setupKidsTownDi: false,
+                setupBackgroundTasksDi: true,
+                mockPlanningCenterClient: false);
+        }
+        
+        public static ServiceProvider SetupServiceProviderWithBackgroundTasksDiAndMockedPlanningCenterClient()
+        {
+            return SetupServiceProvider(
+                setupKidsTownDi: false,
+                setupBackgroundTasksDi: true,
+                mockPlanningCenterClient: true);
+        }
+        
+        private static ServiceProvider SetupServiceProvider(
+            bool setupKidsTownDi,
+            bool setupBackgroundTasksDi,
+            bool mockPlanningCenterClient
+        )
+        {
+            IServiceCollection services = new ServiceCollection();
+            var configuration = SetupConfigurations(services: services);
+            SetupDatabaseConnection(services: services, configuration: configuration);
+
+            if (setupKidsTownDi)
+            {
+                SetupKidsTownDi(services: services);
+            }
+
+            if (setupBackgroundTasksDi)
+            {
+                SetupBackgroundTasksDi(mockPlanningCenterClient: mockPlanningCenterClient, services: services);
+            }
+            
+            return services.BuildServiceProvider();
+        }
+
+        private static void SetupDatabaseConnection(IServiceCollection services, IConfigurationRoot configuration)
+        {
+            services.AddDbContext<KidsTownContext>(
+                contextLifetime: ServiceLifetime.Transient,
+                optionsAction: o
+                    => o.UseSqlServer(connectionString: configuration.GetConnectionString(name: "Database")));
+        }
+
+        private static void SetupKidsTownDi(IServiceCollection services)
+        {
+            services.AddScoped<ICheckInOutService, CheckInOutService>();
+            services.AddScoped<IConfigurationService, ConfigurationService>();
+            services.AddScoped<IOverviewService, OverviewService>();
+
+            services.AddScoped<ICheckInOutRepository, CheckInOutRepository>();
+            services.AddScoped<IConfigurationRepository, ConfigurationRepository>();
+            services.AddScoped<IOverviewRepository, OverviewRepository>();
+        }
+        
+        private static IConfigurationRoot SetupConfigurations(IServiceCollection services)
+        {
+            var configuration = new ConfigurationBuilder()
+                .AddJsonFile(path: "appsettings.json", optional: false)
+                .AddJsonFile(path: "appsettings.Secrets.json", optional: false)
+                .AddJsonFile(path: "appsettings.DevelopementMachine.json", optional: true)
+                .Build();
+
+            services.AddSingleton<IConfiguration>(implementationFactory: _ => configuration);
+            return configuration;
+        }
+        
+        private static void SetupBackgroundTasksDi(bool mockPlanningCenterClient, IServiceCollection services)
+        {
+            services.AddSingleton<ILoggerFactory, NullLoggerFactory>();
+            services.AddHostedService<UpdateTask>();
+
+            if (mockPlanningCenterClient)
+            {
+                services.AddSingleton<IPlanningCenterClient, PlanningCenterClientMock>();
+            }
+            else
+            {
+                services.AddSingleton<IPlanningCenterClient, PlanningCenterClient>();
+            }
+
+            services.AddSingleton<IUpdateService, UpdateService>();
+            services.AddSingleton<IUpdateRepository, UpdateRepository>();
+            services.AddSingleton<ILoggerFactory, LoggerFactory>();
+            services.AddSingleton(serviceType: typeof(ILogger), implementationType: typeof(Logger<UpdateTask>));
         }
     }
 }
