@@ -10,19 +10,13 @@ using KidsTown.BackgroundTasks.PlanningCenter;
 using KidsTown.Database;
 using KidsTown.IntegrationTests.Mocks;
 using KidsTown.KidsTown.Models;
-using KidsTown.PlanningCenterApiClient;
 using KidsTown.PlanningCenterApiClient.Models.CheckInsResult;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
 using NUnit.Framework;
 using Location = KidsTown.Database.Location;
 using Person = KidsTown.Database.Person;
-
-// ReSharper disable ConvertToUsingDeclaration
 
 namespace KidsTown.IntegrationTests
 {
@@ -39,7 +33,7 @@ namespace KidsTown.IntegrationTests
         [Test]
         public async Task TaskRunsWithoutExceptions()
         {
-            SetupServiceProvider();
+            _serviceProvider = TestHelper.SetupServiceProviderWithBackgroundTasksDi();
             
             var updateTask = _serviceProvider.GetService<IHostedService>() as UpdateTask;
             await RunTask(updateTask: updateTask!, minExecutionCount: 2).ConfigureAwait(continueOnCapturedContext: false);
@@ -51,7 +45,7 @@ namespace KidsTown.IntegrationTests
         [Test]
         public async Task UpdateMockData()
         {
-            SetupServiceProvider(mockPlanningCenterClient: true);
+            _serviceProvider = TestHelper.SetupServiceProviderWithBackgroundTasksDiAndMockedPlanningCenterClient();
             await TestHelper.CleanDatabase(serviceProvider: _serviceProvider).ConfigureAwait(continueOnCapturedContext: false);
             
             var updateTask = _serviceProvider.GetService<IHostedService>() as UpdateTask;
@@ -77,57 +71,21 @@ namespace KidsTown.IntegrationTests
             await task;
         }
         
-        private void SetupServiceProvider(bool mockPlanningCenterClient = false)
-        {
-            IServiceCollection services = new ServiceCollection();
-            var configuration = new ConfigurationBuilder()
-                .AddJsonFile(path: "appsettings.json", optional: false)
-                .AddJsonFile(path: "appsettings.Secrets.json", optional: false)
-                .AddJsonFile(path: "appsettings.DevelopementMachine.json", optional: true)
-                .Build();
-
-            services.AddSingleton<IConfiguration>(implementationFactory: _ => configuration);
-            services.AddSingleton<ILoggerFactory, NullLoggerFactory>();
-            services.AddHostedService<UpdateTask>();
-
-            if (mockPlanningCenterClient)
-            {
-                services.AddSingleton<IPlanningCenterClient, PlanningCenterClientMock>();
-            }
-            else
-            {
-                services.AddSingleton<IPlanningCenterClient, PlanningCenterClient>();
-            }
-            services.AddSingleton<IUpdateService, UpdateService>();
-            services.AddSingleton<IUpdateRepository, UpdateRepository>();
-            services.AddSingleton<ILoggerFactory, LoggerFactory>();
-            services.AddSingleton(serviceType: typeof(ILogger), implementationType: typeof(Logger<UpdateTask>));
-            services.AddDbContext<KidsTownContext>(
-                contextLifetime: ServiceLifetime.Transient,
-                optionsAction: o
-                => o.UseSqlServer(connectionString: configuration.GetConnectionString(name: "Database")));
-            
-            _serviceProvider =  services.BuildServiceProvider();
-        }
-
         private async Task<ImmutableList<Data>> GetActualData()
         {
             var serviceScopeFactory = _serviceProvider.GetService<IServiceScopeFactory>();
-            
-            await using (var db = serviceScopeFactory!.CreateScope().ServiceProvider
-                .GetRequiredService<KidsTownContext>())
-            {
-                var people = await (from a in db.Attendances
-                        join p in db.People
-                            on a.PersonId equals p.Id
-                        join l in db.Locations
-                            on a.LocationId equals l.Id
-                        where a.CheckInsId < 100
-                        select MapData(a, p, l))
-                    .ToListAsync().ConfigureAwait(continueOnCapturedContext: false);
 
-                return people.ToImmutableList();
-            }   
+            await using var db = serviceScopeFactory!.CreateScope().ServiceProvider.GetRequiredService<KidsTownContext>();
+            var people = await (from a in db.Attendances
+                    join p in db.People
+                        on a.PersonId equals p.Id
+                    join l in db.Locations
+                        on a.LocationId equals l.Id
+                    where a.CheckInsId < 100
+                    select MapData(a, p, l))
+                .ToListAsync().ConfigureAwait(continueOnCapturedContext: false);
+
+            return people.ToImmutableList();
         }
 
         private async Task AssertUpdateTask()

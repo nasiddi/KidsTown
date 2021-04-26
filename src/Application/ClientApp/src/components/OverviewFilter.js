@@ -1,12 +1,6 @@
 import React, { Component } from 'react'
 import { Grid } from '@material-ui/core'
-import {
-	fetchLocationGroups,
-	getStringFromSession,
-	getSelectedOptionsFromStorage,
-	getLastSunday,
-	getSelectedFromSession,
-} from './Common'
+import { getSelectedFromSession } from './Common'
 import { withAuth } from '../auth/MsalAuthProvider'
 import { Button } from 'reactstrap'
 
@@ -36,8 +30,6 @@ class Filter extends Component {
 		this.toggleCheckedIn = this.toggleCheckedIn.bind(this)
 		this.toggleCheckedOut = this.toggleCheckedOut.bind(this)
 		this.toggleState = this.toggleState.bind(this)
-		this.updateDate = this.updateDate.bind(this)
-		this.resetDate = this.resetDate.bind(this)
 
 		this.state = {
 			selectedStates: getSelectedFromSession('selectedOverviewStates', [
@@ -45,26 +37,7 @@ class Filter extends Component {
 				'CheckedIn',
 				'CheckedOut',
 			]),
-			locations: [],
-			overviewLocations: getSelectedOptionsFromStorage(
-				'overviewLocations',
-				[]
-			),
-			loading: true,
-			date: '',
 		}
-	}
-
-	async componentDidMount() {
-		const locations = await fetchLocationGroups()
-		this.setState({
-			date: getStringFromSession(
-				'overviewDate',
-				getLastSunday().toISOString()
-			),
-		})
-		this.setState({ locations: locations })
-		this.setState({ loading: false })
 	}
 
 	renderFilter() {
@@ -117,10 +90,6 @@ class Filter extends Component {
 		)
 	}
 	render() {
-		if (this.state.loading) {
-			return <div />
-		}
-
 		return (
 			<div>
 				<Grid
@@ -163,26 +132,6 @@ class Filter extends Component {
 			'selectedOverviewStates',
 			JSON.stringify(currentStates)
 		)
-	}
-
-	updateOptions = (options, key) => {
-		localStorage.setItem(key.name, JSON.stringify(options))
-		this.setState({ [key.name]: options })
-	}
-
-	resetDate() {
-		const sunday = getLastSunday().toISOString()
-		this.updateDate(sunday)
-	}
-
-	updateDate(value) {
-		console.log(value)
-		if (value === null) {
-			return
-		}
-
-		sessionStorage.setItem('overviewDate', value)
-		this.setState({ date: value })
 	}
 }
 

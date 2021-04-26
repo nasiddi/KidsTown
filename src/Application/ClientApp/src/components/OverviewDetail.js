@@ -182,17 +182,21 @@ class Detail extends Component {
 	}
 
 	getStateBadge(state) {
+		let color = ''
+
 		if (state === 'PreCheckedIn') {
-			return <Badge color="info">{state}</Badge>
+			color = 'info'
 		}
 
 		if (state === 'CheckedIn') {
-			return <Badge color="success">{state}</Badge>
+			color = 'success'
 		}
 
 		if (state === 'CheckedOut') {
-			return <Badge color="primary">{state}</Badge>
+			color = 'primary'
 		}
+
+		return <Badge color={color}>{state}</Badge>
 	}
 }
 
