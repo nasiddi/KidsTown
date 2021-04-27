@@ -11,7 +11,7 @@ namespace KidsTown.BackgroundTasks.Models
         public readonly string SecurityCode;
         public readonly int LocationId;
         public readonly DateTime CreationDate;
-        public readonly PeopleUpdate Person;
+        public readonly PeopleUpdate Kid;
 
         public CheckInsUpdate(
             long checkInsId, 
@@ -20,7 +20,7 @@ namespace KidsTown.BackgroundTasks.Models
             string securityCode,
             int locationId, 
             DateTime creationDate,
-            PeopleUpdate person)
+            PeopleUpdate kid)
         {
             CheckInsId = checkInsId;
             PeopleId = peopleId;
@@ -28,7 +28,7 @@ namespace KidsTown.BackgroundTasks.Models
 
             LocationId = locationId;
             CreationDate = creationDate;
-            Person = person;
+            Kid = kid;
             AttendeeType = attendeeType;
         }
     }

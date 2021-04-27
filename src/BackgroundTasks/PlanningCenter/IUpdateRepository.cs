@@ -9,7 +9,7 @@ namespace KidsTown.BackgroundTasks.PlanningCenter
         Task InsertPreCheckIns(IImmutableList<CheckInsUpdate> preCheckIns);
         Task<IImmutableList<long>> GetExistingCheckInsIds(IImmutableList<long> checkinsIds);
         Task<ImmutableList<long>> GetCurrentPeopleIds(int daysLookBack);
-        Task UpdatePersons(ImmutableList<PeopleUpdate> peoples, ImmutableList<Family> immutableList);
+        Task UpdateKids(ImmutableList<PeopleUpdate> kids, ImmutableList<Family> immutableList);
         Task AutoCheckInVolunteers();
         Task AutoCheckoutEveryoneByEndOfDay();
         Task<ImmutableList<PersistedLocation>> GetPersistedLocations();

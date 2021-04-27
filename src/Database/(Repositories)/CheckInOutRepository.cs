@@ -21,21 +21,21 @@ namespace KidsTown.Database
             _serviceScopeFactory = serviceScopeFactory;
         }
         
-        public async Task<ImmutableList<KidsTown.Models.Person>> GetPeople(
+        public async Task<ImmutableList<KidsTown.Models.Kid>> GetPeople(
             PeopleSearchParameters peopleSearchParameters)
         {
             await using (var db = _serviceScopeFactory.CreateScope().ServiceProvider.GetRequiredService<KidsTownContext>())
             {
                 var people = await (from a in db.Attendances
-                    join p in db.People
-                        on a.PersonId equals p.Id
+                    join p in db.Kids
+                        on a.KidId equals p.Id
                     join l in db.Locations
                         on a.LocationId equals l.Id
                     where a.SecurityCode == peopleSearchParameters.SecurityCode
                           && peopleSearchParameters.LocationGroups.Contains(l.LocationGroupId)
                           && a.InsertDate >= DateTime.Today.AddDays(-3)
                           && l.EventId == peopleSearchParameters.EventId
-                    select MapPerson(a, p, l))
+                    select MapKid(a, p, l))
                     .ToListAsync().ConfigureAwait(continueOnCapturedContext: false);
 
                 return people.ToImmutableList();
@@ -72,7 +72,7 @@ namespace KidsTown.Database
                 switch (revertedCheckState)
                 {
                     case CheckState.None:
-                        var people = await db.People.Where(predicate: p => attendances.Select(a => a.PersonId).Contains(p.Id)).ToListAsync();
+                        var people = await db.Kids.Where(predicate: p => attendances.Select(a => a.KidId).Contains(p.Id)).ToListAsync();
                         db.RemoveRange(entities: attendances);
                         db.RemoveRange(entities: people);
                         break;
@@ -97,7 +97,7 @@ namespace KidsTown.Database
         {
             await using (var db = _serviceScopeFactory.CreateScope().ServiceProvider.GetRequiredService<KidsTownContext>())
             {
-                var person = new Person
+                var kid = new Kid
                 {
                     FistName = firstName,
                     LastName = lastName,
@@ -112,7 +112,7 @@ namespace KidsTown.Database
                     SecurityCode = securityCode,
                     AttendanceTypeId = (int) AttendanceTypes.Guest,
                     InsertDate = DateTime.UtcNow,
-                    Person = person
+                    Kid = kid
                 };
 
                 var entry = await db.AddAsync(entity: attendance);
@@ -141,22 +141,22 @@ namespace KidsTown.Database
             return attendances;
         }
 
-        private static KidsTown.Models.Person MapPerson(Attendance attendance, Person person,
+        private static KidsTown.Models.Kid MapKid(Attendance attendance, Kid kid,
             Location location)
         {
             var checkState = MappingService.GetCheckState(attendance: attendance);
 
-            return new KidsTown.Models.Person
+            return new KidsTown.Models.Kid
             {
                 AttendanceId = attendance.Id,
                 SecurityCode = attendance.SecurityCode,
                 Location = location.Name,
-                FirstName = person.FistName,
-                LastName = person.LastName,
+                FirstName = kid.FistName,
+                LastName = kid.LastName,
                 CheckInTime = attendance.CheckInDate,
                 CheckOutTime = attendance.CheckOutDate,
-                MayLeaveAlone = person.MayLeaveAlone,
-                HasPeopleWithoutPickupPermission = person.HasPeopleWithoutPickupPermission,
+                MayLeaveAlone = kid.MayLeaveAlone,
+                HasPeopleWithoutPickupPermission = kid.HasPeopleWithoutPickupPermission,
                 CheckState = checkState
             };
         }

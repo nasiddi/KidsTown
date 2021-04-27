@@ -5,7 +5,7 @@ using System.Collections.Generic;
 
 namespace KidsTown.Database
 {
-    public partial class Parent
+    public partial class Adult
     {
         public int Id { get; set; }
         public long PeopleId { get; set; }

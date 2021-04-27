@@ -171,19 +171,19 @@ namespace KidsTown.BackgroundTasks.PlanningCenter
                 return ImmutableList<Family>.Empty;
             }
 
-            var peopleUpdates = await _planningCenterClient.GetPeopleUpdates(peopleIds: peopleIds).ConfigureAwait(continueOnCapturedContext: false);
-            var peoples = MapToPeoples(peopleUpdates: peopleUpdates);
+            var people = await _planningCenterClient.GetPeopleUpdates(peopleIds: peopleIds).ConfigureAwait(continueOnCapturedContext: false);
+            var peopleUpdates = MapPeopleUpdates(peopleUpdates: people);
 
-            var householdIds = peoples.Where(p => p.HouseholdId.HasValue)
+            var householdIds = peopleUpdates.Where(p => p.HouseholdId.HasValue)
                 .Select(p => p.HouseholdId!.Value).Distinct().ToImmutableList();
 
             var existingFamilies = await _updateRepository.GetExistingFamilies(householdIds);
             var newHouseholdIds = householdIds.Where(h => existingFamilies.All(f => f.HouseholdId != h)).ToImmutableList();
-            var newFamilies = await _updateRepository.InsertFamilies(newHouseholdIds, peoples);
+            var newFamilies = await _updateRepository.InsertFamilies(newHouseholdIds, peopleUpdates);
 
             var families = existingFamilies.Union(newFamilies).ToImmutableList();
             
-            await _updateRepository.UpdatePersons(peoples: peoples, families).ConfigureAwait(continueOnCapturedContext: false);
+            await _updateRepository.UpdateKids(kids: peopleUpdates, families).ConfigureAwait(continueOnCapturedContext: false);
 
             return families;
         }
@@ -198,7 +198,7 @@ namespace KidsTown.BackgroundTasks.PlanningCenter
             await _updateRepository.InsertPreCheckIns(preCheckIns: newCheckins).ConfigureAwait(continueOnCapturedContext: false);
         }
 
-        private static ImmutableList<PeopleUpdate> MapToPeoples(ImmutableList<Peoples> peopleUpdates)
+        private static ImmutableList<PeopleUpdate> MapPeopleUpdates(ImmutableList<Peoples> peopleUpdates)
         {
             var fieldOptions = peopleUpdates.SelectMany(selector: p => p.Included ?? new List<Included>())
                 .Where(predicate: i => i.PeopleIncludedType == PeopleIncludedType.FieldDatum)
@@ -288,7 +288,7 @@ namespace KidsTown.BackgroundTasks.PlanningCenter
                 securityCode: attributes?.SecurityCode ?? string.Empty,
                 locationId: locationId,
                 creationDate: attributes?.CreatedAt ?? DateTime.UtcNow,
-                person: people);
+                kid: people);
         }
 
         private static PeopleUpdate MapPeopleUpdate(

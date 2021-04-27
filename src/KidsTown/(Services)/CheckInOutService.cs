@@ -14,7 +14,7 @@ namespace KidsTown.KidsTown
             _checkInOutRepository = checkInOutRepository;
         }
         
-        public async Task<IImmutableList<Person>> SearchForPeople(PeopleSearchParameters searchParameters)
+        public async Task<IImmutableList<Kid>> SearchForPeople(PeopleSearchParameters searchParameters)
         {
             return await _checkInOutRepository.GetPeople(peopleSearchParameters: searchParameters).ConfigureAwait(continueOnCapturedContext: false);
         }

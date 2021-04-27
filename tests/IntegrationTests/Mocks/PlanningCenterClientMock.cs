@@ -52,7 +52,7 @@ namespace KidsTown.IntegrationTests.Mocks
             }
         }
 
-        public class PersonData
+        public class KidsData
         {
             public readonly string FirstName;
             public readonly string LastName;
@@ -61,7 +61,7 @@ namespace KidsTown.IntegrationTests.Mocks
             public readonly bool? MayLeaveAlone;
             public readonly bool? HasPeopleWithoutPickupPermission;
 
-            public PersonData(
+            public KidsData(
                 string firstName,
                 string lastName,
                 long peopleId,
@@ -94,21 +94,21 @@ namespace KidsTown.IntegrationTests.Mocks
             ).ToImmutableList();
         }
 
-        public static ImmutableList<PersonData> GetPersonData()
+        public static ImmutableList<KidsData> GetKidsData()
         {
             return TestDataFactory.GetTestData()
                 .Where(predicate: d => d.PeopleId.HasValue)
                 .GroupBy(keySelector: d => d.PeopleId)
                 .Select(selector: d =>
                     {
-                        var person = d.First();
-                        return new PersonData(
-                            firstName: person.PeopleFirstName!,
-                            lastName: person.PeopleLastName!,
-                            peopleId: person.PeopleId!.Value,
-                            fieldDataIds: person.FieldData.Select(selector: f => f.FieldOptionId).ToImmutableList(),
-                            mayLeaveAlone: person.ExpectedMayLeaveAlone,
-                            hasPeopleWithoutPickupPermission: person.ExpectedHasPeopleWithoutPickupPermission);
+                        var kid = d.First();
+                        return new KidsData(
+                            firstName: kid.PeopleFirstName!,
+                            lastName: kid.PeopleLastName!,
+                            peopleId: kid.PeopleId!.Value,
+                            fieldDataIds: kid.FieldData.Select(selector: f => f.FieldOptionId).ToImmutableList(),
+                            mayLeaveAlone: kid.ExpectedMayLeaveAlone,
+                            hasPeopleWithoutPickupPermission: kid.ExpectedHasPeopleWithoutPickupPermission);
                     }
                 ).ToImmutableList();
         }
@@ -126,7 +126,7 @@ namespace KidsTown.IntegrationTests.Mocks
 
         public Task<ImmutableList<People>> GetPeopleUpdates(IImmutableList<long> peopleIds)
         {
-            var data = GetPersonData();
+            var data = GetKidsData();
 
             return Task.FromResult(result: ImmutableList.Create(
                 item: new People
@@ -164,7 +164,7 @@ namespace KidsTown.IntegrationTests.Mocks
             };
         }
 
-        private static List<Datum> MapPersonData(ImmutableList<PersonData> data)
+        private static List<Datum> MapPersonData(ImmutableList<KidsData> data)
         {
             return data.Select(selector: d => new Datum
             {

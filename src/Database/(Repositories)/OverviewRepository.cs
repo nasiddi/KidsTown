@@ -27,8 +27,8 @@ namespace KidsTown.Database
             await using (var db = _serviceScopeFactory.CreateScope().ServiceProvider.GetRequiredService<KidsTownContext>())
             {
                 var people = await (from a in db.Attendances
-                        join p in db.People
-                            on a.PersonId equals p.Id
+                        join p in db.Kids
+                            on a.KidId equals p.Id
                         join at in db.AttendanceTypes
                             on a.AttendanceTypeId equals at.Id
                         join l in db.Locations
@@ -83,8 +83,8 @@ namespace KidsTown.Database
             await using (var db = _serviceScopeFactory.CreateScope().ServiceProvider.GetRequiredService<KidsTownContext>())
             {
                 var attendees = await (from a in db.Attendances
-                        join p in db.People
-                            on a.PersonId equals p.Id
+                        join p in db.Kids
+                            on a.KidId equals p.Id
                         join at in db.AttendanceTypes
                             on a.AttendanceTypeId equals at.Id
                         join l in db.Locations
@@ -103,7 +103,7 @@ namespace KidsTown.Database
 
         private static Attendee MapAttendee(
             Attendance attendance, 
-            Person person, 
+            Kid kid, 
             AttendanceType attendanceType,
             Location location)
         {
@@ -112,8 +112,8 @@ namespace KidsTown.Database
             return new Attendee
             {
                 AttendanceId = attendance.Id,
-                FirstName = person.FistName,
-                LastName = person.LastName,
+                FirstName = kid.FistName,
+                LastName = kid.LastName,
                 AttendanceType = (AttendanceTypes) attendanceType.Id,
                 SecurityCode = attendance.SecurityCode,
                 LocationGroupId = location.LocationGroupId,

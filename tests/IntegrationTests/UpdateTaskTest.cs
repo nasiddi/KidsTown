@@ -16,7 +16,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using NUnit.Framework;
 using Location = KidsTown.Database.Location;
-using Person = KidsTown.Database.Person;
+using Kid = KidsTown.Database.Kid;
 
 namespace KidsTown.IntegrationTests
 {
@@ -77,8 +77,8 @@ namespace KidsTown.IntegrationTests
 
             await using var db = serviceScopeFactory!.CreateScope().ServiceProvider.GetRequiredService<KidsTownContext>();
             var people = await (from a in db.Attendances
-                    join p in db.People
-                        on a.PersonId equals p.Id
+                    join p in db.Kids
+                        on a.KidId equals p.Id
                     join l in db.Locations
                         on a.LocationId equals l.Id
                     where a.CheckInsId < 100
@@ -105,38 +105,38 @@ namespace KidsTown.IntegrationTests
             actual.Should().BeEquivalentTo(expectation: expected);
         }
 
-        private static Data MapData(Attendance attendance, Person person, Location location)
+        private static Data MapData(Attendance attendance, Kid kid, Location location)
         {
             return new(
-                firstName: person.FistName,
-                lastName: person.LastName,
+                firstName: kid.FistName,
+                lastName: kid.LastName,
                 checkInsId: attendance.CheckInsId,
-                peopleId: person.PeopleId,
+                peopleId: kid.PeopleId,
                 attendanceType: (AttendanceTypes) attendance.AttendanceTypeId,
                 testLocation: location.CheckInsLocationId!.Value,
-                mayLeaveAlone: person.MayLeaveAlone,
-                hasPeopleWithoutPickupPermission: person.HasPeopleWithoutPickupPermission
+                mayLeaveAlone: kid.MayLeaveAlone,
+                hasPeopleWithoutPickupPermission: kid.HasPeopleWithoutPickupPermission
             );
         }
 
         private static ImmutableList<Data> GetExpectedData()
         {
             var attendeesData = PlanningCenterClientMock.GetAttendanceData();
-            var peopleData = PlanningCenterClientMock.GetPersonData();
+            var peopleData = PlanningCenterClientMock.GetKidsData();
 
             return attendeesData.Select(selector: a =>
             {
-                var person = peopleData.SingleOrDefault(predicate: p => p.PeopleId == a.PeopleId);
+                var kid = peopleData.SingleOrDefault(predicate: p => p.PeopleId == a.PeopleId);
 
                 return new Data(
-                    firstName: person?.FirstName ?? a.FirstName,
-                    lastName: person?.LastName ?? a.LastName,
+                    firstName: kid?.FirstName ?? a.FirstName,
+                    lastName: kid?.LastName ?? a.LastName,
                     checkInsId: a.CheckInsId,
                     peopleId: a.PeopleId,
                     attendanceType: MapAttendanceType(attendeeType: a.AttendanceType),
                     testLocation: (int) a.TestLocation,
-                    mayLeaveAlone: person?.MayLeaveAlone ?? true,
-                    hasPeopleWithoutPickupPermission: person?.HasPeopleWithoutPickupPermission ?? false);
+                    mayLeaveAlone: kid?.MayLeaveAlone ?? true,
+                    hasPeopleWithoutPickupPermission: kid?.HasPeopleWithoutPickupPermission ?? false);
             }).ToImmutableList();
         }
 
