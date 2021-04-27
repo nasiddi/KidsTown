@@ -1,14 +1,14 @@
 use [KidsTown]
 
-IF OBJECT_ID('[kt].[Parent]') IS NULL
+IF OBJECT_ID('[kt].[Adult]') IS NULL
     BEGIN
-        CREATE TABLE [kt].[Parent](
+        CREATE TABLE [kt].[Adult](
                                       [Id] [int] IDENTITY(1, 1) NOT NULL,
                                       [PeopleId] [bigint] NOT NULL,
                                       [FamilyId] [int] NOT NULL,
-                                      [FistName] varchar(50) NOT NULL,
+                                      [FirstName] varchar(50) NOT NULL,
                                       [LastName] varchar(50) NOT NULL,
-                                      [PhoneNumber] varchar(30) NULL,
+                                      [PhoneNumber] varchar(30) NOT NULL,
                                       [UpdateDate] datetime2 NOT NULL
         )
     END;
@@ -23,14 +23,14 @@ IF OBJECT_ID('[kt].[Family]') IS NULL
         )
     END;
 
-IF COL_LENGTH('kt.Person','FamilyId') IS NULL
+IF COL_LENGTH('kt.Kid','FamilyId') IS NULL
     BEGIN
-        ALTER TABLE kt.Person ADD FamilyId [int] NULL
+        ALTER TABLE kt.Kid ADD FamilyId [int] NULL
     END
 
-IF OBJECT_ID('kt.[PK_Parent]', 'PK') IS NULL
+IF OBJECT_ID('kt.[PK_Adult]', 'PK') IS NULL
     BEGIN
-        ALTER TABLE [kt].[Parent] ADD CONSTRAINT [PK_Parent] PRIMARY KEY CLUSTERED ( [Id] ASC )
+        ALTER TABLE [kt].[Adult] ADD CONSTRAINT [PK_Adult] PRIMARY KEY CLUSTERED ( [Id] ASC )
             WITH (DATA_COMPRESSION=ROW)
     END;
 
@@ -40,23 +40,23 @@ IF OBJECT_ID('kt.[PK_Family]', 'PK') IS NULL
             WITH (DATA_COMPRESSION=ROW)
     END;
 
-IF OBJECT_ID('[kt].[FK_Parent_FamilyId]', 'F') IS NULL
+IF OBJECT_ID('[kt].[FK_Adult_FamilyId]', 'F') IS NULL
     BEGIN
-        ALTER TABLE [kt].[Parent] ADD CONSTRAINT [FK_Parent_FamilyId]
+        ALTER TABLE [kt].[Adult] ADD CONSTRAINT [FK_Adult_FamilyId]
             FOREIGN KEY ([FamilyId])
                 REFERENCES [kt].[Family] ([Id])
     END;
 
-IF OBJECT_ID('[kt].[FK_Person_FamilyId]', 'F') IS NULL
+IF OBJECT_ID('[kt].[FK_Kid_FamilyId]', 'F') IS NULL
     BEGIN
-        ALTER TABLE [kt].[Person] ADD CONSTRAINT [FK_Person_FamilyId]
+        ALTER TABLE [kt].[Kid] ADD CONSTRAINT [FK_Kid_FamilyId]
             FOREIGN KEY ([FamilyId])
                 REFERENCES [kt].[Family] ([Id])
     END;
 
-IF INDEXPROPERTY(OBJECT_ID('kt.Parent'), 'UQ_Parent_PeopleId', 'IndexId') IS NULL
+IF INDEXPROPERTY(OBJECT_ID('kt.Adult'), 'UQ_Adult_PeopleId', 'IndexId') IS NULL
     BEGIN
-        CREATE UNIQUE NONCLUSTERED INDEX [UQ_Parent_PeopleId] ON [kt].[Parent]
+        CREATE UNIQUE NONCLUSTERED INDEX [UQ_Adult_PeopleId] ON [kt].[Adult]
             (
              [PeopleId] ASC
                 )
