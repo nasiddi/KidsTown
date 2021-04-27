@@ -7,12 +7,15 @@ using KidsTown.IntegrationTests.TestData;
 using KidsTown.PlanningCenterApiClient;
 using KidsTown.PlanningCenterApiClient.Models.CheckInsResult;
 using KidsTown.PlanningCenterApiClient.Models.EventResult;
+using KidsTown.PlanningCenterApiClient.Models.HouseholdResult;
 using KidsTown.PlanningCenterApiClient.Models.PeopleResult;
 using Attendee = KidsTown.PlanningCenterApiClient.Models.CheckInsResult.Attendee;
 using Datum = KidsTown.PlanningCenterApiClient.Models.PeopleResult.Datum;
 using Included = KidsTown.PlanningCenterApiClient.Models.CheckInsResult.Included;
 using IncludedAttributes = KidsTown.PlanningCenterApiClient.Models.CheckInsResult.IncludedAttributes;
+using IncludedRelationships = KidsTown.PlanningCenterApiClient.Models.PeopleResult.IncludedRelationships;
 using Parent = KidsTown.PlanningCenterApiClient.Models.PeopleResult.Parent;
+using People = KidsTown.PlanningCenterApiClient.Models.PeopleResult.People;
 using Relationship = KidsTown.PlanningCenterApiClient.Models.CheckInsResult.Relationship;
 
 namespace KidsTown.IntegrationTests.Mocks
@@ -133,6 +136,11 @@ namespace KidsTown.IntegrationTests.Mocks
                 }));
         }
 
+        public Task<Household?> GetHousehold(long householdId)
+        {
+            throw new NotImplementedException();
+        }
+
         public Task<Event> GetActiveEvents()
         {
             return Task.FromResult(result: new Event
@@ -168,7 +176,7 @@ namespace KidsTown.IntegrationTests.Mocks
                 },
                 Relationships = new DatumRelationships
                 {
-                    FieldData = new FieldData
+                    FieldData = new DatumRelationship
                     {
                         Data = GetFieldDataParents(ids: d.FieldDataIds)
                     }

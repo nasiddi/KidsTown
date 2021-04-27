@@ -201,9 +201,6 @@ IF OBJECT_ID('[kt].[FK_Location_LocationGroupId]', 'F') IS NULL
             FOREIGN KEY ([LocationGroupId])
                 REFERENCES [kt].[LocationGroup] ([Id])
     END;
-
-
--- dotnet ef dbcontext scaffold "Server=skyship.space;Database=KidsTown;User Id=sa;Password=Sherlock69" Microsoft.EntityFrameworkCore.SqlServer -f
     
 
     

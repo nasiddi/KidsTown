@@ -1,15 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Linq;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 using KidsTown.PlanningCenterApiClient.Models;
 using KidsTown.PlanningCenterApiClient.Models.CheckInsResult;
 using KidsTown.PlanningCenterApiClient.Models.EventResult;
-using KidsTown.PlanningCenterApiClient.Models.PeopleResult;
+using KidsTown.PlanningCenterApiClient.Models.HouseholdResult;
 using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
+using People = KidsTown.PlanningCenterApiClient.Models.PeopleResult.People;
 
 namespace KidsTown.PlanningCenterApiClient
 {
@@ -41,8 +43,15 @@ namespace KidsTown.PlanningCenterApiClient
 
         public async Task<ImmutableList<People>> GetPeopleUpdates(IImmutableList<long> peopleIds)
         {
-            var endPoint = $"people/v2/people?include=field_data&per_page=100&where[id]={string.Join(separator: ',', values: peopleIds)}";
+            var endPoint = $"people/v2/people?include=households,field_data,phone_numbers&per_page=100&where[id]={string.Join(separator: ',', values: peopleIds)}";
             return await FetchData<People>(endPoint: endPoint).ConfigureAwait(continueOnCapturedContext: false);
+        }
+        
+        public async Task<Household?> GetHousehold(long householdId)
+        {
+            var endPoint = $"people/v2/households/{householdId}?include=people";
+            var households = await FetchData<Household>(endPoint: endPoint).ConfigureAwait(continueOnCapturedContext: false);
+            return households.SingleOrDefault();
         }
 
         private HttpClient InitClient()
@@ -61,20 +70,51 @@ namespace KidsTown.PlanningCenterApiClient
         
         private async Task<ImmutableList<T>> FetchData<T>(string endPoint)
         {
-            var response = await Client.GetStringAsync(requestUri: endPoint);
+            var response = await Client.GetAsync(requestUri: endPoint);
+            var responseString = await response.Content.ReadAsStringAsync();
 
-            var responseBody = JsonConvert.DeserializeObject<T>(value: response);
+            await CheckRateLimitation(response);
+
+            var responseBody = JsonConvert.DeserializeObject<T>(value: responseString);
 
             var pages = new List<T> {responseBody};
 
             while (((IPlanningCenterResponse) responseBody!).NextLink != null)
             {
-                var nextResponse = await Client.GetStringAsync(requestUri: ((IPlanningCenterResponse) responseBody!).NextLink);
-                responseBody = JsonConvert.DeserializeObject<T>(value: nextResponse);
+                var nextResponse = await Client.GetAsync(requestUri: ((IPlanningCenterResponse) responseBody!).NextLink);
+                var nextResponseString = await nextResponse.Content.ReadAsStringAsync();
+
+                responseBody = JsonConvert.DeserializeObject<T>(value: nextResponseString);
                 pages.Add(item: responseBody);
             }
 
             return pages.ToImmutableList();
+        }
+
+        private static async Task CheckRateLimitation(HttpResponseMessage response)
+        {
+            var countHeader = response.Headers.SingleOrDefault(h => h.Key == "X-PCO-API-Request-Rate-Count");
+            var limitHeader = response.Headers.SingleOrDefault(h => h.Key == "X-PCO-API-Request-Rate-Limit");
+            var periodHeader = response.Headers.SingleOrDefault(h => h.Key == "X-PCO-API-Request-Rate-Period");
+
+            var count = ParseHeader(countHeader);
+            if (count == 0)
+            {
+                return;
+            }
+            
+            var limit = ParseHeader(limitHeader);
+            var period = ParseHeader(periodHeader);
+
+            if (count >= limit - 5)
+            {
+                await Task.Delay(period * 250).ConfigureAwait(false);
+            }
+        }
+
+        private static int ParseHeader(KeyValuePair<string, IEnumerable<string>>? header)
+        {
+            return int.TryParse(header?.Value.FirstOrDefault(), result: out var number) ? number : 0;
         }
     }
 }
