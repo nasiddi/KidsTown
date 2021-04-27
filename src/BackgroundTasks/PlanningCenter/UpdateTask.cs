@@ -15,7 +15,7 @@ namespace KidsTown.BackgroundTasks.PlanningCenter
         private readonly IUpdateService _updateService;
         private readonly IConfiguration _configuration;
 
-        private bool _taskIsActive;
+        private bool _taskIsActive = true;
         private int _successCount;
         private int _currentFailedCount;
         private DateTime? _emailSent = DateTime.UnixEpoch;

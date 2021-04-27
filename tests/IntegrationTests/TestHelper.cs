@@ -24,7 +24,7 @@ namespace KidsTown.IntegrationTests
             await EstablishConnectionToDatabase(db: db).ConfigureAwait(continueOnCapturedContext: false);
                 
             var attendances = await db.Attendances.Where(predicate: a => a.CheckInsId < 100).ToListAsync();
-            var people = await db.People.Where(predicate: p => attendances.Select(a => a.PersonId)
+            var people = await db.Kids.Where(predicate: p => attendances.Select(a => a.KidId)
                 .Contains(p.Id)).ToListAsync();
                 
             db.RemoveRange(entities: attendances);
@@ -32,7 +32,7 @@ namespace KidsTown.IntegrationTests
             await db.SaveChangesAsync();
         }
 
-        private static async Task EstablishConnectionToDatabase(KidsTownContext db)
+        private static async Task EstablishConnectionToDatabase(DbContext db)
         {
             while (!await db.Database.CanConnectAsync())
             {
@@ -56,7 +56,7 @@ namespace KidsTown.IntegrationTests
 
             var people = testData
                 .GroupBy(keySelector: d => d.PeopleId)
-                .Select(selector: d => MapPerson(grouping: d, locations: locations.ToImmutableList()))
+                .Select(selector: d => MapKid(grouping: d, locations: locations.ToImmutableList()))
                 .ToImmutableList();
 
             await db.AddRangeAsync(entities: people).ConfigureAwait(continueOnCapturedContext: false);
@@ -79,13 +79,13 @@ namespace KidsTown.IntegrationTests
             };
         }
 
-        private static Person MapPerson(IGrouping<long?, TestData.TestData> grouping, ImmutableList<Location> locations)
+        private static Kid MapKid(IGrouping<long?, TestData.TestData> grouping, ImmutableList<Location> locations)
         {
             var data = grouping.First();
 
             var attendances = grouping.Select(selector: g => MapAttendance(data: g, locations: locations));
             
-            return new Person
+            return new Kid
             {
                 PeopleId = data.PeopleId,
                 FistName = data.PeopleFirstName ?? data.CheckInsFirstName,

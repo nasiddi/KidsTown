@@ -6,7 +6,7 @@ namespace KidsTown.KidsTown
 {
     public interface ICheckInOutRepository
     {
-        Task<ImmutableList<Person>> GetPeople(PeopleSearchParameters peopleSearchParameters);
+        Task<ImmutableList<Kid>> GetPeople(PeopleSearchParameters peopleSearchParameters);
         Task<bool> CheckInPeople(IImmutableList<int> attendanceIds);
         Task<bool> CheckOutPeople(IImmutableList<int> attendanceIds);
         Task<bool> SetCheckState(CheckState revertedCheckState, ImmutableList<int> attendanceIds);

@@ -16,7 +16,7 @@ IF OBJECT_ID('[kt].[Attendance]') IS NULL
         CREATE TABLE [kt].[Attendance](
                                         [Id] [int] IDENTITY(1, 1) NOT NULL,
                                         [CheckInsId] [bigint] NOT NULL,
-                                        [PersonId] [int] NOT NULL,
+                                        [KidId] [int] NOT NULL,
                                         [LocationId] [int] NOT NULL,
                                         [SecurityCode] varchar(10) NOT NULL,
                                         [AttendanceTypeId] [int] NOT NULL,
@@ -26,12 +26,12 @@ IF OBJECT_ID('[kt].[Attendance]') IS NULL
         )
     END;
 
-IF OBJECT_ID('[kt].[Person]') IS NULL
+IF OBJECT_ID('[kt].[Kid]') IS NULL
     BEGIN
-        CREATE TABLE [kt].[Person](
+        CREATE TABLE [kt].[Kid](
                                        [Id] [int] IDENTITY(1, 1) NOT NULL,
                                        [PeopleId] [bigint] NULL,
-                                       [FistName] varchar(50) NOT NULL,
+                                       [FirstName] varchar(50) NOT NULL,
                                        [LastName] varchar(50) NOT NULL,
                                        [MayLeaveAlone] bit NOT NULL,
                                        [HasPeopleWithoutPickupPermission] bit NOT NULL
@@ -74,9 +74,9 @@ IF OBJECT_ID('kt.[PK_Attendance]', 'PK') IS NULL
             WITH (DATA_COMPRESSION=ROW)
     END;
 
-IF OBJECT_ID('kt.[PK_Person]', 'PK') IS NULL
+IF OBJECT_ID('kt.[PK_Kid]', 'PK') IS NULL
     BEGIN
-        ALTER TABLE [kt].[Person] ADD CONSTRAINT [PK_Person] PRIMARY KEY CLUSTERED ( [Id] ASC )
+        ALTER TABLE [kt].[Kid] ADD CONSTRAINT [PK_Kid] PRIMARY KEY CLUSTERED ( [Id] ASC )
             WITH (DATA_COMPRESSION=ROW)
     END;
 
@@ -98,11 +98,11 @@ IF OBJECT_ID('kt.[PK_TaskExecution]', 'PK') IS NULL
             WITH (DATA_COMPRESSION=ROW)
     END;
 
-IF OBJECT_ID('[kt].[FK_Attendance_PersonId]', 'F') IS NULL
+IF OBJECT_ID('[kt].[FK_Attendance_KidId]', 'F') IS NULL
     BEGIN
-        ALTER TABLE [kt].[Attendance] ADD CONSTRAINT [FK_Attendance_PersonId]
-            FOREIGN KEY ([PersonId])
-                REFERENCES [kt].[Person] ([Id])
+        ALTER TABLE [kt].[Attendance] ADD CONSTRAINT [FK_Attendance_KidId]
+            FOREIGN KEY ([KidId])
+                REFERENCES [kt].[Kid] ([Id])
     END;
 
 IF OBJECT_ID('[kt].[FK_Attendance_AttendanceTypeId]', 'F') IS NULL
@@ -144,9 +144,9 @@ IF NOT EXISTS( SELECT 1 FROM [kt].[AttendanceType] WHERE Id = 3)
 
 SET IDENTITY_INSERT kt.AttendanceType OFF
 
-IF INDEXPROPERTY(OBJECT_ID('kt.Person'), 'UQ_Person_PeopleId', 'IndexId') IS NULL
+IF INDEXPROPERTY(OBJECT_ID('kt.Kid'), 'UQ_Kid_PeopleId', 'IndexId') IS NULL
     BEGIN
-        CREATE UNIQUE NONCLUSTERED INDEX [UQ_Person_PeopleId] ON [kt].[Person]
+        CREATE UNIQUE NONCLUSTERED INDEX [UQ_Kid_PeopleId] ON [kt].[Kid]
             (
              [PeopleId] ASC
                 )
@@ -201,9 +201,6 @@ IF OBJECT_ID('[kt].[FK_Location_LocationGroupId]', 'F') IS NULL
             FOREIGN KEY ([LocationGroupId])
                 REFERENCES [kt].[LocationGroup] ([Id])
     END;
-
-
--- dotnet ef dbcontext scaffold "Server=skyship.space;Database=KidsTown;User Id=sa;Password=Sherlock69" Microsoft.EntityFrameworkCore.SqlServer -f
     
 
     

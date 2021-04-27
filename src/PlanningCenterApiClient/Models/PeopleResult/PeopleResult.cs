@@ -97,8 +97,8 @@ namespace KidsTown.PlanningCenterApiClient.Models.PeopleResult
 //         [JsonProperty("middle_name")]
 //         public string MiddleName { get; set; }
 
-//         [JsonProperty("name")]
-//         public string Name { get; set; }
+         // [JsonProperty("name")]
+         // public string? Name { get; set; }
 
 //         [JsonProperty("nickname")]
 //         public object Nickname { get; set; }
@@ -143,10 +143,16 @@ namespace KidsTown.PlanningCenterApiClient.Models.PeopleResult
 //         public PrimaryCampus PrimaryCampus { get; set; }
 
          [JsonProperty(propertyName: "field_data")]
-         public FieldData? FieldData { get; set; }
+         public DatumRelationship? FieldData { get; set; }
+         
+         [JsonProperty(propertyName: "households")]
+         public DatumRelationship? Households { get; set; }
+         
+         [JsonProperty(propertyName: "phone_numbers")]
+         public DatumRelationship? PhoneNumbers { get; set; }
      }
 
-     public class FieldData
+     public class DatumRelationship
      {
 //         [JsonProperty("links")]
 //         public FieldDataLinks Links { get; set; }
@@ -212,6 +218,18 @@ namespace KidsTown.PlanningCenterApiClient.Models.PeopleResult
 
          [JsonProperty(propertyName: "value")]
          public string? Value { get; set; }
+         
+         [JsonProperty(propertyName: "name")]
+         public string? Name { get; set; }
+         
+         [JsonProperty(propertyName: "number")]
+         public string? Number { get; set; }
+         
+         [JsonProperty(propertyName: "location")]
+         public string? NumberType { get; set; }
+         
+         [JsonProperty(propertyName: "primary")]
+         public bool? Primary { get; set; }
      }
 
 //     public class File
@@ -253,7 +271,7 @@ namespace KidsTown.PlanningCenterApiClient.Models.PeopleResult
 //         public Parent Parent { get; set; }
 //     }
 
-     public enum PeopleIncludedType { FieldDatum, FieldDefinition, Organization, Person, PrimaryCampus }
+     public enum PeopleIncludedType { FieldDatum, FieldDefinition, Organization, Person, PrimaryCampus, Household, PhoneNumber }
 
      // ReSharper disable once UnusedType.Global
      internal static class Converter
@@ -316,6 +334,8 @@ namespace KidsTown.PlanningCenterApiClient.Models.PeopleResult
                 "Organization" => PeopleIncludedType.Organization,
                 "Person" => PeopleIncludedType.Person,
                 "PrimaryCampus" => PeopleIncludedType.PrimaryCampus,
+                "Household" => PeopleIncludedType.Household,
+                "PhoneNumber" => PeopleIncludedType.PhoneNumber,
                 _ => throw new Exception(message: "Cannot unmarshal type TypeEnum")
             };
         }
@@ -344,6 +364,12 @@ namespace KidsTown.PlanningCenterApiClient.Models.PeopleResult
                     return;
                 case PeopleIncludedType.PrimaryCampus:
                     serializer.Serialize(jsonWriter: writer, value: "PrimaryCampus");
+                    return;
+                case PeopleIncludedType.Household:
+                    serializer.Serialize(jsonWriter: writer, value: "Household");
+                    return;
+                case PeopleIncludedType.PhoneNumber:
+                    serializer.Serialize(jsonWriter: writer, value: "PhoneNumber");
                     return;
                 default:
                     throw new Exception(message: "Cannot marshal type TypeEnum");

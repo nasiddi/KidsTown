@@ -42,8 +42,9 @@ namespace KidsTown.Database
                 .GetRequiredService<KidsTownContext>())
             {
                 var peopleIds = await db.Attendances
-                    .Where(predicate: i => i.InsertDate >= DateTime.Today.AddDays(-daysLookBack) && i.Person.PeopleId.HasValue)
-                    .Select(selector: i => i.Person.PeopleId!.Value)
+                    .Where(predicate: i
+                        => i.InsertDate >= DateTime.Today.AddDays(-daysLookBack) && i.Kid.PeopleId.HasValue)
+                    .Select(selector: i => i.Kid.PeopleId!.Value)
                     .Distinct()
                     .ToListAsync().ConfigureAwait(continueOnCapturedContext: false);
 
@@ -51,15 +52,20 @@ namespace KidsTown.Database
             }
         }
 
-        public async Task UpdatePersons(ImmutableList<PeopleUpdate> peoples)
+        public async Task UpdateKids(
+            ImmutableList<PeopleUpdate> kids,
+            ImmutableList<BackgroundTasks.Models.Family> families
+        )
         {
             await using (var db = _serviceScopeFactory.CreateScope().ServiceProvider
                 .GetRequiredService<KidsTownContext>())
             {
-                var existingPersons =
-                    await GetPersonsByPeopleIds(db: db, peopleIds: peoples.Select(selector: p => p.PeopleId!.Value).ToImmutableList()).ConfigureAwait(continueOnCapturedContext: false);
+                var existingKids = await GetKidsByPeopleIds(db: db,
+                    peopleIds: kids.Select(selector: p => p.PeopleId!.Value)
+                        .ToImmutableList()).ConfigureAwait(continueOnCapturedContext: false);
 
-                await UpdatePersons(db: db, people: existingPersons, updates: peoples).ConfigureAwait(continueOnCapturedContext: false);
+                await UpdateKids(db: db, people: existingKids, updates: kids, families: families)
+                    .ConfigureAwait(continueOnCapturedContext: false);
             }
         }
 
@@ -69,11 +75,11 @@ namespace KidsTown.Database
                 .GetRequiredService<KidsTownContext>())
             {
                 var volunteers = await db.Attendances
-                    .Where(predicate: a => 
+                    .Where(predicate: a =>
                         a.AttendanceTypeId == (int) AttendanceTypes.Volunteer
                         && a.CheckInDate == null)
                     .ToListAsync().ConfigureAwait(continueOnCapturedContext: false);
-                
+
                 volunteers.ForEach(action: v => v.CheckInDate = DateTime.UtcNow);
                 await db.SaveChangesAsync().ConfigureAwait(continueOnCapturedContext: false);
             }
@@ -85,13 +91,14 @@ namespace KidsTown.Database
                 .GetRequiredService<KidsTownContext>())
             {
                 var attendances = await db.Attendances
-                    .Where(predicate: a => 
+                    .Where(predicate: a =>
                         a.CheckInDate != null
                         && a.CheckOutDate == null
-                        && a. CheckInDate < DateTime.Today)
+                        && a.CheckInDate < DateTime.Today)
                     .ToListAsync().ConfigureAwait(continueOnCapturedContext: false);
-                
-                attendances.ForEach(action: v => v.CheckOutDate = v.CheckInDate!.Value.Date.AddDays(value: 1).AddSeconds(value: -1));
+
+                attendances.ForEach(action: v
+                    => v.CheckOutDate = v.CheckInDate!.Value.Date.AddDays(value: 1).AddSeconds(value: -1));
                 await db.SaveChangesAsync().ConfigureAwait(continueOnCapturedContext: false);
             }
         }
@@ -105,10 +112,11 @@ namespace KidsTown.Database
                 await PreCheckInGuests(guests: guests, db: db).ConfigureAwait(continueOnCapturedContext: false);
 
                 var regularPreCheckIns = preCheckIns.Except(second: guests).ToImmutableList();
-                await PreCheckInRegulars(regularPreCheckIns: regularPreCheckIns, db: db).ConfigureAwait(continueOnCapturedContext: false);
+                await PreCheckInRegulars(regularPreCheckIns: regularPreCheckIns, db: db)
+                    .ConfigureAwait(continueOnCapturedContext: false);
             }
         }
-        
+
         public async Task<ImmutableList<PersistedLocation>> GetPersistedLocations()
         {
             await using (var db = _serviceScopeFactory.CreateScope().ServiceProvider
@@ -116,7 +124,9 @@ namespace KidsTown.Database
             {
                 var locations = await db.Locations.Where(predicate: l => l.CheckInsLocationId.HasValue)
                     .ToListAsync().ConfigureAwait(continueOnCapturedContext: false);
-                return locations.Select(selector: l => new PersistedLocation(locationId: l.Id, checkInsLocationId: l.CheckInsLocationId!.Value)).ToImmutableList();
+                return locations.Select(selector: l
+                        => new PersistedLocation(locationId: l.Id, checkInsLocationId: l.CheckInsLocationId!.Value))
+                    .ToImmutableList();
             }
         }
 
@@ -138,7 +148,7 @@ namespace KidsTown.Database
             {
                 var locationGroups = await db.LocationGroups.Where(predicate: l => l.Id == (int) LocationGroups.Unknown)
                     .ToListAsync().ConfigureAwait(continueOnCapturedContext: false);
-                
+
                 locationGroups.ForEach(action: l => l.IsEnabled = true);
                 await db.SaveChangesAsync().ConfigureAwait(continueOnCapturedContext: false);
             }
@@ -166,13 +176,128 @@ namespace KidsTown.Database
                     var taskExecutionsToDelete = await db.TaskExecutions.OrderBy(keySelector: t => t.Id)
                         .Take(count: toBeDeleted).ToListAsync()
                         .ConfigureAwait(continueOnCapturedContext: false);
-                    
+
                     db.RemoveRange(entities: taskExecutionsToDelete);
                 }
 
                 await db.AddAsync(entity: taskExecution).ConfigureAwait(continueOnCapturedContext: false);
                 await db.SaveChangesAsync().ConfigureAwait(continueOnCapturedContext: false);
             }
+        }
+
+        public async Task<ImmutableList<BackgroundTasks.Models.Family>> GetExistingFamilies(
+            ImmutableList<long> householdIds
+        )
+        {
+            await using (var db = _serviceScopeFactory.CreateScope().ServiceProvider
+                .GetRequiredService<KidsTownContext>())
+            {
+                var families = await db.Families.Where(predicate: f => householdIds.Contains(f.HouseholdId))
+                    .ToListAsync().ConfigureAwait(continueOnCapturedContext: false);
+
+                return families.Select(selector: MapFamily).ToImmutableList();
+            }
+        }
+
+        public async Task<ImmutableList<BackgroundTasks.Models.Family>> InsertFamilies(
+            ImmutableList<long> newHouseholdIds,
+            ImmutableList<PeopleUpdate> peoples
+        )
+        {
+            await using (var db = _serviceScopeFactory.CreateScope().ServiceProvider
+                .GetRequiredService<KidsTownContext>())
+            {
+                var families = newHouseholdIds.Select(selector: h => MapFamily(householdId: h, peoples: peoples));
+                await db.AddRangeAsync(entities: families).ConfigureAwait(continueOnCapturedContext: false);
+                await db.SaveChangesAsync().ConfigureAwait(continueOnCapturedContext: false);
+                return await GetExistingFamilies(householdIds: newHouseholdIds).ConfigureAwait(continueOnCapturedContext: false);
+            }
+        }
+
+        public async Task UpdateParents(IImmutableList<ParentUpdate> parentUpdates)
+        {
+            await using (var db = _serviceScopeFactory.CreateScope().ServiceProvider
+                .GetRequiredService<KidsTownContext>())
+            {
+                var peopleIds = parentUpdates.Select(selector: p => p.PeopleId).ToImmutableList();
+                var existingParents = await GetExistingParents(peopleIds: peopleIds, db: db);
+
+                var updates = parentUpdates.Where(
+                        predicate: p => existingParents.Select(selector: e => e.PeopleId).Contains(value: p.PeopleId))
+                    .ToImmutableList();
+                existingParents.ForEach(action: e => UpdateParent(parent: e, updates: updates));
+
+                var newEntries = parentUpdates.Except(second: updates).ToImmutableList();
+                var newParents = newEntries.Select(selector: MapParent);
+                await db.AddRangeAsync(entities: newParents);
+                await db.SaveChangesAsync();
+            }
+        }
+
+        private static Adult MapParent(ParentUpdate parent)
+        {
+            return new()
+            {
+                PeopleId = parent.PeopleId,
+                FamilyId = parent.FamilyId,
+                FirstName = parent.FirstName,
+                LastName = parent.LastName,
+                PhoneNumber = parent.PhoneNumber,
+                UpdateDate = DateTime.UtcNow
+            };
+        }
+
+        private static void UpdateParent(Adult parent, ImmutableList<ParentUpdate> updates)
+        {
+            var update = updates.Single(predicate: u => u.PeopleId == parent.PeopleId);
+
+            parent.FamilyId = update.FamilyId;
+
+            if (update.FirstName.Length < 0)
+            {
+                parent.FirstName = update.FirstName;
+            }
+            
+            if (update.LastName.Length < 0)
+            {
+                parent.LastName = update.LastName;
+            }
+            
+            if (update.PhoneNumber.Length < 0)
+            {
+                parent.PhoneNumber = update.PhoneNumber;
+            }
+            
+            parent.UpdateDate = DateTime.UtcNow;
+        }
+
+
+        private static async Task<ImmutableList<Adult>> GetExistingParents(
+            IImmutableList<long> peopleIds,
+            KidsTownContext db
+        )
+        {
+            var parents = await db.Adults.Where(predicate: p => peopleIds.Contains(p.PeopleId)).ToListAsync()
+                .ConfigureAwait(continueOnCapturedContext: false);
+            return parents.ToImmutableList();
+        }
+
+        private static Family MapFamily(long householdId, ImmutableList<PeopleUpdate> peoples)
+        {
+            var name = peoples.First(predicate: p => p.HouseholdId == householdId).HouseholdName;
+
+            return new Family
+            {
+                HouseholdId = householdId,
+                Name = name
+            };
+        }
+
+        private static BackgroundTasks.Models.Family MapFamily(Family family)
+        {
+            return new(
+                familyId: family.Id,
+                householdId: family.HouseholdId);
         }
 
         private static Location MapLocation(LocationUpdate locationUpdate)
@@ -184,32 +309,41 @@ namespace KidsTown.Database
                 CheckInsLocationId = locationUpdate.CheckInsLocationId,
                 EventId = locationUpdate.EventId
             };
-
         }
 
-        private static async Task PreCheckInRegulars(ImmutableList<CheckInsUpdate> regularPreCheckIns, KidsTownContext db)
+        private static async Task PreCheckInRegulars(
+            ImmutableList<CheckInsUpdate> regularPreCheckIns,
+            KidsTownContext db
+        )
         {
-            var persons = regularPreCheckIns
-                .Select(selector: c => c.Person)
+            var kids = regularPreCheckIns
+                .Select(selector: c => c.Kid)
                 .GroupBy(keySelector: p => p.PeopleId).Select(selector: p => p.First())
                 .ToImmutableList();
 
-            var existingPersons = await GetPersonsByPeopleIds(
-                db: db,
-                peopleIds: persons.Where(predicate: p => p.PeopleId.HasValue)
-                    .Select(selector: p => p.PeopleId!.Value).ToImmutableList())
+            var existingKids = await GetKidsByPeopleIds(
+                    db: db,
+                    peopleIds: kids.Where(predicate: p => p.PeopleId.HasValue)
+                        .Select(selector: p => p.PeopleId!.Value).ToImmutableList())
                 .ConfigureAwait(continueOnCapturedContext: false);
 
-            var personUpdates = persons.Where(
-                    predicate: p => existingPersons.Select(selector: e => e.PeopleId).Contains(value: p.PeopleId))
+            var peopleUpdates = kids.Where(
+                    predicate: p => existingKids.Select(selector: e => e.PeopleId).Contains(value: p.PeopleId))
                 .ToImmutableList();
-            await UpdatePersons(db: db, people: existingPersons, updates: personUpdates).ConfigureAwait(continueOnCapturedContext: false);
-            
-            var personInserts = persons.Except(second: personUpdates).ToImmutableList();
-            var insertedPersons = await InsertPersons(db: db, personToInsert: personInserts).ConfigureAwait(continueOnCapturedContext: false);
+            await UpdateKids(
+                    db: db,
+                    people: existingKids,
+                    updates: peopleUpdates,
+                    families: ImmutableList<BackgroundTasks.Models.Family>.Empty)
+                .ConfigureAwait(continueOnCapturedContext: false);
+
+            var kidsInserts = kids.Except(second: peopleUpdates).ToImmutableList();
+            var insertKids = await InsertKids(db: db, kidsToInsert: kidsInserts)
+                .ConfigureAwait(continueOnCapturedContext: false);
 
             var checkIns = regularPreCheckIns
-                .Select(selector: c => MapToAttendance(checkInsUpdate: c, persons: existingPersons.Union(second: insertedPersons).ToImmutableList()))
+                .Select(selector: c => MapToAttendance(checkInsUpdate: c,
+                    kids: existingKids.Union(second: insertKids).ToImmutableList()))
                 .ToImmutableList();
             await db.AddRangeAsync(entities: checkIns).ConfigureAwait(continueOnCapturedContext: false);
             await db.SaveChangesAsync().ConfigureAwait(continueOnCapturedContext: false);
@@ -217,35 +351,41 @@ namespace KidsTown.Database
 
         private async Task PreCheckInGuests(ImmutableList<CheckInsUpdate> guests, DbContext db)
         {
-            var existingCheckInsIds = await GetExistingCheckInsIds(checkinsIds: guests.Select(selector: g => g.CheckInsId).ToImmutableList()).ConfigureAwait(continueOnCapturedContext: false);
-            var newGuests = guests.Where(predicate: g => !existingCheckInsIds.Contains(value: g.CheckInsId)).ToImmutableList();
+            var existingCheckInsIds =
+                await GetExistingCheckInsIds(checkinsIds: guests.Select(selector: g => g.CheckInsId).ToImmutableList())
+                    .ConfigureAwait(continueOnCapturedContext: false);
+            var newGuests = guests.Where(predicate: g => !existingCheckInsIds.Contains(value: g.CheckInsId))
+                .ToImmutableList();
 
             var guestAttendances = newGuests.Select(selector: MapGuestAttendance).ToImmutableList();
-            
+
             await db.AddRangeAsync(entities: guestAttendances).ConfigureAwait(continueOnCapturedContext: false);
             await db.SaveChangesAsync().ConfigureAwait(continueOnCapturedContext: false);
         }
 
         private static Attendance MapGuestAttendance(CheckInsUpdate guest)
         {
-            var person = MapPerson(peopleUpdate: guest.Person);
-            return MapToAttendance(checkInsUpdate: guest, persons: ImmutableList.Create(item: person));
+            var kid = MapKid(peopleUpdate: guest.Kid);
+            return MapToAttendance(checkInsUpdate: guest, kids: ImmutableList.Create(item: kid));
         }
 
-        private static async Task<List<Person>> InsertPersons(KidsTownContext db,
-            IImmutableList<PeopleUpdate> personToInsert)
+        private static async Task<List<Kid>> InsertKids(
+            KidsTownContext db,
+            IImmutableList<PeopleUpdate> kidsToInsert
+        )
         {
-            var persons = personToInsert.Select(selector: MapPerson).ToImmutableList();
-            await db.AddRangeAsync(entities: persons).ConfigureAwait(continueOnCapturedContext: false);
+            var kids = kidsToInsert.Select(selector: MapKid).ToImmutableList();
+            await db.AddRangeAsync(entities: kids).ConfigureAwait(continueOnCapturedContext: false);
             await db.SaveChangesAsync().ConfigureAwait(continueOnCapturedContext: false);
 
-            var insertedPeople = await db.People.Where(predicate: p => personToInsert.Select(i => i.PeopleId).Contains(p.PeopleId))
+            var insertedPeople = await db.Kids
+                .Where(predicate: p => kidsToInsert.Select(i => i.PeopleId).Contains(p.PeopleId))
                 .ToListAsync().ConfigureAwait(continueOnCapturedContext: false);
 
             return insertedPeople;
         }
 
-        private static Person MapPerson(PeopleUpdate peopleUpdate)
+        private static Kid MapKid(PeopleUpdate peopleUpdate)
         {
             return new()
             {
@@ -257,10 +397,12 @@ namespace KidsTown.Database
             };
         }
 
-        private static async Task UpdatePersons(
+        private static async Task UpdateKids(
             DbContext db,
-            List<Person> people,
-            ImmutableList<PeopleUpdate> updates)
+            List<Kid> people,
+            ImmutableList<PeopleUpdate> updates,
+            ImmutableList<BackgroundTasks.Models.Family> families
+        )
         {
             var updatesByPeopleId = updates.Where(predicate: u => u.PeopleId.HasValue)
                 .ToImmutableDictionary(keySelector: k => k.PeopleId!, elementSelector: v => v);
@@ -268,28 +410,30 @@ namespace KidsTown.Database
             people.ForEach(action: p =>
             {
                 var update = updatesByPeopleId[key: p.PeopleId!];
-
                 p.FistName = update.FirstName;
                 p.LastName = update.LastName;
                 p.MayLeaveAlone = update.MayLeaveAlone;
                 p.HasPeopleWithoutPickupPermission = update.HasPeopleWithoutPickupPermission;
+                p.FamilyId = families.SingleOrDefault(predicate: f => f.HouseholdId == update.HouseholdId)?.FamilyId;
             });
 
             await db.SaveChangesAsync().ConfigureAwait(continueOnCapturedContext: false);
         }
 
-        private static async Task<List<Person>> GetPersonsByPeopleIds(
+        private static async Task<List<Kid>> GetKidsByPeopleIds(
             KidsTownContext db,
-            IImmutableList<long> peopleIds)
+            IImmutableList<long> peopleIds
+        )
         {
-            var people = await db.People.Where(predicate: p => p.PeopleId.HasValue && peopleIds.Contains(p.PeopleId.Value))
+            var kids = await db.Kids
+                .Where(predicate: p => p.PeopleId.HasValue && peopleIds.Contains(p.PeopleId.Value))
                 .ToListAsync().ConfigureAwait(continueOnCapturedContext: false);
-            return people;
+            return kids;
         }
 
-        private static Attendance MapToAttendance(CheckInsUpdate checkInsUpdate, ImmutableList<Person> persons)
+        private static Attendance MapToAttendance(CheckInsUpdate checkInsUpdate, ImmutableList<Kid> kids)
         {
-            var person = persons.SingleOrDefault(predicate: p => p.PeopleId == checkInsUpdate.PeopleId);
+            var kid = kids.SingleOrDefault(predicate: p => p.PeopleId == checkInsUpdate.PeopleId);
 
             return new Attendance
             {
@@ -297,7 +441,7 @@ namespace KidsTown.Database
                 LocationId = checkInsUpdate.LocationId,
                 SecurityCode = checkInsUpdate.SecurityCode,
                 InsertDate = checkInsUpdate.CreationDate,
-                Person = person,
+                Kid = kid,
                 AttendanceTypeId = MapAttendeeType(attendeeType: checkInsUpdate.AttendeeType)
             };
         }
@@ -309,7 +453,8 @@ namespace KidsTown.Database
                 AttendeeType.Regular => 1,
                 AttendeeType.Guest => 2,
                 AttendeeType.Volunteer => 3,
-                _ => throw new ArgumentOutOfRangeException(paramName: nameof(attendeeType), actualValue: attendeeType, message: null)
+                _ => throw new ArgumentOutOfRangeException(paramName: nameof(attendeeType), actualValue: attendeeType,
+                    message: null)
             };
         }
     }

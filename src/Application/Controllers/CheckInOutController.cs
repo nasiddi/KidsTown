@@ -88,15 +88,15 @@ namespace KidsTown.Application.Controllers
                 && (!peopleReadyForProcessing.Any(predicate: p => !p.MayLeaveAlone || p.HasPeopleWithoutPickupPermission) 
                     || request.CheckType == CheckType.CheckIn))
             {
-                var person = await TryFastCheckInOut(people: peopleReadyForProcessing, checkType: request.CheckType).ConfigureAwait(continueOnCapturedContext: false);
-                if (person != null)
+                var kid = await TryFastCheckInOut(people: peopleReadyForProcessing, checkType: request.CheckType).ConfigureAwait(continueOnCapturedContext: false);
+                if (kid != null)
                 {
                     return Ok(value: new CheckInOutResult
                     {
-                        Text = $"{request.CheckType.ToString()} für {person.FirstName} {person.LastName} war erfolgreich.",
+                        Text = $"{request.CheckType.ToString()} für {kid.FirstName} {kid.LastName} war erfolgreich.",
                         AlertLevel = AlertLevel.Success,
                         SuccessfulFastCheckout = true,
-                        AttendanceIds = ImmutableList.Create(item: person.AttendanceId)
+                        AttendanceIds = ImmutableList.Create(item: kid.AttendanceId)
                     });
                 }
             }
@@ -240,7 +240,7 @@ namespace KidsTown.Application.Controllers
             return text;
         }
 
-        private async Task<Person?> TryFastCheckInOut(IImmutableList<Person> people, CheckType checkType)
+        private async Task<Kid?> TryFastCheckInOut(IImmutableList<Kid> people, CheckType checkType)
         {
             if (people.Count != 1)
             {
@@ -255,7 +255,7 @@ namespace KidsTown.Application.Controllers
 
         }
 
-        private static ImmutableList<Person> GetPeopleInRequestedState(IImmutableList<Person> people, CheckType checkType)
+        private static ImmutableList<Kid> GetPeopleInRequestedState(IImmutableList<Kid> people, CheckType checkType)
         {
             return checkType switch
             {

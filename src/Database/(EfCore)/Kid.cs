@@ -5,9 +5,9 @@ using System.Collections.Generic;
 
 namespace KidsTown.Database
 {
-    public partial class Person
+    public partial class Kid
     {
-        public Person()
+        public Kid()
         {
             Attendances = new HashSet<Attendance>();
         }
@@ -18,7 +18,9 @@ namespace KidsTown.Database
         public string LastName { get; set; }
         public bool MayLeaveAlone { get; set; }
         public bool HasPeopleWithoutPickupPermission { get; set; }
+        public int? FamilyId { get; set; }
 
+        public virtual Family Family { get; set; }
         public virtual ICollection<Attendance> Attendances { get; set; }
     }
 }

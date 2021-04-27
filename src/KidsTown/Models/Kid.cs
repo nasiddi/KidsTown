@@ -4,7 +4,7 @@ using System;
 
 namespace KidsTown.KidsTown.Models
 {
-    public class Person
+    public class Kid
     {
         public int AttendanceId { get; init; }
         public string SecurityCode { get; init; } = string.Empty;
