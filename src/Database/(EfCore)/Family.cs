@@ -9,15 +9,15 @@ namespace KidsTown.Database
     {
         public Family()
         {
-            Parents = new HashSet<Parent>();
-            People = new HashSet<Person>();
+            Adults = new HashSet<Adult>();
+            Kids = new HashSet<Kid>();
         }
 
         public int Id { get; set; }
         public long HouseholdId { get; set; }
         public string Name { get; set; }
 
-        public virtual ICollection<Parent> Parents { get; set; }
-        public virtual ICollection<Person> People { get; set; }
+        public virtual ICollection<Adult> Adults { get; set; }
+        public virtual ICollection<Kid> Kids { get; set; }
     }
 }
