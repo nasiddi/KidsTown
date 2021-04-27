@@ -73,7 +73,7 @@ namespace KidsTown.PlanningCenterApiClient
             var response = await Client.GetAsync(requestUri: endPoint);
             var responseString = await response.Content.ReadAsStringAsync();
 
-            await CheckRateLimitation(response);
+            await CheckRateLimitation(response: response);
 
             var responseBody = JsonConvert.DeserializeObject<T>(value: responseString);
 
@@ -93,28 +93,28 @@ namespace KidsTown.PlanningCenterApiClient
 
         private static async Task CheckRateLimitation(HttpResponseMessage response)
         {
-            var countHeader = response.Headers.SingleOrDefault(h => h.Key == "X-PCO-API-Request-Rate-Count");
-            var limitHeader = response.Headers.SingleOrDefault(h => h.Key == "X-PCO-API-Request-Rate-Limit");
-            var periodHeader = response.Headers.SingleOrDefault(h => h.Key == "X-PCO-API-Request-Rate-Period");
+            var countHeader = response.Headers.SingleOrDefault(predicate: h => h.Key == "X-PCO-API-Request-Rate-Count");
+            var limitHeader = response.Headers.SingleOrDefault(predicate: h => h.Key == "X-PCO-API-Request-Rate-Limit");
+            var periodHeader = response.Headers.SingleOrDefault(predicate: h => h.Key == "X-PCO-API-Request-Rate-Period");
 
-            var count = ParseHeader(countHeader);
+            var count = ParseHeader(header: countHeader);
             if (count == 0)
             {
                 return;
             }
             
-            var limit = ParseHeader(limitHeader);
-            var period = ParseHeader(periodHeader);
+            var limit = ParseHeader(header: limitHeader);
+            var period = ParseHeader(header: periodHeader);
 
             if (count >= limit - 5)
             {
-                await Task.Delay(period * 250).ConfigureAwait(false);
+                await Task.Delay(millisecondsDelay: period * 250).ConfigureAwait(continueOnCapturedContext: false);
             }
         }
 
         private static int ParseHeader(KeyValuePair<string, IEnumerable<string>>? header)
         {
-            return int.TryParse(header?.Value.FirstOrDefault(), result: out var number) ? number : 0;
+            return int.TryParse(s: header?.Value.FirstOrDefault(), result: out var number) ? number : 0;
         }
     }
 }

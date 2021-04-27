@@ -32,7 +32,7 @@ namespace KidsTown.IntegrationTests
             await db.SaveChangesAsync();
         }
 
-        private static async Task EstablishConnectionToDatabase(KidsTownContext db)
+        private static async Task EstablishConnectionToDatabase(DbContext db)
         {
             while (!await db.Database.CanConnectAsync())
             {

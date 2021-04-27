@@ -64,7 +64,7 @@ namespace KidsTown.Database
                     peopleIds: kids.Select(selector: p => p.PeopleId!.Value)
                         .ToImmutableList()).ConfigureAwait(continueOnCapturedContext: false);
 
-                await UpdateKids(db: db, people: existingKids, updates: kids, families)
+                await UpdateKids(db: db, people: existingKids, updates: kids, families: families)
                     .ConfigureAwait(continueOnCapturedContext: false);
             }
         }
@@ -192,10 +192,10 @@ namespace KidsTown.Database
             await using (var db = _serviceScopeFactory.CreateScope().ServiceProvider
                 .GetRequiredService<KidsTownContext>())
             {
-                var families = await db.Families.Where(f => householdIds.Contains(f.HouseholdId))
-                    .ToListAsync().ConfigureAwait(false);
+                var families = await db.Families.Where(predicate: f => householdIds.Contains(f.HouseholdId))
+                    .ToListAsync().ConfigureAwait(continueOnCapturedContext: false);
 
-                return families.Select(MapFamily).ToImmutableList();
+                return families.Select(selector: MapFamily).ToImmutableList();
             }
         }
 
@@ -207,10 +207,10 @@ namespace KidsTown.Database
             await using (var db = _serviceScopeFactory.CreateScope().ServiceProvider
                 .GetRequiredService<KidsTownContext>())
             {
-                var families = newHouseholdIds.Select(h => MapFamily(h, peoples));
-                await db.AddRangeAsync(families).ConfigureAwait(false);
-                await db.SaveChangesAsync().ConfigureAwait(false);
-                return await GetExistingFamilies(newHouseholdIds).ConfigureAwait(false);
+                var families = newHouseholdIds.Select(selector: h => MapFamily(householdId: h, peoples: peoples));
+                await db.AddRangeAsync(entities: families).ConfigureAwait(continueOnCapturedContext: false);
+                await db.SaveChangesAsync().ConfigureAwait(continueOnCapturedContext: false);
+                return await GetExistingFamilies(householdIds: newHouseholdIds).ConfigureAwait(continueOnCapturedContext: false);
             }
         }
 
@@ -219,17 +219,17 @@ namespace KidsTown.Database
             await using (var db = _serviceScopeFactory.CreateScope().ServiceProvider
                 .GetRequiredService<KidsTownContext>())
             {
-                var peopleIds = parentUpdates.Select(p => p.PeopleId).ToImmutableList();
-                var existingParents = await GetExistingParents(peopleIds, db);
+                var peopleIds = parentUpdates.Select(selector: p => p.PeopleId).ToImmutableList();
+                var existingParents = await GetExistingParents(peopleIds: peopleIds, db: db);
 
                 var updates = parentUpdates.Where(
-                        p => existingParents.Select(e => e.PeopleId).Contains(p.PeopleId))
+                        predicate: p => existingParents.Select(selector: e => e.PeopleId).Contains(value: p.PeopleId))
                     .ToImmutableList();
-                existingParents.ForEach(e => UpdateParent(e, updates));
+                existingParents.ForEach(action: e => UpdateParent(parent: e, updates: updates));
 
-                var newEntries = parentUpdates.Except(updates).ToImmutableList();
-                var newParents = newEntries.Select(MapParent);
-                await db.AddRangeAsync(newParents);
+                var newEntries = parentUpdates.Except(second: updates).ToImmutableList();
+                var newParents = newEntries.Select(selector: MapParent);
+                await db.AddRangeAsync(entities: newParents);
                 await db.SaveChangesAsync();
             }
         }
@@ -243,13 +243,13 @@ namespace KidsTown.Database
                 FirstName = parent.FirstName,
                 LastName = parent.LastName,
                 PhoneNumber = parent.PhoneNumber,
-                UpdateDate = DateTime.UtcNow,
+                UpdateDate = DateTime.UtcNow
             };
         }
 
         private static void UpdateParent(Adult parent, ImmutableList<ParentUpdate> updates)
         {
-            var update = updates.Single(u => u.PeopleId == parent.PeopleId);
+            var update = updates.Single(predicate: u => u.PeopleId == parent.PeopleId);
 
             parent.FamilyId = update.FamilyId;
 
@@ -277,27 +277,27 @@ namespace KidsTown.Database
             KidsTownContext db
         )
         {
-            var parents = await db.Adults.Where(p => peopleIds.Contains(p.PeopleId)).ToListAsync()
-                .ConfigureAwait(false);
+            var parents = await db.Adults.Where(predicate: p => peopleIds.Contains(p.PeopleId)).ToListAsync()
+                .ConfigureAwait(continueOnCapturedContext: false);
             return parents.ToImmutableList();
         }
 
         private static Family MapFamily(long householdId, ImmutableList<PeopleUpdate> peoples)
         {
-            var name = peoples.First(p => p.HouseholdId == householdId).HouseholdName;
+            var name = peoples.First(predicate: p => p.HouseholdId == householdId).HouseholdName;
 
             return new Family
             {
                 HouseholdId = householdId,
-                Name = name,
+                Name = name
             };
         }
 
         private static BackgroundTasks.Models.Family MapFamily(Family family)
         {
             return new(
-                family.Id,
-                family.HouseholdId);
+                familyId: family.Id,
+                householdId: family.HouseholdId);
         }
 
         private static Location MapLocation(LocationUpdate locationUpdate)
@@ -334,7 +334,7 @@ namespace KidsTown.Database
                     db: db,
                     people: existingKids,
                     updates: peopleUpdates,
-                    ImmutableList<BackgroundTasks.Models.Family>.Empty)
+                    families: ImmutableList<BackgroundTasks.Models.Family>.Empty)
                 .ConfigureAwait(continueOnCapturedContext: false);
 
             var kidsInserts = kids.Except(second: peopleUpdates).ToImmutableList();
@@ -414,7 +414,7 @@ namespace KidsTown.Database
                 p.LastName = update.LastName;
                 p.MayLeaveAlone = update.MayLeaveAlone;
                 p.HasPeopleWithoutPickupPermission = update.HasPeopleWithoutPickupPermission;
-                p.FamilyId = families.SingleOrDefault(f => f.HouseholdId == update.HouseholdId)?.FamilyId;
+                p.FamilyId = families.SingleOrDefault(predicate: f => f.HouseholdId == update.HouseholdId)?.FamilyId;
             });
 
             await db.SaveChangesAsync().ConfigureAwait(continueOnCapturedContext: false);

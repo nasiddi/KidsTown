@@ -2,18 +2,15 @@ namespace KidsTown.PlanningCenterApiClient.Models.HouseholdResult
 {
     using System;
     using System.Collections.Generic;
-
-    using System.Globalization;
     using Newtonsoft.Json;
-    using Newtonsoft.Json.Converters;
 //
-     public partial class Household : IPlanningCenterResponse
+     public class Household : IPlanningCenterResponse
      {
-         [JsonProperty("data")]
-         public Data Data { get; set; }
+         // [JsonProperty(propertyName: "data")]
+         // public Data? Data { get; set; }
 
-         [JsonProperty("included")]
-         public List<Included> Included { get; set; }
+         [JsonProperty(propertyName: "included")]
+         public List<Included>? Included { get; set; }
 //
 //         [JsonProperty("meta")]
 //         public Meta Meta { get; set; }
@@ -22,8 +19,8 @@ namespace KidsTown.PlanningCenterApiClient.Models.HouseholdResult
 //
      }
 //
-     public partial class Data
-     {
+     // public class Data
+     // {
 //         [JsonProperty("type")]
 //         public string Type { get; set; }
 //
@@ -31,18 +28,18 @@ namespace KidsTown.PlanningCenterApiClient.Models.HouseholdResult
 //         [JsonConverter(typeof(ParseStringConverter))]
 //         public long Id { get; set; }
 //
-         [JsonProperty("attributes")]
-         public DataAttributes Attributes { get; set; }
+         // [JsonProperty(propertyName: "attributes")]
+         // public DataAttributes? Attributes { get; set; }
 //
 //         [JsonProperty("relationships")]
 //         public DataRelationships Relationships { get; set; }
 //
 //         [JsonProperty("links")]
 //         public DataLinks Links { get; set; }
-     }
+     // }
 //
-     public partial class DataAttributes
-     {
+//         public class DataAttribute
+//         {
 //         [JsonProperty("avatar")]
 //         public Uri Avatar { get; set; }
 //
@@ -64,7 +61,7 @@ namespace KidsTown.PlanningCenterApiClient.Models.HouseholdResult
 //
 //         [JsonProperty("updated_at")]
 //         public DateTimeOffset UpdatedAt { get; set; }
-     }
+     // }
 //
 //     public partial class DataLinks
 //     {
@@ -118,17 +115,17 @@ namespace KidsTown.PlanningCenterApiClient.Models.HouseholdResult
 //         public Parent Data { get; set; }
 //     }
 //
-     public partial class Included
+     public class Included
      {
-         [JsonProperty("type")]
-         public string Type { get; set; }
+         [JsonProperty(propertyName: "type")]
+         public string? Type { get; set; }
 //
-         [JsonProperty("id")]
-         [JsonConverter(typeof(ParseStringConverter))]
+         [JsonProperty(propertyName: "id")]
+         [JsonConverter(converterType: typeof(ParseStringConverter))]
          public long Id { get; set; }
 //
-         [JsonProperty("attributes")]
-         public IncludedAttributes Attributes { get; set; }
+         [JsonProperty(propertyName: "attributes")]
+         public IncludedAttributes? Attributes { get; set; }
 //
 //         [JsonProperty("relationships")]
 //         public IncludedRelationships Relationships { get; set; }
@@ -137,7 +134,7 @@ namespace KidsTown.PlanningCenterApiClient.Models.HouseholdResult
 //         public IncludedLinks Links { get; set; }
      }
 //
-     public partial class IncludedAttributes
+     public class IncludedAttributes
      {
 //         [JsonProperty("accounting_administrator")]
 //         public bool AccountingAdministrator { get; set; }
@@ -154,7 +151,7 @@ namespace KidsTown.PlanningCenterApiClient.Models.HouseholdResult
 //         [JsonProperty("can_create_forms")]
 //         public bool CanCreateForms { get; set; }
 //
-         [JsonProperty("child")]
+         [JsonProperty(propertyName: "child")]
          public bool Child { get; set; }
 //
 //         [JsonProperty("created_at")]
@@ -272,30 +269,26 @@ namespace KidsTown.PlanningCenterApiClient.Models.HouseholdResult
      {
          public override bool CanConvert(Type t) => t == typeof(long) || t == typeof(long?);
 
-         public override object ReadJson(JsonReader reader, Type t, object existingValue, JsonSerializer serializer)
+         public override object? ReadJson(JsonReader reader, Type t, object? existingValue, JsonSerializer serializer)
          {
              if (reader.TokenType == JsonToken.Null) return null;
-             var value = serializer.Deserialize<string>(reader);
-             long l;
-             if (Int64.TryParse(value, out l))
+             var value = serializer.Deserialize<string>(reader: reader);
+             if (long.TryParse(s: value, result: out var l))
              {
                  return l;
              }
-             throw new Exception("Cannot unmarshal type long");
+             throw new Exception(message: "Cannot unmarshal type long");
          }
 
-         public override void WriteJson(JsonWriter writer, object untypedValue, JsonSerializer serializer)
+         public override void WriteJson(JsonWriter writer, object? untypedValue, JsonSerializer serializer)
          {
              if (untypedValue == null)
              {
-                 serializer.Serialize(writer, null);
+                 serializer.Serialize(jsonWriter: writer, value: null);
                  return;
              }
              var value = (long)untypedValue;
-             serializer.Serialize(writer, value.ToString());
-             return;
+             serializer.Serialize(jsonWriter: writer, value: value.ToString());
          }
-
-         public static readonly ParseStringConverter Singleton = new ParseStringConverter();
      }
 }
