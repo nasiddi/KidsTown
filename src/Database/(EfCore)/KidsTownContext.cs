@@ -23,8 +23,10 @@ namespace KidsTown.Database
 
         public virtual DbSet<Attendance> Attendances { get; set; }
         public virtual DbSet<AttendanceType> AttendanceTypes { get; set; }
+        public virtual DbSet<Family> Families { get; set; }
         public virtual DbSet<Location> Locations { get; set; }
         public virtual DbSet<LocationGroup> LocationGroups { get; set; }
+        public virtual DbSet<Parent> Parents { get; set; }
         public virtual DbSet<Person> People { get; set; }
         public virtual DbSet<TaskExecution> TaskExecutions { get; set; }
 
@@ -38,104 +40,150 @@ namespace KidsTown.Database
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            modelBuilder.HasAnnotation(annotation: "Relational:Collation", value: "SQL_Latin1_General_CP1_CI_AS");
+            modelBuilder.HasAnnotation("Relational:Collation", "SQL_Latin1_General_CP1_CI_AS");
 
-            modelBuilder.Entity<Attendance>(buildAction: entity =>
+            modelBuilder.Entity<Attendance>(entity =>
             {
-                entity.ToTable(name: "Attendance", schema: "kt");
+                entity.ToTable("Attendance", "kt");
 
-                entity.Property(propertyExpression: e => e.SecurityCode)
+                entity.Property(e => e.SecurityCode)
                     .IsRequired()
-                    .HasMaxLength(maxLength: 10)
-                    .IsUnicode(unicode: false);
+                    .HasMaxLength(10)
+                    .IsUnicode(false);
 
-                entity.HasOne(navigationExpression: d => d.AttendanceType)
-                    .WithMany(navigationExpression: p => p.Attendances)
-                    .HasForeignKey(foreignKeyExpression: d => d.AttendanceTypeId)
-                    .OnDelete(deleteBehavior: DeleteBehavior.ClientSetNull)
-                    .HasConstraintName(name: "FK_Attendance_AttendanceTypeId");
+                entity.HasOne(d => d.AttendanceType)
+                    .WithMany(p => p.Attendances)
+                    .HasForeignKey(d => d.AttendanceTypeId)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("FK_Attendance_AttendanceTypeId");
 
-                entity.HasOne(navigationExpression: d => d.Location)
-                    .WithMany(navigationExpression: p => p.Attendances)
-                    .HasForeignKey(foreignKeyExpression: d => d.LocationId)
-                    .OnDelete(deleteBehavior: DeleteBehavior.ClientSetNull)
-                    .HasConstraintName(name: "FK_Attendance_LocationId");
+                entity.HasOne(d => d.Location)
+                    .WithMany(p => p.Attendances)
+                    .HasForeignKey(d => d.LocationId)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("FK_Attendance_LocationId");
 
-                entity.HasOne(navigationExpression: d => d.Person)
-                    .WithMany(navigationExpression: p => p.Attendances)
-                    .HasForeignKey(foreignKeyExpression: d => d.PersonId)
-                    .OnDelete(deleteBehavior: DeleteBehavior.ClientSetNull)
-                    .HasConstraintName(name: "FK_Attendance_PersonId");
+                entity.HasOne(d => d.Person)
+                    .WithMany(p => p.Attendances)
+                    .HasForeignKey(d => d.PersonId)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("FK_Attendance_PersonId");
             });
 
-            modelBuilder.Entity<AttendanceType>(buildAction: entity =>
+            modelBuilder.Entity<AttendanceType>(entity =>
             {
-                entity.ToTable(name: "AttendanceType", schema: "kt");
+                entity.ToTable("AttendanceType", "kt");
 
-                entity.Property(propertyExpression: e => e.Name)
+                entity.Property(e => e.Name)
                     .IsRequired()
-                    .HasMaxLength(maxLength: 50)
-                    .IsUnicode(unicode: false);
+                    .HasMaxLength(50)
+                    .IsUnicode(false);
             });
 
-            modelBuilder.Entity<Location>(buildAction: entity =>
+            modelBuilder.Entity<Family>(entity =>
             {
-                entity.ToTable(name: "Location", schema: "kt");
+                entity.ToTable("Family", "kt");
 
-                entity.Property(propertyExpression: e => e.LocationGroupId).HasDefaultValueSql(sql: "((5))");
+                entity.HasIndex(e => e.HouseholdId, "UQ_Family_HouseholdId")
+                    .IsUnique();
 
-                entity.Property(propertyExpression: e => e.Name)
+                entity.Property(e => e.Name)
                     .IsRequired()
-                    .HasMaxLength(maxLength: 50)
-                    .IsUnicode(unicode: false);
-
-                entity.HasOne(navigationExpression: d => d.LocationGroup)
-                    .WithMany(navigationExpression: p => p.Locations)
-                    .HasForeignKey(foreignKeyExpression: d => d.LocationGroupId)
-                    .OnDelete(deleteBehavior: DeleteBehavior.ClientSetNull)
-                    .HasConstraintName(name: "FK_Location_LocationGroupId");
+                    .HasMaxLength(70)
+                    .IsUnicode(false);
             });
 
-            modelBuilder.Entity<LocationGroup>(buildAction: entity =>
+            modelBuilder.Entity<Location>(entity =>
             {
-                entity.ToTable(name: "LocationGroup", schema: "kt");
+                entity.ToTable("Location", "kt");
 
-                entity.Property(propertyExpression: e => e.Name)
+                entity.Property(e => e.LocationGroupId).HasDefaultValueSql("((5))");
+
+                entity.Property(e => e.Name)
                     .IsRequired()
-                    .HasMaxLength(maxLength: 50)
-                    .IsUnicode(unicode: false);
+                    .HasMaxLength(50)
+                    .IsUnicode(false);
+
+                entity.HasOne(d => d.LocationGroup)
+                    .WithMany(p => p.Locations)
+                    .HasForeignKey(d => d.LocationGroupId)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("FK_Location_LocationGroupId");
             });
 
-            modelBuilder.Entity<Person>(buildAction: entity =>
+            modelBuilder.Entity<LocationGroup>(entity =>
             {
-                entity.ToTable(name: "Person", schema: "kt");
+                entity.ToTable("LocationGroup", "kt");
 
-                entity.HasIndex(indexExpression: e => e.PeopleId, name: "UQ_Person_PeopleId")
+                entity.Property(e => e.Name)
+                    .IsRequired()
+                    .HasMaxLength(50)
+                    .IsUnicode(false);
+            });
+
+            modelBuilder.Entity<Parent>(entity =>
+            {
+                entity.ToTable("Parent", "kt");
+
+                entity.HasIndex(e => e.PeopleId, "UQ_Parent_PeopleId")
+                    .IsUnique();
+
+                entity.Property(e => e.FirstName)
+                    .IsRequired()
+                    .HasMaxLength(50)
+                    .IsUnicode(false);
+
+                entity.Property(e => e.LastName)
+                    .IsRequired()
+                    .HasMaxLength(50)
+                    .IsUnicode(false);
+
+                entity.Property(e => e.PhoneNumber)
+                    .HasMaxLength(30)
+                    .IsUnicode(false);
+
+                entity.HasOne(d => d.Family)
+                    .WithMany(p => p.Parents)
+                    .HasForeignKey(d => d.FamilyId)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("FK_Parent_FamilyId");
+            });
+
+            modelBuilder.Entity<Person>(entity =>
+            {
+                entity.ToTable("Person", "kt");
+
+                entity.HasIndex(e => e.PeopleId, "UQ_Person_PeopleId")
                     .IsUnique()
-                    .HasFilter(sql: "([PeopleId] IS NOT NULL)");
+                    .HasFilter("([PeopleId] IS NOT NULL)");
 
-                entity.Property(propertyExpression: e => e.FistName)
+                entity.Property(e => e.FistName)
                     .IsRequired()
-                    .HasMaxLength(maxLength: 50)
-                    .IsUnicode(unicode: false);
+                    .HasMaxLength(50)
+                    .IsUnicode(false);
 
-                entity.Property(propertyExpression: e => e.LastName)
+                entity.Property(e => e.LastName)
                     .IsRequired()
-                    .HasMaxLength(maxLength: 50)
-                    .IsUnicode(unicode: false);
+                    .HasMaxLength(50)
+                    .IsUnicode(false);
+
+                entity.HasOne(d => d.Family)
+                    .WithMany(p => p.People)
+                    .HasForeignKey(d => d.FamilyId)
+                    .HasConstraintName("FK_Person_FamilyId");
             });
 
-            modelBuilder.Entity<TaskExecution>(buildAction: entity =>
+            modelBuilder.Entity<TaskExecution>(entity =>
             {
-                entity.ToTable(name: "TaskExecution", schema: "kt");
+                entity.ToTable("TaskExecution", "kt");
 
-                entity.Property(propertyExpression: e => e.Environment)
+                entity.Property(e => e.Environment)
                     .IsRequired()
-                    .HasMaxLength(maxLength: 20)
-                    .IsUnicode(unicode: false);
+                    .HasMaxLength(20)
+                    .IsUnicode(false);
             });
 
-            OnModelCreatingPartial(modelBuilder: modelBuilder);
+            OnModelCreatingPartial(modelBuilder);
         }
 
         partial void OnModelCreatingPartial(ModelBuilder modelBuilder);
