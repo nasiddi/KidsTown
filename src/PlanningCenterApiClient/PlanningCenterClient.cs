@@ -9,9 +9,9 @@ using KidsTown.PlanningCenterApiClient.Models;
 using KidsTown.PlanningCenterApiClient.Models.CheckInsResult;
 using KidsTown.PlanningCenterApiClient.Models.EventResult;
 using KidsTown.PlanningCenterApiClient.Models.HouseholdResult;
+using KidsTown.PlanningCenterApiClient.Models.PeopleResult;
 using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
-using People = KidsTown.PlanningCenterApiClient.Models.PeopleResult.People;
 
 namespace KidsTown.PlanningCenterApiClient
 {
@@ -73,7 +73,7 @@ namespace KidsTown.PlanningCenterApiClient
             var response = await Client.GetAsync(requestUri: endPoint);
             var responseString = await response.Content.ReadAsStringAsync();
 
-            await CheckRateLimitation(response: response);
+            await CheckRateLimitation(response: response).ConfigureAwait(continueOnCapturedContext: false);
 
             var responseBody = JsonConvert.DeserializeObject<T>(value: responseString);
 

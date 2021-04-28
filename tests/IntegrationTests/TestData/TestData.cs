@@ -31,8 +31,36 @@ namespace KidsTown.IntegrationTests.TestData
             TestLocationIds testLocation,
             IImmutableList<TestFieldData> fieldData,
             bool expectedMayLeaveAlone,
+            bool expectedHasPeopleWithoutPickupPermission
+        ) : this(
+            checkInsFirstName: checkInsFirstName,
+            checkInsLastName: checkInsLastName,
+            peopleFirstName: peopleFirstName,
+            peopleLastName: peopleLastName,
+            checkInsId: checkInsId,
+            peopleId: peopleId,
+            attendanceType: attendanceType,
+            testLocation: testLocation,
+            fieldData: fieldData,
+            expectedMayLeaveAlone: expectedMayLeaveAlone,
+            expectedHasPeopleWithoutPickupPermission: expectedHasPeopleWithoutPickupPermission,
+            securityCode: null)
+        {
+        }
+
+        public TestData(
+            string checkInsFirstName,
+            string checkInsLastName,
+            string peopleFirstName,
+            string peopleLastName,
+            long checkInsId,
+            long? peopleId,
+            AttendeeType attendanceType,
+            TestLocationIds testLocation,
+            IImmutableList<TestFieldData> fieldData,
+            bool expectedMayLeaveAlone,
             bool expectedHasPeopleWithoutPickupPermission,
-            string? securityCode = null
+            string? securityCode
         )
         {
             CheckInsFirstName = checkInsFirstName;
@@ -47,7 +75,7 @@ namespace KidsTown.IntegrationTests.TestData
             ExpectedHasPeopleWithoutPickupPermission = expectedHasPeopleWithoutPickupPermission;
             FieldData = fieldData;
             SecurityCode = SetSecurityCode(securityCode: securityCode);
-            
+
             LocationGroupId = GetLocationGroup(testLocationId: testLocation);
         }
 
@@ -72,10 +100,11 @@ namespace KidsTown.IntegrationTests.TestData
 
             LocationGroupId = GetLocationGroup(testLocationId: testLocation);
         }
-        
+
         private string SetSecurityCode(string? securityCode)
         {
-            return securityCode ?? $"{TestLocation.ToString().Substring(startIndex: 0, length: 1)}{CheckInsId}{AttendanceType.ToString().Substring(startIndex: 0, length: 1)}{PeopleId ?? 0}";
+            return securityCode ??
+                   $"{TestLocation.ToString().Substring(startIndex: 0, length: 1)}{CheckInsId}{AttendanceType.ToString().Substring(startIndex: 0, length: 1)}{PeopleId ?? 0}";
         }
 
         private static int GetLocationGroup(TestLocationIds testLocationId)
@@ -90,7 +119,8 @@ namespace KidsTown.IntegrationTests.TestData
                 TestLocationIds.KidsChurch3Rd => 4,
                 TestLocationIds.KidsChurch4Th => 4,
                 TestLocationIds.KidsChurch5Th => 4,
-                _ => throw new ArgumentOutOfRangeException(paramName: nameof(testLocationId), actualValue: testLocationId, message: null)
+                _ => throw new ArgumentOutOfRangeException(paramName: nameof(testLocationId),
+                    actualValue: testLocationId, message: null)
             };
         }
     }

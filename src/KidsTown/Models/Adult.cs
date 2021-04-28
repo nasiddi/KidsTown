@@ -1,3 +1,4 @@
+// ReSharper disable UnusedAutoPropertyAccessor.Global
 namespace KidsTown.KidsTown.Models
 {
     public class Adult

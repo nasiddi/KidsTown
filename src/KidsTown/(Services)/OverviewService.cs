@@ -1,10 +1,8 @@
 using System;
-using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using System.Threading.Tasks;
 using KidsTown.KidsTown.Models;
-using Attendee = KidsTown.KidsTown.Models.Attendee;
 
 namespace KidsTown.KidsTown
 {
@@ -28,15 +26,15 @@ namespace KidsTown.KidsTown
                     date: date)
                 .ConfigureAwait(continueOnCapturedContext: false);
 
-            var familyIds = attendees.Where(a => a.FamilyId.HasValue)
-                .Select(a => a.FamilyId!.Value).
+            var familyIds = attendees.Where(predicate: a => a.FamilyId.HasValue)
+                .Select(selector: a => a.FamilyId!.Value).
                 ToImmutableList();
             
-            var adults = await _overviewRepository.GetAdults(familyIds);
+            var adults = await _overviewRepository.GetAdults(familyIds: familyIds);
 
-            var attendeesWithAdultsInfo = attendees.Select(attendee =>
+            var attendeesWithAdultsInfo = attendees.Select(selector: attendee =>
             {
-                var adultInfos = adults.Where(a => a.FamilyId == attendee.FamilyId).ToImmutableList();
+                var adultInfos = adults.Where(predicate: a => a.FamilyId == attendee.FamilyId).ToImmutableList();
                 if (adultInfos.Count == 0)
                 {
                     return attendee;

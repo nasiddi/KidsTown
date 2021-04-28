@@ -8,8 +8,8 @@ using KidsTown.PlanningCenterApiClient;
 using KidsTown.PlanningCenterApiClient.Models.CheckInsResult;
 using KidsTown.PlanningCenterApiClient.Models.HouseholdResult;
 using KidsTown.PlanningCenterApiClient.Models.PeopleResult;
-using Peoples = KidsTown.PlanningCenterApiClient.Models.PeopleResult.People;
 using Included = KidsTown.PlanningCenterApiClient.Models.PeopleResult.Included;
+using Peoples = KidsTown.PlanningCenterApiClient.Models.PeopleResult.People;
 
 namespace KidsTown.BackgroundTasks.PlanningCenter
 {
@@ -82,7 +82,7 @@ namespace KidsTown.BackgroundTasks.PlanningCenter
         }
 
         private static IImmutableList<ParentUpdate> MapParents(
-            IImmutableList<People> parents,
+            IImmutableList<Peoples> parents,
             IImmutableList<Family> families
         )
         {
@@ -126,19 +126,19 @@ namespace KidsTown.BackgroundTasks.PlanningCenter
                     return null;
                 case 1:
                     return numbers.Single().Attributes?.Number;
+                case > 1:
+                    var mobileNumbers = numbers.Where(predicate: n => n.Attributes?.NumberType == "Mobile").ToImmutableList();
+
+                    var primaryNumber = numbers.FirstOrDefault(predicate: n => n.Attributes?.Primary == true)?.Attributes
+                        ?.Number;
+                    if (numbers.Count <= mobileNumbers.Count)
+                    {
+                        return primaryNumber;
+                    }
+
+                    var mobileNumber = SelectNumber(numbers: mobileNumbers);
+                    return mobileNumber ?? primaryNumber;
             }
-
-            var mobileNumbers = numbers.Where(predicate: n => n.Attributes?.NumberType == "Mobile").ToImmutableList();
-
-            var primaryNumber = numbers.FirstOrDefault(predicate: n => n.Attributes?.Primary == true)?.Attributes
-                ?.Number;
-            if (numbers.Count <= mobileNumbers.Count)
-            {
-                return primaryNumber;
-            }
-
-            var mobileNumber = SelectNumber(numbers: mobileNumbers);
-            return mobileNumber ?? primaryNumber;
         }
 
         private async Task UpdateLocations(IImmutableList<CheckIns> checkIns)

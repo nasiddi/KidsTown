@@ -1,18 +1,15 @@
 /* eslint-disable react/jsx-no-bind */
-import { createMuiTheme, Grid, MuiThemeProvider } from '@material-ui/core'
+import {createMuiTheme, Grid, MuiThemeProvider} from '@material-ui/core'
 import Select from 'react-select'
 import React from 'react'
 import DatePicker from 'reactstrap-date-picker'
-import { loadCSS } from 'fg-loadcss'
+import {loadCSS} from 'fg-loadcss'
 import Icon from '@material-ui/core/Icon'
 import FormControlLabel from '@material-ui/core/FormControlLabel'
 import Checkbox from '@material-ui/core/Checkbox'
-import { Button, ButtonGroup } from 'reactstrap'
-import { withStyles } from '@material-ui/styles'
+import {Button, ButtonGroup} from 'reactstrap'
 
 import Tooltip from '@material-ui/core/Tooltip'
-
-const _ = require('lodash')
 
 export async function fetchLocationGroups() {
 	const response = await fetch('configuration/location-groups')
@@ -197,7 +194,7 @@ export function FontAwesomeIcon(props) {
 // 	)
 // }
 
-export const HtmlTooltip = withStyles((theme) => ({
+export const HtmlTooltip = (() => ({
 	tooltip: {
 		backgroundColor: '#1c1c1f',
 		color: 'rgba(255,255,255,0.87)',

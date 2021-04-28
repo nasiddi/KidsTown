@@ -220,7 +220,7 @@ namespace KidsTown.Database
                 .GetRequiredService<KidsTownContext>())
             {
                 var peopleIds = parentUpdates.Select(selector: p => p.PeopleId).ToImmutableList();
-                var existingParents = await GetExistingParents(peopleIds: peopleIds, db: db);
+                var existingParents = await GetExistingParents(peopleIds: peopleIds, db: db).ConfigureAwait(continueOnCapturedContext: false);
 
                 var updates = parentUpdates.Where(
                         predicate: p => existingParents.Select(selector: e => e.PeopleId).Contains(value: p.PeopleId))

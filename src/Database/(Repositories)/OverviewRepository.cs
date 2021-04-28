@@ -6,7 +6,6 @@ using KidsTown.KidsTown;
 using KidsTown.KidsTown.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using Attendee = KidsTown.KidsTown.Models.Attendee;
 
 // ReSharper disable ConvertToUsingDeclaration
 
@@ -77,9 +76,9 @@ namespace KidsTown.Database
         {
             await using (var db = _serviceScopeFactory.CreateScope().ServiceProvider.GetRequiredService<KidsTownContext>())
             {
-                var adults = await db.Adults.Where(a => familyIds.Contains(a.FamilyId)).ToArrayAsync();
+                var adults = await db.Adults.Where(predicate: a => familyIds.Contains(a.FamilyId)).ToArrayAsync();
 
-                return adults?.Select(a => new KidsTown.Models.Adult
+                return adults?.Select(selector: a => new KidsTown.Models.Adult
                 {
                     FamilyId = a.FamilyId,
                     FirstName = a.FirstName,

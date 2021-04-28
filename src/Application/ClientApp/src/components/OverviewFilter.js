@@ -1,8 +1,8 @@
-import React, { Component } from 'react'
-import { Grid } from '@material-ui/core'
-import { getSelectedFromSession } from './Common'
-import { withAuth } from '../auth/MsalAuthProvider'
-import { Button } from 'reactstrap'
+import React, {Component} from 'react'
+import {Grid} from '@material-ui/core'
+import {getSelectedFromSession} from './Common'
+import {withAuth} from '../auth/MsalAuthProvider'
+import {Button} from 'reactstrap'
 
 const _ = require('lodash')
 
