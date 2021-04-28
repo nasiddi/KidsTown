@@ -1,4 +1,3 @@
-/* eslint-disable react/jsx-no-bind */
 import { createMuiTheme, Grid, MuiThemeProvider } from '@material-ui/core'
 import Select from 'react-select'
 import React from 'react'
@@ -10,6 +9,7 @@ import Checkbox from '@material-ui/core/Checkbox'
 import { Button, ButtonGroup } from 'reactstrap'
 
 import Tooltip from '@material-ui/core/Tooltip'
+import { withStyles } from '@material-ui/styles'
 
 export async function fetchLocationGroups() {
 	const response = await fetch('configuration/location-groups')
@@ -175,26 +175,7 @@ export function FontAwesomeIcon(props) {
 	return <Icon className={props['name']} />
 }
 
-// export function ToolTips(props) {
-// 	const [tooltipOpen, setTooltipOpen] = useState(false)
-//
-// 	const toggle = () => setTooltipOpen(!tooltipOpen)
-//
-// 	return (
-// 		<div>
-// 			<Tooltip
-// 				placement="top"
-// 				isOpen={tooltipOpen}
-// 				target={props['target']}
-// 				toggle={toggle}
-// 			>
-// 				{_.join(props['lines'], '\n')}
-// 			</Tooltip>
-// 		</div>
-// 	)
-// }
-
-export const HtmlTooltip = (() => ({
+export const HtmlTooltip = withStyles(() => ({
 	tooltip: {
 		backgroundColor: '#1c1c1f',
 		color: 'rgba(255,255,255,0.87)',
