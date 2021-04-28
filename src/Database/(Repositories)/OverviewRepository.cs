@@ -26,8 +26,12 @@ namespace KidsTown.Database
             await using (var db = _serviceScopeFactory.CreateScope().ServiceProvider.GetRequiredService<KidsTownContext>())
             {
                 var people = await (from a in db.Attendances
-                        join p in db.Kids
-                            on a.KidId equals p.Id
+                        join p in db.People
+                            on a.PersonId equals p.Id
+                        join k in db.Kids.DefaultIfEmpty()
+                            on p.Id equals k.PersonId
+                        join ad in db.Adults.DefaultIfEmpty()
+                            on p.Id equals ad.PersonId    
                         join at in db.AttendanceTypes
                             on a.AttendanceTypeId equals at.Id
                         join l in db.Locations
@@ -76,17 +80,27 @@ namespace KidsTown.Database
         {
             await using (var db = _serviceScopeFactory.CreateScope().ServiceProvider.GetRequiredService<KidsTownContext>())
             {
-                var adults = await db.Adults.Where(predicate: a => familyIds.Contains(a.FamilyId)).ToArrayAsync();
-
-                return adults?.Select(selector: a => new KidsTown.Models.Adult
-                {
-                    FamilyId = a.FamilyId,
-                    FirstName = a.FirstName,
-                    LastName = a.LastName,
-                    PhoneNumber = a.PhoneNumber
-                }).ToImmutableList()
+                var adults = await (from a in db.Adults
+                        join p in db.People
+                            on a.PersonId equals p.Id
+                        where p.FamilyId.HasValue && familyIds.Contains(p.FamilyId.Value)
+                        select MapAdult(p, a))
+                    .ToListAsync().ConfigureAwait(continueOnCapturedContext: false);
+                
+                return adults?.ToImmutableList()
                     ?? ImmutableList<KidsTown.Models.Adult>.Empty;
             }
+        }
+
+        private static KidsTown.Models.Adult MapAdult(Person person, Adult adult)
+        {
+            return new()
+            {
+                FamilyId = person.FamilyId!.Value,
+                FirstName = person.FirstName,
+                LastName = person.LastName,
+                PhoneNumber = adult.PhoneNumber
+            };
         }
 
         private async Task<IImmutableList<Attendee>> GetAttendanceHistory(
@@ -99,8 +113,8 @@ namespace KidsTown.Database
             await using (var db = _serviceScopeFactory.CreateScope().ServiceProvider.GetRequiredService<KidsTownContext>())
             {
                 var attendees = await (from a in db.Attendances
-                        join p in db.Kids
-                            on a.KidId equals p.Id
+                        join p in db.People
+                            on a.PersonId equals p.Id
                         join at in db.AttendanceTypes
                             on a.AttendanceTypeId equals at.Id
                         join l in db.Locations
@@ -118,19 +132,20 @@ namespace KidsTown.Database
         }
 
         private static Attendee MapAttendee(
-            Attendance attendance, 
-            Kid kid, 
+            Attendance attendance,
+            Person person,
             AttendanceType attendanceType,
-            Location location)
+            Location location
+        )
         {
             var checkState = MappingService.GetCheckState(attendance: attendance);
 
             return new Attendee
             {
                 AttendanceId = attendance.Id,
-                FamilyId = kid.FamilyId,
-                FirstName = kid.FistName,
-                LastName = kid.LastName,
+                FamilyId = person.FamilyId,
+                FirstName = person.FirstName,
+                LastName = person.LastName,
                 AttendanceType = (AttendanceTypes) attendanceType.Id,
                 SecurityCode = attendance.SecurityCode,
                 LocationGroupId = location.LocationGroupId,

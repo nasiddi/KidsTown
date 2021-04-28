@@ -98,11 +98,11 @@ IF OBJECT_ID('kt.[PK_TaskExecution]', 'PK') IS NULL
             WITH (DATA_COMPRESSION=ROW)
     END;
 
-IF OBJECT_ID('[kt].[FK_Attendance_KidId]', 'F') IS NULL
+IF OBJECT_ID('[kt].[FK_Attendance_PersonId]', 'F') IS NULL
     BEGIN
-        ALTER TABLE [kt].[Attendance] ADD CONSTRAINT [FK_Attendance_KidId]
-            FOREIGN KEY ([KidId])
-                REFERENCES [kt].[Kid] ([Id])
+        ALTER TABLE [kt].[Attendance] ADD CONSTRAINT [FK_Attendance_PersonId]
+            FOREIGN KEY ([PersonId])
+                REFERENCES [kt].[Person] ([Id])
     END;
 
 IF OBJECT_ID('[kt].[FK_Attendance_AttendanceTypeId]', 'F') IS NULL

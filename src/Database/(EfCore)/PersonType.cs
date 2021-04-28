@@ -5,17 +5,16 @@ using System.Collections.Generic;
 
 namespace KidsTown.Database
 {
-    public partial class Family
+    public partial class PersonType
     {
-        public Family()
+        public PersonType()
         {
-            KidOlds = new HashSet<KidOld>();
+            People = new HashSet<Person>();
         }
 
         public int Id { get; set; }
-        public long HouseholdId { get; set; }
         public string Name { get; set; }
 
-        public virtual ICollection<KidOld> KidOlds { get; set; }
+        public virtual ICollection<Person> People { get; set; }
     }
 }

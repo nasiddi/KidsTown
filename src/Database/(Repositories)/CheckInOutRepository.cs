@@ -27,15 +27,17 @@ namespace KidsTown.Database
             await using (var db = _serviceScopeFactory.CreateScope().ServiceProvider.GetRequiredService<KidsTownContext>())
             {
                 var people = await (from a in db.Attendances
-                    join p in db.Kids
-                        on a.KidId equals p.Id
+                    join p in db.People
+                        on a.PersonId equals p.Id
+                    join k in db.Kids
+                        on p.Id equals k.PersonId
                     join l in db.Locations
                         on a.LocationId equals l.Id
                     where a.SecurityCode == peopleSearchParameters.SecurityCode
                           && peopleSearchParameters.LocationGroups.Contains(l.LocationGroupId)
                           && a.InsertDate >= DateTime.Today.AddDays(-3)
                           && l.EventId == peopleSearchParameters.EventId
-                    select MapKid(a, p, l))
+                    select MapKid(a, p, k, l))
                     .ToListAsync().ConfigureAwait(continueOnCapturedContext: false);
 
                 return people.ToImmutableList();
@@ -72,8 +74,10 @@ namespace KidsTown.Database
                 switch (revertedCheckState)
                 {
                     case CheckState.None:
-                        var people = await db.Kids.Where(predicate: p => attendances.Select(a => a.KidId).Contains(p.Id)).ToListAsync();
+                        var people = await db.People.Where(predicate: p => attendances.Select(a => a.PersonId).Contains(p.Id)).ToListAsync();
+                        var kids = await db.Kids.Where(predicate: k => people.Select(p => p.Id).Contains(k.PersonId)).ToListAsync();
                         db.RemoveRange(entities: attendances);
+                        db.RemoveRange(entities: kids);
                         db.RemoveRange(entities: people);
                         break;
                     case CheckState.PreCheckedIn:
@@ -99,12 +103,20 @@ namespace KidsTown.Database
             {
                 var kid = new Kid
                 {
-                    FistName = firstName,
-                    LastName = lastName,
                     MayLeaveAlone = true,
-                    HasPeopleWithoutPickupPermission = false
+                    HasPeopleWithoutPickupPermission = false,
+                    UpdateDate = DateTime.UtcNow
                 };
 
+                var person = new Person
+                {
+                    PersonTypeId = 1,
+                    FirstName = firstName,
+                    LastName = lastName,
+                    UpdateDate = DateTime.UtcNow,
+                    Kid = kid
+                };
+                
                 var attendance = new Attendance
                 {
                     CheckInsId = 0,
@@ -112,7 +124,7 @@ namespace KidsTown.Database
                     SecurityCode = securityCode,
                     AttendanceTypeId = (int) AttendanceTypes.Guest,
                     InsertDate = DateTime.UtcNow,
-                    Kid = kid
+                    Person = person
                 };
 
                 var entry = await db.AddAsync(entity: attendance);
@@ -141,8 +153,12 @@ namespace KidsTown.Database
             return attendances;
         }
 
-        private static KidsTown.Models.Kid MapKid(Attendance attendance, Kid kid,
-            Location location)
+        private static KidsTown.Models.Kid MapKid(
+            Attendance attendance,
+            Person person,
+            Kid kid,
+            Location location
+        )
         {
             var checkState = MappingService.GetCheckState(attendance: attendance);
 
@@ -151,8 +167,8 @@ namespace KidsTown.Database
                 AttendanceId = attendance.Id,
                 SecurityCode = attendance.SecurityCode,
                 Location = location.Name,
-                FirstName = kid.FistName,
-                LastName = kid.LastName,
+                FirstName = person.FirstName,
+                LastName = person.LastName,
                 CheckInTime = attendance.CheckInDate,
                 CheckOutTime = attendance.CheckOutDate,
                 MayLeaveAlone = kid.MayLeaveAlone,
