@@ -6,7 +6,7 @@ namespace KidsTown.KidsTown
 {
     public interface IConfigurationRepository
     {
-        Task<ImmutableList<LocationGroup>> GetActiveLocationGroups();
-        Task<ImmutableList<Location>> GetLocations(long eventId, IImmutableList<int>? selectedLocationGroups);
+        Task<IImmutableList<LocationGroup>> GetActiveLocationGroups();
+        Task<IImmutableList<Location>> GetLocations(long eventId, IImmutableList<int>? selectedLocationGroups);
     }
 }

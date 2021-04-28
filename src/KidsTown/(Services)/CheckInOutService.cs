@@ -30,7 +30,7 @@ namespace KidsTown.KidsTown
             };   
         }
 
-        public Task<bool> UndoAction(CheckState revertedCheckState, ImmutableList<int> attendanceIds)
+        public Task<bool> UndoAction(CheckState revertedCheckState, IImmutableList<int> attendanceIds)
         {
             return _checkInOutRepository.SetCheckState(revertedCheckState: revertedCheckState, attendanceIds: attendanceIds);
         }

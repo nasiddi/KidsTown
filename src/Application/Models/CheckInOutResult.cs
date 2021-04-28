@@ -9,7 +9,7 @@ namespace KidsTown.Application.Models
         public string Text { get; init; } = string.Empty;
         public AlertLevel AlertLevel { get; init; } = AlertLevel.Info;
         public bool SuccessfulFastCheckout { get; init; }
-        public ImmutableList<CheckInOutCandidate> CheckInOutCandidates { get; init; } = ImmutableList<CheckInOutCandidate>.Empty;
-        public ImmutableList<int> AttendanceIds { get; init; } = ImmutableList<int>.Empty;
+        public IImmutableList<CheckInOutCandidate> CheckInOutCandidates { get; init; } = ImmutableList<CheckInOutCandidate>.Empty;
+        public IImmutableList<int> AttendanceIds { get; init; } = ImmutableList<int>.Empty;
     }
 }

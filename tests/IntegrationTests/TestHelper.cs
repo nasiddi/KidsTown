@@ -63,7 +63,7 @@ namespace KidsTown.IntegrationTests
             await db.SaveChangesAsync().ConfigureAwait(continueOnCapturedContext: false);
         }
 
-        private static Attendance MapAttendance(TestData.TestData data, ImmutableList<Location> locations)
+        private static Attendance MapAttendance(TestData.TestData data, IImmutableList<Location> locations)
         {
             var location = locations.Single(predicate: l => l.CheckInsLocationId == (long) data.TestLocation);
 
@@ -79,7 +79,7 @@ namespace KidsTown.IntegrationTests
             };
         }
 
-        private static Kid MapKid(IGrouping<long?, TestData.TestData> grouping, ImmutableList<Location> locations)
+        private static Kid MapKid(IGrouping<long?, TestData.TestData> grouping, IImmutableList<Location> locations)
         {
             var data = grouping.First();
 

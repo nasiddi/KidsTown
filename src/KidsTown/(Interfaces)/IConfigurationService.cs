@@ -6,9 +6,9 @@ namespace KidsTown.KidsTown
 {
     public interface IConfigurationService
     {
-        Task<ImmutableList<LocationGroup>> GetActiveLocationGroups();
+        Task<IImmutableList<LocationGroup>> GetActiveLocationGroups();
         long GetDefaultEventId();
-        Task<ImmutableList<CheckInsEvent>> GetAvailableEvents();
-        Task<ImmutableList<Location>> GetLocations(long eventId, IImmutableList<int>? selectedLocationGroups);
+        Task<IImmutableList<CheckInsEvent>> GetAvailableEvents();
+        Task<IImmutableList<Location>> GetLocations(long eventId, IImmutableList<int>? selectedLocationGroups);
     }
 }

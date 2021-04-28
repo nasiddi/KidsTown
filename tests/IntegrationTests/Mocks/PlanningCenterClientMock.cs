@@ -79,7 +79,7 @@ namespace KidsTown.IntegrationTests.Mocks
             }
         }
 
-        public static ImmutableList<AttendanceData> GetAttendanceData()
+        public static IImmutableList<AttendanceData> GetAttendanceData()
         {
             return TestDataFactory.GetTestData().Select(selector: d =>
                 new AttendanceData(
@@ -94,7 +94,7 @@ namespace KidsTown.IntegrationTests.Mocks
             ).ToImmutableList();
         }
 
-        public static ImmutableList<KidsData> GetKidsData()
+        public static IImmutableList<KidsData> GetKidsData()
         {
             return TestDataFactory.GetTestData()
                 .Where(predicate: d => d.PeopleId.HasValue)
@@ -113,27 +113,29 @@ namespace KidsTown.IntegrationTests.Mocks
                 ).ToImmutableList();
         }
 
-        public Task<ImmutableList<CheckIns>> GetCheckedInPeople(int daysLookBack)
+        public Task<IImmutableList<CheckIns>> GetCheckedInPeople(int daysLookBack)
         {
             var data = GetAttendanceData();
-            return Task.FromResult(result: ImmutableList.Create(
+            var result = ImmutableList.Create(
                 item: new CheckIns
                 {
                     Attendees = GetAttendees(data: data),
                     Included = GetCheckInsIncluded()
-                }));
+                });
+            
+            return Task.FromResult(result: result as IImmutableList<CheckIns>);
         }
 
-        public Task<ImmutableList<People>> GetPeopleUpdates(IImmutableList<long> peopleIds)
+        public Task<IImmutableList<People>> GetPeopleUpdates(IImmutableList<long> peopleIds)
         {
             var data = GetKidsData();
-
-            return Task.FromResult(result: ImmutableList.Create(
+            var result = ImmutableList.Create(
                 item: new People
                 {
                     Data = MapPersonData(data: data),
                     Included = GetPeopleIncluded()
-                }));
+                });
+            return Task.FromResult(result: result as IImmutableList<People>);
         }
 
         public Task<Household?> GetHousehold(long householdId)
@@ -164,7 +166,7 @@ namespace KidsTown.IntegrationTests.Mocks
             };
         }
 
-        private static List<Datum> MapPersonData(ImmutableList<KidsData> data)
+        private static List<Datum> MapPersonData(IImmutableList<KidsData> data)
         {
             return data.Select(selector: d => new Datum
             {
@@ -228,7 +230,7 @@ namespace KidsTown.IntegrationTests.Mocks
                 ).ToList();
         }
 
-        private static List<Attendee> GetAttendees(ImmutableList<AttendanceData> data)
+        private static List<Attendee> GetAttendees(IImmutableList<AttendanceData> data)
         {
             var createdAt = DateTime.UtcNow;
 

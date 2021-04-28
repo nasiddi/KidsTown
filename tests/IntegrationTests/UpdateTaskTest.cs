@@ -71,7 +71,7 @@ namespace KidsTown.IntegrationTests
             await task;
         }
         
-        private async Task<ImmutableList<Data>> GetActualData()
+        private async Task<IImmutableList<Data>> GetActualData()
         {
             var serviceScopeFactory = _serviceProvider.GetService<IServiceScopeFactory>();
 
@@ -93,7 +93,7 @@ namespace KidsTown.IntegrationTests
             var expectedData = GetExpectedData();
             var actualData = await GetActualData().ConfigureAwait(continueOnCapturedContext: false);
 
-            expectedData.ForEach(action: e => AssertAttendance(
+            (expectedData as ImmutableList<Data>)?.ForEach(action: e => AssertAttendance(
                 expected: e,
                 actual: actualData.SingleOrDefault(predicate: a => a.CheckInsId == e.CheckInsId)));
 
@@ -119,7 +119,7 @@ namespace KidsTown.IntegrationTests
             );
         }
 
-        private static ImmutableList<Data> GetExpectedData()
+        private static IImmutableList<Data> GetExpectedData()
         {
             var attendeesData = PlanningCenterClientMock.GetAttendanceData();
             var peopleData = PlanningCenterClientMock.GetKidsData();

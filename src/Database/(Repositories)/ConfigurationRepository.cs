@@ -18,7 +18,7 @@ namespace KidsTown.Database
             _serviceScopeFactory = serviceScopeFactory;
         }
         
-        public async Task<ImmutableList<KidsTown.Models.LocationGroup>> GetActiveLocationGroups()
+        public async Task<IImmutableList<KidsTown.Models.LocationGroup>> GetActiveLocationGroups()
         {
             await using (var db = _serviceScopeFactory.CreateScope().ServiceProvider.GetRequiredService<KidsTownContext>())
             {
@@ -32,7 +32,7 @@ namespace KidsTown.Database
             }
         }
 
-        public async Task<ImmutableList<KidsTown.Models.Location>> GetLocations(
+        public async Task<IImmutableList<KidsTown.Models.Location>> GetLocations(
             long eventId,
             IImmutableList<int>? selectedLocationGroups
         )

@@ -34,14 +34,14 @@ namespace KidsTown.PlanningCenterApiClient
             return responseBody;
         }
         
-        public async Task<ImmutableList<CheckIns>> GetCheckedInPeople(int daysLookBack)
+        public async Task<IImmutableList<CheckIns>> GetCheckedInPeople(int daysLookBack)
         {
             var dateString = DateTime.Today.AddDays(value: -daysLookBack).ToString(format: "yyyy-MM-ddT00:00:00Z");
             var endPoint = $"check-ins/v2/check_ins?include=event,locations,person&order=created_at&per_page=100&where[created_at][gte]={dateString}";
             return await FetchData<CheckIns>(endPoint: endPoint).ConfigureAwait(continueOnCapturedContext: false);
         }
 
-        public async Task<ImmutableList<People>> GetPeopleUpdates(IImmutableList<long> peopleIds)
+        public async Task<IImmutableList<People>> GetPeopleUpdates(IImmutableList<long> peopleIds)
         {
             var endPoint = $"people/v2/people?include=households,field_data,phone_numbers&per_page=100&where[id]={string.Join(separator: ',', values: peopleIds)}";
             return await FetchData<People>(endPoint: endPoint).ConfigureAwait(continueOnCapturedContext: false);
@@ -68,7 +68,7 @@ namespace KidsTown.PlanningCenterApiClient
             return client;
         }
         
-        private async Task<ImmutableList<T>> FetchData<T>(string endPoint)
+        private async Task<IImmutableList<T>> FetchData<T>(string endPoint)
         {
             var response = await Client.GetAsync(requestUri: endPoint);
             var responseString = await response.Content.ReadAsStringAsync();
@@ -114,7 +114,7 @@ namespace KidsTown.PlanningCenterApiClient
 
         private static int ParseHeader(KeyValuePair<string, IEnumerable<string>>? header)
         {
-            return int.TryParse(s: header?.Value.FirstOrDefault(), result: out var number) ? number : 0;
+            return int.TryParse(s: header?.Value?.FirstOrDefault(), result: out var number) ? number : 0;
         }
     }
 }

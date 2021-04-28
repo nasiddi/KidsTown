@@ -2,6 +2,11 @@ import React from 'react'
 import { Route } from 'react-router'
 import { CheckInLayout, OverviewLayout } from './components/Layout'
 
+import { library } from '@fortawesome/fontawesome-svg-core'
+import { faMobileAlt } from '@fortawesome/free-solid-svg-icons'
+
+library.add(faMobileAlt)
+
 import './custom.css'
 import { CheckInOut } from './components/CheckIn'
 import { GuestCheckIn } from './components/GuestCheckIn'

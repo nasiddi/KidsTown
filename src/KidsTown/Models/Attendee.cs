@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Immutable;
 
 // ReSharper disable UnusedAutoPropertyAccessor.Global
 
@@ -6,7 +7,8 @@ namespace KidsTown.KidsTown.Models
 {
     public class Attendee
     {
-        public long AttendanceId { get; init; }
+        public int AttendanceId { get; init; }
+        public int? FamilyId { get; init; }
         public string FirstName { get; init; } = string.Empty;
         public string LastName { get; init; } = string.Empty;
         public AttendanceTypes AttendanceType { get; init; }
@@ -17,5 +19,6 @@ namespace KidsTown.KidsTown.Models
         public DateTime InsertDate { get; init; }
         public DateTime? CheckInDate { get; init; }
         public DateTime? CheckOutDate { get; init; }
+        public IImmutableList<Adult> Adults { get; init; } = ImmutableList<Adult>.Empty;
     }
 }

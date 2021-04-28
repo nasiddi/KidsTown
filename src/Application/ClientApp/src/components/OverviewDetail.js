@@ -4,14 +4,17 @@ import {
 	AccordionDetails,
 	AccordionSummary,
 	Grid,
+	Typography,
 } from '@material-ui/core'
 import {
-	getSelectedEventFromStorage,
-	getStringFromSession,
-	getSelectedOptionsFromStorage,
 	getLastSunday,
+	getSelectedEventFromStorage,
 	getSelectedFromSession,
+	getSelectedOptionsFromStorage,
+	getStringFromSession,
+	HtmlTooltip,
 } from './Common'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { Badge, Table } from 'reactstrap'
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore'
 import { withAuth } from '../auth/MsalAuthProvider'
@@ -86,11 +89,18 @@ class Detail extends Component {
 		return (
 			<div>
 				<h4>Kinder</h4>
-				<Table responsive>
+				<Table>
 					<thead>
 						<tr>
 							<th>First Name</th>
 							<th>Last Name</th>
+							<th>
+								<div style={{ textAlign: 'center' }}>
+									<FontAwesomeIcon
+										icon={['fas', 'mobile-alt']}
+									/>
+								</div>
+							</th>
 							<th>Status</th>
 							<th>SecurityCode</th>
 						</tr>
@@ -100,6 +110,14 @@ class Detail extends Component {
 							<tr key={row['attendanceId']}>
 								<td>{row['firstName']}</td>
 								<td>{row['lastName']}</td>
+								<td>
+									<div
+										id={this.getToolTipTarget(row)}
+										style={{ textAlign: 'center' }}
+									>
+										{this.getTooltip(row)}
+									</div>
+								</td>
 								<td>{this.getStateBadge(row['checkState'])}</td>
 								<td>{row['securityCode']}</td>
 							</tr>
@@ -108,6 +126,33 @@ class Detail extends Component {
 				</Table>
 			</div>
 		)
+	}
+
+	getTooltip(row) {
+		if (row['adults'].length === 0) {
+			return <div />
+		}
+
+		return (
+			<HtmlTooltip
+				arrow
+				enterTouchDelay={0}
+				leaveTouchDelay={10000}
+				title={
+					<React.Fragment>{this.getAdultInfos(row)}</React.Fragment>
+				}
+			>
+				<span>
+					<FontAwesomeIcon icon={['fas', 'mobile-alt']} />
+				</span>
+			</HtmlTooltip>
+		)
+	}
+
+	getToolTipTarget(row) {
+		return `${row['firstName'].replace(/\s+/g, '')}${row[
+			'lastName'
+		].replace(/\s+/g, '')}${row['attendanceId']}`
 	}
 
 	renderVolunteerTable(volunteers) {
@@ -197,6 +242,21 @@ class Detail extends Component {
 		}
 
 		return <Badge color={color}>{state}</Badge>
+	}
+
+	getAdultInfos(row) {
+		return (
+			<div>
+				{row['adults'].map((a) => (
+					<Typography
+						key={`${a['firstName']} ${a['lastName']} ${a['phoneNumber']}`}
+					>
+						{`${a['firstName']} ${a['lastName']} ${a['phoneNumber']}`}
+						<br />
+					</Typography>
+				))}
+			</div>
+		)
 	}
 }
 

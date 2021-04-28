@@ -21,7 +21,7 @@ namespace KidsTown.Database
             _serviceScopeFactory = serviceScopeFactory;
         }
         
-        public async Task<ImmutableList<KidsTown.Models.Kid>> GetPeople(
+        public async Task<IImmutableList<KidsTown.Models.Kid>> GetPeople(
             PeopleSearchParameters peopleSearchParameters)
         {
             await using (var db = _serviceScopeFactory.CreateScope().ServiceProvider.GetRequiredService<KidsTownContext>())
@@ -63,7 +63,7 @@ namespace KidsTown.Database
             }
         }
 
-        public async Task<bool> SetCheckState(CheckState revertedCheckState, ImmutableList<int> attendanceIds)
+        public async Task<bool> SetCheckState(CheckState revertedCheckState, IImmutableList<int> attendanceIds)
         {
             await using (var db = _serviceScopeFactory.CreateScope().ServiceProvider.GetRequiredService<KidsTownContext>())
             {

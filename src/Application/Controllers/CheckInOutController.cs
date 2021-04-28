@@ -122,7 +122,7 @@ namespace KidsTown.Application.Controllers
         [HttpPost]
         [Route(template: "undo/{checkType}")]
         [Produces(contentType: "application/json")]
-        public async Task<IActionResult> Undo([FromRoute] CheckType checkType, [FromBody] ImmutableList<int> attendanceIds)
+        public async Task<IActionResult> Undo([FromRoute] CheckType checkType, [FromBody] IImmutableList<int> attendanceIds)
         {
             var checkState = checkType switch
             {
@@ -212,7 +212,7 @@ namespace KidsTown.Application.Controllers
 
         }
         
-        private static string GetCandidateAlert(CheckInOutRequest request, ImmutableList<CheckInOutCandidate> checkInOutCandidates,
+        private static string GetCandidateAlert(CheckInOutRequest request, IImmutableList<CheckInOutCandidate> checkInOutCandidates,
             out AlertLevel level)
         {
             var text = "";
@@ -255,7 +255,7 @@ namespace KidsTown.Application.Controllers
 
         }
 
-        private static ImmutableList<Kid> GetPeopleInRequestedState(IImmutableList<Kid> people, CheckType checkType)
+        private static IImmutableList<Kid> GetPeopleInRequestedState(IImmutableList<Kid> people, CheckType checkType)
         {
             return checkType switch
             {

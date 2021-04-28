@@ -9,8 +9,8 @@ namespace KidsTown.PlanningCenterApiClient
 {
     public interface IPlanningCenterClient
     {
-        Task<ImmutableList<CheckIns>> GetCheckedInPeople(int daysLookBack);
-        Task<ImmutableList<People>> GetPeopleUpdates(IImmutableList<long> peopleIds);
+        Task<IImmutableList<CheckIns>> GetCheckedInPeople(int daysLookBack);
+        Task<IImmutableList<People>> GetPeopleUpdates(IImmutableList<long> peopleIds);
         Task<Household?> GetHousehold(long householdId);
         Task<Event> GetActiveEvents();
     }

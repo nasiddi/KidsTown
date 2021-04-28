@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using System.Threading.Tasks;
@@ -16,7 +17,7 @@ namespace KidsTown.KidsTown
             _overviewRepository = overviewRepository;
         }
 
-        public async Task<ImmutableList<AttendeesByLocation>> GetActiveAttendees(
+        public async Task<IImmutableList<AttendeesByLocation>> GetActiveAttendees(
             long eventId,
             IImmutableList<int> selectedLocationGroups,
             DateTime date)
@@ -26,13 +27,46 @@ namespace KidsTown.KidsTown
                     eventId: eventId,
                     date: date)
                 .ConfigureAwait(continueOnCapturedContext: false);
+
+            var familyIds = attendees.Where(a => a.FamilyId.HasValue)
+                .Select(a => a.FamilyId!.Value).
+                ToImmutableList();
             
-            return attendees.GroupBy(keySelector: a => a.Location)
+            var adults = await _overviewRepository.GetAdults(familyIds);
+
+            var attendeesWithAdultsInfo = attendees.Select(attendee =>
+            {
+                var adultInfos = adults.Where(a => a.FamilyId == attendee.FamilyId).ToImmutableList();
+                if (adultInfos.Count == 0)
+                {
+                    return attendee;
+                }
+
+                return new Attendee
+                {
+                    AttendanceId = attendee.AttendanceId,
+                    FamilyId = attendee.FamilyId,
+                    FirstName = attendee.FirstName,
+                    LastName = attendee.LastName,
+                    AttendanceType = attendee.AttendanceType,
+                    LocationGroupId = attendee.LocationGroupId,
+                    Location = attendee.Location,
+                    SecurityCode = attendee.SecurityCode,
+                    CheckState = attendee.CheckState,
+                    InsertDate = attendee.InsertDate,
+                    CheckInDate = attendee.CheckInDate,
+                    CheckOutDate = attendee.CheckOutDate,
+                    Adults = adultInfos
+                };
+
+            });
+            
+            return attendeesWithAdultsInfo.GroupBy(keySelector: a => a.Location)
                 .Select(selector: MapAttendeesByLocation)
                 .ToImmutableList();
         }
 
-        public async Task<ImmutableList<HeadCounts>> GetSummedUpHeadCounts(
+        public async Task<IImmutableList<HeadCounts>> GetSummedUpHeadCounts(
             long eventId,
             IImmutableList<int> selectedLocations,
             DateTime startDate)
@@ -49,7 +83,7 @@ namespace KidsTown.KidsTown
                 .ToImmutableList();
         }
 
-        public async Task<ImmutableList<LiveHeadCounts>> GetHeadCountsByLocations(
+        public async Task<IImmutableList<LiveHeadCounts>> GetHeadCountsByLocations(
             long eventId,
             IImmutableList<int> selectedLocationGroups,
             DateTime startDate,

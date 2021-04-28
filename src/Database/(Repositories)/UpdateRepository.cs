@@ -36,7 +36,7 @@ namespace KidsTown.Database
             }
         }
 
-        public async Task<ImmutableList<long>> GetCurrentPeopleIds(int daysLookBack)
+        public async Task<IImmutableList<long>> GetCurrentPeopleIds(int daysLookBack)
         {
             await using (var db = _serviceScopeFactory.CreateScope().ServiceProvider
                 .GetRequiredService<KidsTownContext>())
@@ -53,8 +53,8 @@ namespace KidsTown.Database
         }
 
         public async Task UpdateKids(
-            ImmutableList<PeopleUpdate> kids,
-            ImmutableList<BackgroundTasks.Models.Family> families
+            IImmutableList<PeopleUpdate> kids,
+            IImmutableList<BackgroundTasks.Models.Family> families
         )
         {
             await using (var db = _serviceScopeFactory.CreateScope().ServiceProvider
@@ -117,7 +117,7 @@ namespace KidsTown.Database
             }
         }
 
-        public async Task<ImmutableList<PersistedLocation>> GetPersistedLocations()
+        public async Task<IImmutableList<PersistedLocation>> GetPersistedLocations()
         {
             await using (var db = _serviceScopeFactory.CreateScope().ServiceProvider
                 .GetRequiredService<KidsTownContext>())
@@ -130,7 +130,7 @@ namespace KidsTown.Database
             }
         }
 
-        public async Task UpdateLocations(ImmutableList<LocationUpdate> locationUpdates)
+        public async Task UpdateLocations(IImmutableList<LocationUpdate> locationUpdates)
         {
             await using (var db = _serviceScopeFactory.CreateScope().ServiceProvider
                 .GetRequiredService<KidsTownContext>())
@@ -185,8 +185,8 @@ namespace KidsTown.Database
             }
         }
 
-        public async Task<ImmutableList<BackgroundTasks.Models.Family>> GetExistingFamilies(
-            ImmutableList<long> householdIds
+        public async Task<IImmutableList<BackgroundTasks.Models.Family>> GetExistingFamilies(
+            IImmutableList<long> householdIds
         )
         {
             await using (var db = _serviceScopeFactory.CreateScope().ServiceProvider
@@ -199,9 +199,9 @@ namespace KidsTown.Database
             }
         }
 
-        public async Task<ImmutableList<BackgroundTasks.Models.Family>> InsertFamilies(
-            ImmutableList<long> newHouseholdIds,
-            ImmutableList<PeopleUpdate> peoples
+        public async Task<IImmutableList<BackgroundTasks.Models.Family>> InsertFamilies(
+            IImmutableList<long> newHouseholdIds,
+            IImmutableList<PeopleUpdate> peoples
         )
         {
             await using (var db = _serviceScopeFactory.CreateScope().ServiceProvider
@@ -225,8 +225,12 @@ namespace KidsTown.Database
                 var updates = parentUpdates.Where(
                         predicate: p => existingParents.Select(selector: e => e.PeopleId).Contains(value: p.PeopleId))
                     .ToImmutableList();
-                existingParents.ForEach(action: e => UpdateParent(parent: e, updates: updates));
-
+                
+                foreach (var existingParent in existingParents)
+                {
+                    UpdateParent(parent: existingParent, updates: updates);
+                }
+                
                 var newEntries = parentUpdates.Except(second: updates).ToImmutableList();
                 var newParents = newEntries.Select(selector: MapParent);
                 await db.AddRangeAsync(entities: newParents);
@@ -247,7 +251,7 @@ namespace KidsTown.Database
             };
         }
 
-        private static void UpdateParent(Adult parent, ImmutableList<ParentUpdate> updates)
+        private static void UpdateParent(Adult parent, IImmutableList<ParentUpdate> updates)
         {
             var update = updates.Single(predicate: u => u.PeopleId == parent.PeopleId);
 
@@ -272,7 +276,7 @@ namespace KidsTown.Database
         }
 
 
-        private static async Task<ImmutableList<Adult>> GetExistingParents(
+        private static async Task<IImmutableList<Adult>> GetExistingParents(
             IImmutableList<long> peopleIds,
             KidsTownContext db
         )
@@ -282,7 +286,7 @@ namespace KidsTown.Database
             return parents.ToImmutableList();
         }
 
-        private static Family MapFamily(long householdId, ImmutableList<PeopleUpdate> peoples)
+        private static Family MapFamily(long householdId, IImmutableList<PeopleUpdate> peoples)
         {
             var name = peoples.First(predicate: p => p.HouseholdId == householdId).HouseholdName;
 
@@ -312,7 +316,7 @@ namespace KidsTown.Database
         }
 
         private static async Task PreCheckInRegulars(
-            ImmutableList<CheckInsUpdate> regularPreCheckIns,
+            IImmutableList<CheckInsUpdate> regularPreCheckIns,
             KidsTownContext db
         )
         {
@@ -349,7 +353,7 @@ namespace KidsTown.Database
             await db.SaveChangesAsync().ConfigureAwait(continueOnCapturedContext: false);
         }
 
-        private async Task PreCheckInGuests(ImmutableList<CheckInsUpdate> guests, DbContext db)
+        private async Task PreCheckInGuests(IImmutableList<CheckInsUpdate> guests, DbContext db)
         {
             var existingCheckInsIds =
                 await GetExistingCheckInsIds(checkinsIds: guests.Select(selector: g => g.CheckInsId).ToImmutableList())
@@ -400,8 +404,8 @@ namespace KidsTown.Database
         private static async Task UpdateKids(
             DbContext db,
             List<Kid> people,
-            ImmutableList<PeopleUpdate> updates,
-            ImmutableList<BackgroundTasks.Models.Family> families
+            IImmutableList<PeopleUpdate> updates,
+            IImmutableList<BackgroundTasks.Models.Family> families
         )
         {
             var updatesByPeopleId = updates.Where(predicate: u => u.PeopleId.HasValue)
@@ -431,7 +435,7 @@ namespace KidsTown.Database
             return kids;
         }
 
-        private static Attendance MapToAttendance(CheckInsUpdate checkInsUpdate, ImmutableList<Kid> kids)
+        private static Attendance MapToAttendance(CheckInsUpdate checkInsUpdate, IImmutableList<Kid> kids)
         {
             var kid = kids.SingleOrDefault(predicate: p => p.PeopleId == checkInsUpdate.PeopleId);
 
