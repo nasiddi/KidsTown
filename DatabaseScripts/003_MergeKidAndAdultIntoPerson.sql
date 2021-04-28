@@ -52,7 +52,7 @@ IF OBJECT_ID('[kt].[Adult]') IS NULL
                                   [UpdateDate] datetime2 NOT NULL
         )
     END;
-
+    
 IF OBJECT_ID('kt.[PK_PersonType]', 'PK') IS NULL
     BEGIN
         ALTER TABLE [kt].[PersonType] ADD CONSTRAINT [PK_PersonType] PRIMARY KEY CLUSTERED ( [Id] ASC )
