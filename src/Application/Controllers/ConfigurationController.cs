@@ -26,7 +26,7 @@ namespace KidsTown.Application.Controllers
         [HttpGet]
         [Route(template: "location-groups")]
         [Produces(contentType: "application/json")]
-        public async Task<ImmutableList<SelectOption>> GetLocationGroups()
+        public async Task<IImmutableList<SelectOption>> GetLocationGroups()
         {
             _updateTask.ActivateTask();
             var locations = await _configurationService.GetActiveLocationGroups().ConfigureAwait(continueOnCapturedContext: false);
@@ -36,7 +36,7 @@ namespace KidsTown.Application.Controllers
         [HttpPost]
         [Route(template: "events/{eventId}/location-groups/locations")]
         [Produces(contentType: "application/json")]
-        public async Task<ImmutableList<GroupedSelectOptions>> GetLocationsByLocationGroups(
+        public async Task<IImmutableList<GroupedSelectOptions>> GetLocationsByLocationGroups(
             [FromRoute] long eventId,
             [FromBody] IImmutableList<int> selectedLocationGroups)
         {
@@ -66,7 +66,7 @@ namespace KidsTown.Application.Controllers
         [HttpGet]
         [Route(template: "events")]
         [Produces(contentType: "application/json")]
-        public async Task<ImmutableList<CheckInsEvent>> GetAvailableEvents()
+        public async Task<IImmutableList<CheckInsEvent>> GetAvailableEvents()
         {
             return await _configurationService.GetAvailableEvents().ConfigureAwait(continueOnCapturedContext: false);
         }

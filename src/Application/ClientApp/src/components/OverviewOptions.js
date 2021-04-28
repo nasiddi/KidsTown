@@ -116,5 +116,4 @@ class Options extends Component {
 		this.setState({ date: value })
 	}
 }
-
 export const OverviewOptions = withAuth(Options)

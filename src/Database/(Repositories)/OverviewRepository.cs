@@ -21,7 +21,7 @@ namespace KidsTown.Database
             _serviceScopeFactory = serviceScopeFactory;
         }
 
-        public async Task<ImmutableList<Attendee>> GetActiveAttendees(IImmutableList<int> selectedLocationGroups,
+        public async Task<IImmutableList<Attendee>> GetActiveAttendees(IImmutableList<int> selectedLocationGroups,
             long eventId, DateTime date)
         {
             await using (var db = _serviceScopeFactory.CreateScope().ServiceProvider.GetRequiredService<KidsTownContext>())
@@ -43,7 +43,7 @@ namespace KidsTown.Database
             }
         }
 
-        public async Task<ImmutableList<Attendee>> GetAttendanceHistoryByLocations(
+        public async Task<IImmutableList<Attendee>> GetAttendanceHistoryByLocations(
             long eventId,
             DateTime startDate,
             DateTime endDate,
@@ -58,7 +58,7 @@ namespace KidsTown.Database
                 .ConfigureAwait(continueOnCapturedContext: false);   
         }
 
-        public async Task<ImmutableList<Attendee>> GetAttendanceHistoryByLocationGroups(
+        public async Task<IImmutableList<Attendee>> GetAttendanceHistoryByLocationGroups(
             long eventId,
             DateTime startDate,
             DateTime endDate,
@@ -73,7 +73,24 @@ namespace KidsTown.Database
                 .ConfigureAwait(continueOnCapturedContext: false);
         }
 
-        private async Task<ImmutableList<Attendee>> GetAttendanceHistory(
+        public async Task<IImmutableList<KidsTown.Models.Adult>> GetAdults(IImmutableList<int> familyIds)
+        {
+            await using (var db = _serviceScopeFactory.CreateScope().ServiceProvider.GetRequiredService<KidsTownContext>())
+            {
+                var adults = await db.Adults.Where(a => familyIds.Contains(a.FamilyId)).ToArrayAsync();
+
+                return adults?.Select(a => new KidsTown.Models.Adult
+                {
+                    FamilyId = a.FamilyId,
+                    FirstName = a.FirstName,
+                    LastName = a.LastName,
+                    PhoneNumber = a.PhoneNumber
+                }).ToImmutableList()
+                    ?? ImmutableList<KidsTown.Models.Adult>.Empty;
+            }
+        }
+
+        private async Task<IImmutableList<Attendee>> GetAttendanceHistory(
             long eventId,
             DateTime startDate,
             DateTime endDate,
@@ -112,6 +129,7 @@ namespace KidsTown.Database
             return new Attendee
             {
                 AttendanceId = attendance.Id,
+                FamilyId = kid.FamilyId,
                 FirstName = kid.FistName,
                 LastName = kid.LastName,
                 AttendanceType = (AttendanceTypes) attendanceType.Id,

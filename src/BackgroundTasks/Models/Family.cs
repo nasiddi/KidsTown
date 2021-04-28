@@ -6,7 +6,7 @@ namespace KidsTown.BackgroundTasks.Models
     {
         public readonly int FamilyId;
         public readonly long HouseholdId;
-        public readonly ImmutableList<long> PeopleIds = ImmutableList<long>.Empty;
+        public readonly IImmutableList<long> PeopleIds = ImmutableList<long>.Empty;
 
         public Family(int familyId, long householdId)
         {
@@ -14,7 +14,7 @@ namespace KidsTown.BackgroundTasks.Models
             HouseholdId = householdId;
         }
         
-        public Family(int familyId, long householdId, ImmutableList<long> peopleIds)
+        public Family(int familyId, long householdId, IImmutableList<long> peopleIds)
         {
             FamilyId = familyId;
             HouseholdId = householdId;

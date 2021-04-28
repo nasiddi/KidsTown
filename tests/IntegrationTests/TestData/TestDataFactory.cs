@@ -5,7 +5,7 @@ namespace KidsTown.IntegrationTests.TestData
 {
     public static class TestDataFactory
     {
-        public static ImmutableList<TestData> GetTestData()
+        public static IImmutableList<TestData> GetTestData()
         {
             return ImmutableList.Create(
                 new TestData(

@@ -22,7 +22,7 @@ namespace KidsTown.Application.Controllers
         [HttpPost]
         [Route(template: "event/{eventId}/attendees")]
         [Produces(contentType: "application/json")]
-        public async Task<ImmutableList<AttendeesByLocation>> GetAttendees(
+        public async Task<IImmutableList<AttendeesByLocation>> GetAttendees(
             [FromRoute] long eventId, 
             [FromQuery] string date,
             [FromBody] IImmutableList<int> selectedLocationGroups)
@@ -36,7 +36,7 @@ namespace KidsTown.Application.Controllers
         [HttpPost]
         [Route(template: "event/{eventId}/attendees/headcounts")]
         [Produces(contentType: "application/json")]
-        public async Task<ImmutableList<LiveHeadCounts>> GetAttendeeHeadCounts(
+        public async Task<IImmutableList<LiveHeadCounts>> GetAttendeeHeadCounts(
             [FromRoute] long eventId, 
             [FromQuery] string date,
             [FromBody] IImmutableList<int> selectedLocationGroups)
@@ -54,7 +54,7 @@ namespace KidsTown.Application.Controllers
         [HttpPost]
         [Route(template: "event/{eventId}/attendees/history")]
         [Produces(contentType: "application/json")]
-        public async Task<ImmutableList<HeadCounts>> GetAttendanceHistory(
+        public async Task<IImmutableList<HeadCounts>> GetAttendanceHistory(
             [FromRoute] long eventId,
             [FromBody] IImmutableList<int> selectedLocations)
         {

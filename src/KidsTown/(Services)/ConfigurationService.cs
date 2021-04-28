@@ -24,7 +24,7 @@ namespace KidsTown.KidsTown
             _planningCenterClient = planningCenterClient;
         }
 
-        public async Task<ImmutableList<LocationGroup>> GetActiveLocationGroups()
+        public async Task<IImmutableList<LocationGroup>> GetActiveLocationGroups()
         {
             return await _configurationRepository.GetActiveLocationGroups().ConfigureAwait(continueOnCapturedContext: false);
         }
@@ -34,13 +34,13 @@ namespace KidsTown.KidsTown
             return _configuration.GetValue<long>(key: "EventId");
         }
 
-        public async Task<ImmutableList<CheckInsEvent>> GetAvailableEvents()
+        public async Task<IImmutableList<CheckInsEvent>> GetAvailableEvents()
         {
             var activeEvents = await _planningCenterClient.GetActiveEvents().ConfigureAwait(continueOnCapturedContext: false);
             return activeEvents?.Data?.Select(selector: MapCheckInsEvent).ToImmutableList() ?? ImmutableList<CheckInsEvent>.Empty;
         }
 
-        public async Task<ImmutableList<Location>> GetLocations(
+        public async Task<IImmutableList<Location>> GetLocations(
             long eventId,
             IImmutableList<int>? selectedLocationGroups
         )

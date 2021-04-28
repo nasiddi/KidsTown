@@ -36,7 +36,7 @@ namespace KidsTown.IntegrationTests
             var testData = TestDataFactory.GetTestData();
 
             // Act & Assert
-            testData.ForEach(action: async t =>
+            (testData as ImmutableList<TestData.TestData>)?.ForEach(action: async t =>
             {
                 var checkInOutResult = await SendRequest(
                     securityCode: t.SecurityCode,
@@ -59,7 +59,7 @@ namespace KidsTown.IntegrationTests
             var testData = TestDataFactory.GetTestData();
             
             // Act & Assert
-            testData.ForEach(action: async t =>
+            (testData as ImmutableList<TestData.TestData>)?.ForEach(action: async t =>
             {
                 var checkInOutResult = await SendRequest(
                     securityCode: t.SecurityCode,
@@ -114,7 +114,7 @@ namespace KidsTown.IntegrationTests
 
         private static async Task<CheckInOutResult> SendRequest(
             string securityCode,
-            ImmutableList<int> selectedLocationIds,
+            IImmutableList<int> selectedLocationIds,
             bool isFastCheckInOut,
             CheckInOutController controller
         )
@@ -147,7 +147,7 @@ namespace KidsTown.IntegrationTests
             return controller;
         }
 
-        private async Task<ImmutableList<Data>> GetActualData(ImmutableList<long> checkInsIds)
+        private async Task<IImmutableList<Data>> GetActualData(IImmutableList<long> checkInsIds)
         {
             await Task.Delay(millisecondsDelay: 500).ConfigureAwait(continueOnCapturedContext: false);
             
