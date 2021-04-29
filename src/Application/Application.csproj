@@ -32,6 +32,7 @@
     <ItemGroup>
       <ProjectReference Include="..\BackgroundTasks\BackgroundTasks.csproj" />
       <ProjectReference Include="..\Database\Database.csproj" />
+      <ProjectReference Include="..\KidsTown.Shared\KidsTown.Shared.csproj" />
       <ProjectReference Include="..\KidsTown\KidsTown.csproj" />
     </ItemGroup>
 

@@ -28,10 +28,6 @@ namespace KidsTown.Database
                 var people = await (from a in db.Attendances
                         join p in db.People
                             on a.PersonId equals p.Id
-                        join k in db.Kids.DefaultIfEmpty()
-                            on p.Id equals k.PersonId
-                        join ad in db.Adults.DefaultIfEmpty()
-                            on p.Id equals ad.PersonId    
                         join at in db.AttendanceTypes
                             on a.AttendanceTypeId equals at.Id
                         join l in db.Locations
@@ -146,7 +142,7 @@ namespace KidsTown.Database
                 FamilyId = person.FamilyId,
                 FirstName = person.FirstName,
                 LastName = person.LastName,
-                AttendanceType = (AttendanceTypes) attendanceType.Id,
+                AttendanceTypeId = (Shared.AttendanceTypeId) attendanceType.Id,
                 SecurityCode = attendance.SecurityCode,
                 LocationGroupId = location.LocationGroupId,
                 Location = location.Name,

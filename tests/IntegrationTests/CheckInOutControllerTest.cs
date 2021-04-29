@@ -8,7 +8,7 @@ using KidsTown.BackgroundTasks.PlanningCenter;
 using KidsTown.Database;
 using KidsTown.IntegrationTests.TestData;
 using KidsTown.KidsTown;
-using KidsTown.KidsTown.Models;
+using KidsTown.Shared;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;

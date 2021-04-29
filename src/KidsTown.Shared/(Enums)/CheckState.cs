@@ -1,4 +1,4 @@
-namespace KidsTown.KidsTown.Models
+namespace KidsTown.Shared
 {
     public enum CheckState
     {

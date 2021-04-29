@@ -1,6 +1,7 @@
 using System.Collections.Immutable;
 using System.Threading.Tasks;
 using KidsTown.KidsTown.Models;
+using KidsTown.Shared;
 
 namespace KidsTown.KidsTown
 {

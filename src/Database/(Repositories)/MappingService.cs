@@ -1,4 +1,4 @@
-using KidsTown.KidsTown.Models;
+using KidsTown.Shared;
 
 namespace KidsTown.Database
 {

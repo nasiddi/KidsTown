@@ -1,4 +1,5 @@
 using System.Collections.Immutable;
+using KidsTown.Shared;
 
 // ReSharper disable UnusedAutoPropertyAccessor.Global
 

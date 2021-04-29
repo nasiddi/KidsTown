@@ -8,7 +8,7 @@ namespace KidsTown.BackgroundTasks.PlanningCenter
     {
         Task InsertPreCheckIns(IImmutableList<CheckInsUpdate> preCheckIns);
         Task<IImmutableList<long>> GetExistingCheckInsIds(IImmutableList<long> checkinsIds);
-        Task<IImmutableList<long>> GetCurrentPeopleIds(int daysLookBack);
+        Task<ImmutableList<TypedAttendee>> GetCurrentPeopleIds(int daysLookBack);
         Task UpdateKids(IImmutableList<PeopleUpdate> kids, IImmutableList<Family> families);
         Task AutoCheckInVolunteers();
         Task AutoCheckoutEveryoneByEndOfDay();

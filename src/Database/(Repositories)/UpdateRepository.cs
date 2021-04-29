@@ -5,8 +5,8 @@ using System.Linq;
 using System.Threading.Tasks;
 using KidsTown.BackgroundTasks.Models;
 using KidsTown.BackgroundTasks.PlanningCenter;
-using KidsTown.KidsTown.Models;
 using KidsTown.PlanningCenterApiClient.Models.CheckInsResult;
+using KidsTown.Shared;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -36,19 +36,19 @@ namespace KidsTown.Database
             }
         }
 
-        public async Task<IImmutableList<long>> GetCurrentPeopleIds(int daysLookBack)
+        public async Task<ImmutableList<TypedAttendee>> GetCurrentPeopleIds(int daysLookBack)
         {
             await using (var db = _serviceScopeFactory.CreateScope().ServiceProvider
                 .GetRequiredService<KidsTownContext>())
             {
-                var peopleIds = await db.Attendances
+                var typedAttendees = await db.Attendances
                     .Where(predicate: i
                         => i.InsertDate >= DateTime.Today.AddDays(-daysLookBack) && i.Person.PeopleId.HasValue)
-                    .Select(selector: i => i.Person.PeopleId!.Value)
+                    .Select(selector: a => new TypedAttendee(a.Person.PeopleId!.Value, (AttendanceTypeId)a.AttendanceTypeId))
                     .Distinct()
                     .ToListAsync().ConfigureAwait(continueOnCapturedContext: false);
 
-                return peopleIds.ToImmutableList();
+                return typedAttendees.ToImmutableList();
             }
         }
 
@@ -76,7 +76,7 @@ namespace KidsTown.Database
             {
                 var volunteers = await db.Attendances
                     .Where(predicate: a =>
-                        a.AttendanceTypeId == (int) AttendanceTypes.Volunteer
+                        a.AttendanceTypeId == (int) AttendanceTypeId.Volunteer
                         && a.CheckInDate == null)
                     .ToListAsync().ConfigureAwait(continueOnCapturedContext: false);
 
@@ -146,7 +146,7 @@ namespace KidsTown.Database
             await using (var db = _serviceScopeFactory.CreateScope().ServiceProvider
                 .GetRequiredService<KidsTownContext>())
             {
-                var locationGroups = await db.LocationGroups.Where(predicate: l => l.Id == (int) LocationGroups.Unknown)
+                var locationGroups = await db.LocationGroups.Where(predicate: l => l.Id == (int) Shared.LocationGroup.Unknown)
                     .ToListAsync().ConfigureAwait(continueOnCapturedContext: false);
 
                 locationGroups.ForEach(action: l => l.IsEnabled = true);
@@ -240,11 +240,9 @@ namespace KidsTown.Database
 
         private static Person MapParent(ParentUpdate parent)
         {
-            var updateDate = DateTime.UtcNow;
             var adult = new Adult
             {
-                PhoneNumber = parent.PhoneNumber,
-                UpdateDate = updateDate,
+                PhoneNumber = parent.PhoneNumber
             };
 
             return new Person
@@ -254,8 +252,7 @@ namespace KidsTown.Database
                 FirstName = parent.FirstName,
                 LastName = parent.LastName,
                 UpdateDate = DateTime.UtcNow,
-                Adult = adult,
-                PersonTypeId = 2
+                Adult = adult
             };
         }
 
@@ -265,24 +262,24 @@ namespace KidsTown.Database
 
             person.FamilyId = update.FamilyId;
 
-            if (update.FirstName.Length < 0)
+            if (update.FirstName.Length > 0)
             {
                 person.FirstName = update.FirstName;
             }
             
-            if (update.LastName.Length < 0)
+            if (update.LastName.Length > 0)
             {
                 person.LastName = update.LastName;
             }
             
-            if (update.PhoneNumber.Length < 0)
+            if (update.PhoneNumber.Length > 0)
             {
+                person.Adult ??= new Adult();
                 person.Adult.PhoneNumber = update.PhoneNumber;
             }
 
             var updateDate = DateTime.UtcNow;
             person.UpdateDate = updateDate;
-            person.Adult.UpdateDate = updateDate;
         }
 
 
@@ -293,6 +290,7 @@ namespace KidsTown.Database
         {
             var parents = await db.People
                 .Where(predicate: p => p.PeopleId != null && peopleIds.Contains(p.PeopleId.Value))
+                .Include(navigationPropertyPath: p => p.Adult)
                 .ToListAsync()
                 .ConfigureAwait(continueOnCapturedContext: false);
             return parents.ToImmutableList();
@@ -346,12 +344,6 @@ namespace KidsTown.Database
             var peopleUpdates = kids.Where(
                     predicate: p => existingPeople.Select(selector: e => e.PeopleId).Contains(value: p.PeopleId))
                 .ToImmutableList();
-            await UpdateKids(
-                    db: db,
-                    people: existingPeople,
-                    updates: peopleUpdates,
-                    families: ImmutableList<BackgroundTasks.Models.Family>.Empty)
-                .ConfigureAwait(continueOnCapturedContext: false);
 
             var kidsInserts = kids.Except(second: peopleUpdates).ToImmutableList();
             var insertedPeople = await InsertPeople(db: db, peopleToInsert: kidsInserts)
@@ -408,7 +400,7 @@ namespace KidsTown.Database
                 PeopleId = peopleUpdate.PeopleId,
                 FirstName = peopleUpdate.FirstName,
                 LastName = peopleUpdate.LastName,
-                UpdateDate = DateTime.UtcNow,
+                UpdateDate = DateTime.UtcNow
             };
         }
 
@@ -428,22 +420,19 @@ namespace KidsTown.Database
             {
                 var update = updatesByPeopleId[key: p.PeopleId!];
 
-                
-                var kid = new Kid
-                {
-                    MayLeaveAlone = update.MayLeaveAlone,
-                    HasPeopleWithoutPickupPermission = update.HasPeopleWithoutPickupPermission,
-                    UpdateDate = updateDate,
-                };
-                
+                p.Kid ??= new Kid();
+
+                p.Kid.MayLeaveAlone = update.MayLeaveAlone;
+                p.Kid.HasPeopleWithoutPickupPermission = update.HasPeopleWithoutPickupPermission;
+
                 p.FirstName = update.FirstName;
                 p.LastName = update.LastName;
                 p.FamilyId = families.SingleOrDefault(predicate: f => f.HouseholdId == update.HouseholdId)?.FamilyId;
-                p.Kid = p.PersonTypeId == 1 ? kid : null;
                 p.UpdateDate = updateDate;
             });
-
+            
             await db.SaveChangesAsync().ConfigureAwait(continueOnCapturedContext: false);
+
         }
 
         private static async Task<List<Person>> GetKidsByPeopleIds(
@@ -453,6 +442,7 @@ namespace KidsTown.Database
         {
             var people = await db.People
                 .Where(predicate: p => p.PeopleId.HasValue && peopleIds.Contains(p.PeopleId.Value))
+                .Include(navigationPropertyPath: p => p.Kid)
                 .ToListAsync().ConfigureAwait(continueOnCapturedContext: false);
             return people;
         }

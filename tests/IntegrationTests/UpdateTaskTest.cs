@@ -9,8 +9,8 @@ using FluentAssertions;
 using KidsTown.BackgroundTasks.PlanningCenter;
 using KidsTown.Database;
 using KidsTown.IntegrationTests.Mocks;
-using KidsTown.KidsTown.Models;
 using KidsTown.PlanningCenterApiClient.Models.CheckInsResult;
+using KidsTown.Shared;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -77,12 +77,14 @@ namespace KidsTown.IntegrationTests
 
             await using var db = serviceScopeFactory!.CreateScope().ServiceProvider.GetRequiredService<KidsTownContext>();
             var people = await (from a in db.Attendances
-                    join p in db.Kids
-                        on a.KidId equals p.Id
+                    join p in db.People
+                        on a.PersonId equals p.Id
+                    join k in db.Kids
+                        on p.Id equals k.PersonId
                     join l in db.Locations
                         on a.LocationId equals l.Id
                     where a.CheckInsId < 100
-                    select MapData(a, p, l))
+                    select MapData(a, p, k, l))
                 .ToListAsync().ConfigureAwait(continueOnCapturedContext: false);
 
             return people.ToImmutableList();
@@ -105,14 +107,14 @@ namespace KidsTown.IntegrationTests
             actual.Should().BeEquivalentTo(expectation: expected);
         }
 
-        private static Data MapData(Attendance attendance, Kid kid, Location location)
+        private static Data MapData(Attendance attendance, Person person, Kid kid, Location location)
         {
             return new(
-                firstName: kid.FistName,
-                lastName: kid.LastName,
+                firstName: person.FirstName,
+                lastName: person.LastName,
                 checkInsId: attendance.CheckInsId,
-                peopleId: kid.PeopleId,
-                attendanceType: (AttendanceTypes) attendance.AttendanceTypeId,
+                peopleId: person.PeopleId,
+                attendanceTypeId: (AttendanceTypeId) attendance.AttendanceTypeId,
                 testLocation: location.CheckInsLocationId!.Value,
                 mayLeaveAlone: kid.MayLeaveAlone,
                 hasPeopleWithoutPickupPermission: kid.HasPeopleWithoutPickupPermission
@@ -133,20 +135,20 @@ namespace KidsTown.IntegrationTests
                     lastName: kid?.LastName ?? a.LastName,
                     checkInsId: a.CheckInsId,
                     peopleId: a.PeopleId,
-                    attendanceType: MapAttendanceType(attendeeType: a.AttendanceType),
+                    attendanceTypeId: MapAttendanceType(attendeeType: a.AttendanceType),
                     testLocation: (int) a.TestLocation,
                     mayLeaveAlone: kid?.MayLeaveAlone ?? true,
                     hasPeopleWithoutPickupPermission: kid?.HasPeopleWithoutPickupPermission ?? false);
             }).ToImmutableList();
         }
 
-        private static AttendanceTypes MapAttendanceType(AttendeeType attendeeType)
+        private static AttendanceTypeId MapAttendanceType(AttendeeType attendeeType)
         {
             return attendeeType switch
             {
-                AttendeeType.Guest => AttendanceTypes.Guest,
-                AttendeeType.Regular => AttendanceTypes.Regular,
-                AttendeeType.Volunteer => AttendanceTypes.Volunteer,
+                AttendeeType.Guest => AttendanceTypeId.Guest,
+                AttendeeType.Regular => AttendanceTypeId.Regular,
+                AttendeeType.Volunteer => AttendanceTypeId.Volunteer,
                 _ => throw new ArgumentOutOfRangeException(paramName: nameof(attendeeType), actualValue: attendeeType, message: null)
             };
         }
@@ -159,7 +161,7 @@ namespace KidsTown.IntegrationTests
             public readonly string LastName;
             public readonly long CheckInsId;
             public readonly long? PeopleId;
-            public readonly AttendanceTypes AttendanceType;
+            public readonly AttendanceTypeId AttendanceTypeId;
             public readonly long TestLocation;
             public readonly bool MayLeaveAlone;
             public readonly bool HasPeopleWithoutPickupPermission;
@@ -169,7 +171,7 @@ namespace KidsTown.IntegrationTests
                 string lastName,
                 long checkInsId,
                 long? peopleId,
-                AttendanceTypes attendanceType,
+                AttendanceTypeId attendanceTypeId,
                 long testLocation,
                 bool mayLeaveAlone,
                 bool hasPeopleWithoutPickupPermission
@@ -179,7 +181,7 @@ namespace KidsTown.IntegrationTests
                 LastName = lastName;
                 CheckInsId = checkInsId;
                 PeopleId = peopleId;
-                AttendanceType = attendanceType;
+                AttendanceTypeId = attendanceTypeId;
                 TestLocation = testLocation;
                 MayLeaveAlone = mayLeaveAlone;
                 HasPeopleWithoutPickupPermission = hasPeopleWithoutPickupPermission;

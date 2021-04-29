@@ -1,7 +1,7 @@
 // ReSharper disable UnusedMember.Global
-namespace KidsTown.Database
+namespace KidsTown.Shared
 {
-    public enum LocationGroups
+    public enum LocationGroup
     {
         Haesli = 1,
         Schoefli = 2,

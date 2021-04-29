@@ -7,7 +7,7 @@ using KidsTown.KidsTown;
 using KidsTown.KidsTown.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-
+using KidsTown.Shared;
 // ReSharper disable ConvertToUsingDeclaration
 
 namespace KidsTown.Database
@@ -104,13 +104,11 @@ namespace KidsTown.Database
                 var kid = new Kid
                 {
                     MayLeaveAlone = true,
-                    HasPeopleWithoutPickupPermission = false,
-                    UpdateDate = DateTime.UtcNow
+                    HasPeopleWithoutPickupPermission = false
                 };
 
                 var person = new Person
                 {
-                    PersonTypeId = 1,
                     FirstName = firstName,
                     LastName = lastName,
                     UpdateDate = DateTime.UtcNow,
@@ -121,8 +119,8 @@ namespace KidsTown.Database
                 {
                     CheckInsId = 0,
                     LocationId = locationId,
-                    SecurityCode = securityCode,
-                    AttendanceTypeId = (int) AttendanceTypes.Guest,
+                    SecurityCode = securityCode, 
+                    AttendanceTypeId = (int) AttendanceTypeId.Guest,
                     InsertDate = DateTime.UtcNow,
                     Person = person
                 };

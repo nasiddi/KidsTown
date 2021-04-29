@@ -3,6 +3,7 @@ using System.Collections.Immutable;
 using System.Linq;
 using System.Threading.Tasks;
 using KidsTown.KidsTown.Models;
+using KidsTown.Shared;
 
 namespace KidsTown.KidsTown
 {
@@ -46,7 +47,7 @@ namespace KidsTown.KidsTown
                     FamilyId = attendee.FamilyId,
                     FirstName = attendee.FirstName,
                     LastName = attendee.LastName,
-                    AttendanceType = attendee.AttendanceType,
+                    AttendanceTypeId = attendee.AttendanceTypeId,
                     LocationGroupId = attendee.LocationGroupId,
                     Location = attendee.Location,
                     SecurityCode = attendee.SecurityCode,
@@ -103,9 +104,9 @@ namespace KidsTown.KidsTown
 
         private static LiveHeadCounts MapLiveStatistics(IImmutableList<Attendee> attendees)
         {
-            var regularCounts = GetCounts(attendees: attendees, attendanceType: AttendanceTypes.Regular);
-            var guestCounts = GetCounts(attendees: attendees, attendanceType: AttendanceTypes.Guest);
-            var volunteerCounts = GetCounts(attendees: attendees, attendanceType: AttendanceTypes.Volunteer);
+            var regularCounts = GetCounts(attendees: attendees, attendanceTypeId: AttendanceTypeId.Regular);
+            var guestCounts = GetCounts(attendees: attendees, attendanceTypeId: AttendanceTypeId.Guest);
+            var volunteerCounts = GetCounts(attendees: attendees, attendanceTypeId: AttendanceTypeId.Volunteer);
 
             return new LiveHeadCounts
             {
@@ -118,8 +119,8 @@ namespace KidsTown.KidsTown
         
         private static AttendeesByLocation MapAttendeesByLocation(IGrouping<string, Attendee> attendees)
         {
-            var volunteers = attendees.Where(predicate: a => a.AttendanceType == AttendanceTypes.Volunteer).ToImmutableList();
-            var kids = attendees.Where(predicate: a => a.AttendanceType != AttendanceTypes.Volunteer).ToImmutableList();
+            var volunteers = attendees.Where(predicate: a => a.AttendanceTypeId == AttendanceTypeId.Volunteer).ToImmutableList();
+            var kids = attendees.Where(predicate: a => a.AttendanceTypeId != AttendanceTypeId.Volunteer).ToImmutableList();
 
             return new AttendeesByLocation
             {
@@ -133,9 +134,9 @@ namespace KidsTown.KidsTown
         private static HeadCounts MapDailyStatistic(IGrouping<DateTime, Attendee> attendees)
         {
             var attendeesByDate = attendees.ToImmutableList();
-            var regularCounts = GetCounts(attendees: attendeesByDate, attendanceType: AttendanceTypes.Regular);
-            var guestCounts = GetCounts(attendees: attendeesByDate, attendanceType: AttendanceTypes.Guest);
-            var volunteerCounts = GetCounts(attendees: attendeesByDate, attendanceType: AttendanceTypes.Volunteer);
+            var regularCounts = GetCounts(attendees: attendeesByDate, attendanceTypeId: AttendanceTypeId.Regular);
+            var guestCounts = GetCounts(attendees: attendeesByDate, attendanceTypeId: AttendanceTypeId.Guest);
+            var volunteerCounts = GetCounts(attendees: attendeesByDate, attendanceTypeId: AttendanceTypeId.Volunteer);
 
             return new HeadCounts
             {
@@ -148,9 +149,9 @@ namespace KidsTown.KidsTown
             };
         }
 
-        private static Counts GetCounts(IImmutableList<Attendee> attendees, AttendanceTypes attendanceType)
+        private static Counts GetCounts(IImmutableList<Attendee> attendees, AttendanceTypeId attendanceTypeId)
         {
-            var preCheckedIn = attendees.Where(predicate: a => a.AttendanceType == attendanceType).ToImmutableList();
+            var preCheckedIn = attendees.Where(predicate: a => a.AttendanceTypeId == attendanceTypeId).ToImmutableList();
             var checkedIn = preCheckedIn.Where(predicate: a => a.CheckState > CheckState.PreCheckedIn ).ToImmutableList();
             var checkedOut = checkedIn.Where(predicate: a => a.CheckState == CheckState.CheckedOut).ToImmutableList();
             var autoCheckedOutCount = checkedOut.Count(predicate: a 

@@ -1,5 +1,6 @@
 using System.Collections.Immutable;
 using KidsTown.PlanningCenterApiClient.Models.CheckInsResult;
+using KidsTown.Shared;
 
 namespace KidsTown.IntegrationTests.TestData
 {
@@ -41,7 +42,7 @@ namespace KidsTown.IntegrationTests.TestData
                     peopleLastName: "Fuchser",
                     fieldData: ImmutableList.Create(
                         item: new TestFieldData(
-                            fieldDefinitionId: TestFieldIds.NeedsToBePickedUp,
+                            fieldDefinitionId: PeopleFieldId.NeedsToBePickedUp,
                             fieldOptionId: 3,
                             value: "false")),
                     expectedMayLeaveAlone: true,
@@ -58,7 +59,7 @@ namespace KidsTown.IntegrationTests.TestData
                     peopleLastName: "Hase",
                     fieldData: ImmutableList.Create(
                         item: new TestFieldData(
-                            fieldDefinitionId: TestFieldIds.NeedsToBePickedUp,
+                            fieldDefinitionId: PeopleFieldId.NeedsToBePickedUp,
                             fieldOptionId: 4,
                             value: "true")),
                     expectedMayLeaveAlone: false,
@@ -75,7 +76,7 @@ namespace KidsTown.IntegrationTests.TestData
                     peopleLastName: "Schaf",
                     fieldData: ImmutableList.Create(
                         item: new TestFieldData(
-                            fieldDefinitionId: TestFieldIds.Kab,
+                            fieldDefinitionId: PeopleFieldId.Kab,
                             fieldOptionId: 5,
                             value: "true")),
                     expectedMayLeaveAlone: true,
@@ -93,11 +94,11 @@ namespace KidsTown.IntegrationTests.TestData
                     peopleLastName: "Fox",
                     fieldData: ImmutableList.Create(
                         new TestFieldData(
-                            fieldDefinitionId: TestFieldIds.Kab,
+                            fieldDefinitionId: PeopleFieldId.Kab,
                             fieldOptionId: 6,
                             value: "true"),
                         new TestFieldData(
-                            fieldDefinitionId: TestFieldIds.NeedsToBePickedUp,
+                            fieldDefinitionId: PeopleFieldId.NeedsToBePickedUp,
                             fieldOptionId: 7,
                             value: "false")),
                     expectedMayLeaveAlone: true,
@@ -114,11 +115,11 @@ namespace KidsTown.IntegrationTests.TestData
                     peopleLastName: "Hasenfuss",
                     fieldData: ImmutableList.Create(
                         new TestFieldData(
-                            fieldDefinitionId: TestFieldIds.Kab,
+                            fieldDefinitionId: PeopleFieldId.Kab,
                             fieldOptionId: 8,
                             value: null),
                         new TestFieldData(
-                            fieldDefinitionId: TestFieldIds.NeedsToBePickedUp,
+                            fieldDefinitionId: PeopleFieldId.NeedsToBePickedUp,
                             fieldOptionId: 9,
                             value: null)),
                     expectedMayLeaveAlone: true,
@@ -136,11 +137,11 @@ namespace KidsTown.IntegrationTests.TestData
                     peopleLastName: "Hasenfuss",
                     fieldData: ImmutableList.Create(
                         new TestFieldData(
-                            fieldDefinitionId: TestFieldIds.Kab,
+                            fieldDefinitionId: PeopleFieldId.Kab,
                             fieldOptionId: 8,
                             value: null),
                         new TestFieldData(
-                            fieldDefinitionId: TestFieldIds.NeedsToBePickedUp,
+                            fieldDefinitionId: PeopleFieldId.NeedsToBePickedUp,
                             fieldOptionId: 9,
                             value: null)),
                     expectedMayLeaveAlone: true,

@@ -6,6 +6,7 @@ using KidsTown.Application.Models;
 using KidsTown.BackgroundTasks.PlanningCenter;
 using KidsTown.KidsTown;
 using KidsTown.KidsTown.Models;
+using KidsTown.Shared;
 using Microsoft.AspNetCore.Mvc;
 
 namespace KidsTown.Application.Controllers

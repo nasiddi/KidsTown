@@ -17,6 +17,7 @@
     <ItemGroup>
       <ProjectReference Include="..\BackgroundTasks\BackgroundTasks.csproj" />
       <ProjectReference Include="..\KidsTown\KidsTown.csproj" />
+      <ProjectReference Include="..\KidsTown.Shared\KidsTown.Shared.csproj" />
     </ItemGroup>
 
 </Project>

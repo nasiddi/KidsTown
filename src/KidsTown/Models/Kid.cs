@@ -1,6 +1,7 @@
 // ReSharper disable UnusedAutoPropertyAccessor.Global
 
 using System;
+using KidsTown.Shared;
 
 namespace KidsTown.KidsTown.Models
 {

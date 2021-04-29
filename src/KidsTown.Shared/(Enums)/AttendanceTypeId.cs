@@ -1,6 +1,6 @@
-namespace KidsTown.KidsTown.Models
+namespace KidsTown.Shared
 {
-    public enum AttendanceTypes
+    public enum AttendanceTypeId
     {
         Regular = 1,
         Guest = 2,

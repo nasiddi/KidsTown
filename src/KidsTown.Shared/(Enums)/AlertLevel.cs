@@ -1,4 +1,4 @@
-namespace KidsTown.Application.Models
+namespace KidsTown.Shared
 {
     public enum AlertLevel
     {

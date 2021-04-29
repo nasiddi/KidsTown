@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Immutable;
+using KidsTown.Shared;
 
 // ReSharper disable UnusedAutoPropertyAccessor.Global
 
@@ -11,7 +12,7 @@ namespace KidsTown.KidsTown.Models
         public int? FamilyId { get; init; }
         public string FirstName { get; init; } = string.Empty;
         public string LastName { get; init; } = string.Empty;
-        public AttendanceTypes AttendanceType { get; init; }
+        public AttendanceTypeId AttendanceTypeId { get; init; }
         public int LocationGroupId { get; init; }
         public string Location { get; init; } = string.Empty;
         public string SecurityCode { get; init; } = string.Empty;

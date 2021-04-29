@@ -24,7 +24,7 @@ namespace KidsTown.IntegrationTests
             await EstablishConnectionToDatabase(db: db).ConfigureAwait(continueOnCapturedContext: false);
                 
             var attendances = await db.Attendances.Where(predicate: a => a.CheckInsId < 100).ToListAsync();
-            var people = await db.Kids.Where(predicate: p => attendances.Select(a => a.KidId)
+            var people = await db.People.Where(predicate: p => attendances.Select(a => a.PersonId)
                 .Contains(p.Id)).ToListAsync();
                 
             db.RemoveRange(entities: attendances);
@@ -56,7 +56,7 @@ namespace KidsTown.IntegrationTests
 
             var people = testData
                 .GroupBy(keySelector: d => d.PeopleId)
-                .Select(selector: d => MapKid(grouping: d, locations: locations.ToImmutableList()))
+                .Select(selector: d => MapPerson(grouping: d, locations: locations.ToImmutableList()))
                 .ToImmutableList();
 
             await db.AddRangeAsync(entities: people).ConfigureAwait(continueOnCapturedContext: false);
@@ -79,20 +79,25 @@ namespace KidsTown.IntegrationTests
             };
         }
 
-        private static Kid MapKid(IGrouping<long?, TestData.TestData> grouping, IImmutableList<Location> locations)
+        private static Person MapPerson(IGrouping<long?, TestData.TestData> grouping, IImmutableList<Location> locations)
         {
             var data = grouping.First();
 
             var attendances = grouping.Select(selector: g => MapAttendance(data: g, locations: locations));
-            
-            return new Kid
+
+            var kid = new Kid
+            {
+                MayLeaveAlone = data.ExpectedMayLeaveAlone ?? true,
+                HasPeopleWithoutPickupPermission = data.ExpectedHasPeopleWithoutPickupPermission ?? false
+            };
+
+            return new Person
             {
                 PeopleId = data.PeopleId,
-                FistName = data.PeopleFirstName ?? data.CheckInsFirstName,
+                FirstName = data.PeopleFirstName ?? data.CheckInsFirstName,
                 LastName = data.PeopleLastName ?? data.CheckInsLastName,
-                MayLeaveAlone = data.ExpectedMayLeaveAlone ?? true,
-                HasPeopleWithoutPickupPermission = data.ExpectedHasPeopleWithoutPickupPermission ?? false,
-                Attendances = attendances.ToList()
+                Attendances = attendances.ToList(),
+                Kid = kid
             };
         }
 
