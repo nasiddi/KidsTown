@@ -25,8 +25,15 @@ namespace KidsTown.IntegrationTests
                 
             var attendances = await db.Attendances.Where(predicate: a => a.CheckInsId < 100).ToListAsync();
             var people = await db.People.Where(predicate: p => attendances.Select(a => a.PersonId)
-                .Contains(p.Id)).ToListAsync();
-                
+                .Contains(p.Id))
+                .Include(p => p.Kid)
+                .Include(p => p.Adult).ToListAsync();
+
+            var kids = people.Where(p => p.Kid != null).Select(p => p.Kid);
+            var adults = people.Where(p => p.Adult != null).Select(p => p.Adult);
+            
+            db.RemoveRange(kids);
+            db.RemoveRange(adults);
             db.RemoveRange(entities: attendances);
             db.RemoveRange(entities: people);
             await db.SaveChangesAsync();

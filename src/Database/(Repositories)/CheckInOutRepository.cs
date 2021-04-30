@@ -29,7 +29,7 @@ namespace KidsTown.Database
                 var people = await (from a in db.Attendances
                     join p in db.People
                         on a.PersonId equals p.Id
-                    join k in db.Kids
+                    join k in db.Kids.DefaultIfEmpty()
                         on p.Id equals k.PersonId
                     join l in db.Locations
                         on a.LocationId equals l.Id
@@ -154,7 +154,7 @@ namespace KidsTown.Database
         private static KidsTown.Models.Kid MapKid(
             Attendance attendance,
             Person person,
-            Kid kid,
+            Kid? kid,
             Location location
         )
         {
@@ -169,8 +169,8 @@ namespace KidsTown.Database
                 LastName = person.LastName,
                 CheckInTime = attendance.CheckInDate,
                 CheckOutTime = attendance.CheckOutDate,
-                MayLeaveAlone = kid.MayLeaveAlone,
-                HasPeopleWithoutPickupPermission = kid.HasPeopleWithoutPickupPermission,
+                MayLeaveAlone = kid?.MayLeaveAlone ?? true,
+                HasPeopleWithoutPickupPermission = kid?.HasPeopleWithoutPickupPermission ?? false,
                 CheckState = checkState
             };
         }
