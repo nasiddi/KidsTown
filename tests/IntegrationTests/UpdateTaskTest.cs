@@ -76,18 +76,16 @@ namespace KidsTown.IntegrationTests
             var serviceScopeFactory = _serviceProvider.GetService<IServiceScopeFactory>();
 
             await using var db = serviceScopeFactory!.CreateScope().ServiceProvider.GetRequiredService<KidsTownContext>();
-            var people = await (from a in db.Attendances
-                    join p in db.People
-                        on a.PersonId equals p.Id
-                    join k in db.Kids
-                        on p.Id equals k.PersonId
-                    join l in db.Locations
-                        on a.LocationId equals l.Id
-                    where a.CheckInsId < 100
-                    select MapData(a, p, k, l))
-                .ToListAsync().ConfigureAwait(continueOnCapturedContext: false);
 
-            return people.ToImmutableList();
+            var p = await db.Attendances
+                .Include(i => i.Person)
+                .Include(i => i.Person.Kid)
+                .Include(i => i.Location)
+                .Where(p => p.CheckInsId < 100)
+                .Select(p => MapData2(p))
+                .ToListAsync();
+            
+            return p.ToImmutableList();
         }
 
         private async Task AssertUpdateTask()
@@ -116,8 +114,22 @@ namespace KidsTown.IntegrationTests
                 peopleId: person.PeopleId,
                 attendanceTypeId: (AttendanceTypeId) attendance.AttendanceTypeId,
                 testLocation: location.CheckInsLocationId!.Value,
-                mayLeaveAlone: kid.MayLeaveAlone,
-                hasPeopleWithoutPickupPermission: kid.HasPeopleWithoutPickupPermission
+                mayLeaveAlone: true, //kid?.MayLeaveAlone ?? true,
+                hasPeopleWithoutPickupPermission: false //kid?.HasPeopleWithoutPickupPermission ?? false
+            );
+        }
+        
+        private static Data MapData2(Attendance attendance)
+        {
+            return new(
+                firstName: attendance.Person.FirstName,
+                lastName: attendance.Person.LastName,
+                checkInsId: attendance.CheckInsId,
+                peopleId: attendance.Person.PeopleId,
+                attendanceTypeId: (AttendanceTypeId) attendance.AttendanceTypeId,
+                testLocation: attendance.Location.CheckInsLocationId!.Value,
+                mayLeaveAlone: attendance.Person.Kid?.MayLeaveAlone ?? true,
+                hasPeopleWithoutPickupPermission: attendance.Person.Kid?.HasPeopleWithoutPickupPermission ?? false
             );
         }
 

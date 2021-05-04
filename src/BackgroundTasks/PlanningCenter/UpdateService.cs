@@ -91,18 +91,20 @@ namespace KidsTown.BackgroundTasks.PlanningCenter
                 .Where(predicate: i => i.PeopleIncludedType == PeopleIncludedType.PhoneNumber)
                 .ToImmutableList();
 
-            return parents.SelectMany(selector: p => p.Data ?? new List<Datum>())
+            var parentUpdates = parents.SelectMany(selector: p => p.Data ?? new List<Datum>())
                 .Select(selector: d => MapParent(adult: d, families: families, phoneNumbers: phoneNumbers))
                 .ToImmutableList();
+
+            return parentUpdates.Where(p => p != null).Select(p => p!).ToImmutableList();
         }
 
-        private static ParentUpdate MapParent(
+        private static ParentUpdate? MapParent(
             Datum adult,
             IImmutableList<Family> families,
             IImmutableList<Included> phoneNumbers
         )
         {
-            var family = families.First(predicate: f => f.PeopleIds.Contains(value: adult.Id));
+            var family = families.FirstOrDefault(predicate: f => f.PeopleIds.Contains(value: adult.Id));
             var phoneNumberIds = adult.Relationships?.PhoneNumbers?.Data?.Select(selector: d => d.Id).ToImmutableList()
                                  ?? ImmutableList<long>.Empty;
 
@@ -111,12 +113,17 @@ namespace KidsTown.BackgroundTasks.PlanningCenter
 
             var number = SelectNumber(numbers: personalNumbers);
 
+            if (family == null || number == null)
+            {
+                return null;
+            }
+
             return new ParentUpdate(
                 peopleId: adult.Id,
                 familyId: family.FamilyId,
                 firstName: adult.Attributes?.FirstName ?? string.Empty,
                 lastName: adult.Attributes?.LastName ?? string.Empty,
-                phoneNumber: number ?? string.Empty);
+                phoneNumber: number);
         }
 
         private static string? SelectNumber(IImmutableList<Included> numbers)

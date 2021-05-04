@@ -140,7 +140,7 @@ namespace KidsTown.IntegrationTests.Mocks
 
         public Task<Household?> GetHousehold(long householdId)
         {
-            throw new NotImplementedException();
+            return Task.FromResult<Household?>(result: null)!;
         }
 
         public Task<Event> GetActiveEvents()
@@ -196,12 +196,12 @@ namespace KidsTown.IntegrationTests.Mocks
 
         private static List<PlanningCenterApiClient.Models.PeopleResult.Included> GetPeopleIncluded()
         {
-            var fieldData = TestDataFactory.GetTestData()
-                .Where(predicate: d => d.PeopleId.HasValue)
+            var testData = TestDataFactory.GetTestData();
+           
+            var fieldData = testData.Where(predicate: d => d.PeopleId.HasValue)
                 .SelectMany(selector: d => d.FieldData)
                 .ToImmutableList();
-
-            return fieldData.GroupBy(keySelector: f => f.FieldOptionId)
+            var fieldIncluded= fieldData.GroupBy(keySelector: f => f.FieldOptionId)
                 .Select(selector: f =>
                     {
                         var field = f.Last();
@@ -227,7 +227,26 @@ namespace KidsTown.IntegrationTests.Mocks
                             }
                         };
                     }
-                ).ToList();
+                );
+
+
+            var householdIncluded = testData
+                .Where(t => t.HouseholdId.HasValue)
+                .Select(t =>
+                {
+                    return new PlanningCenterApiClient.Models.PeopleResult.Included
+                    {
+                        PeopleIncludedType = PeopleIncludedType.Household,
+                        Id = t.HouseholdId!.Value,
+                        Attributes = new PlanningCenterApiClient.Models.PeopleResult.IncludedAttributes
+                        {
+                            Name = t.HouseholdName,
+                        },
+                        Relationships = null
+                    };
+                });
+
+            return fieldIncluded.Union(householdIncluded).ToList();
         }
 
         private static List<Attendee> GetAttendees(IImmutableList<AttendanceData> data)

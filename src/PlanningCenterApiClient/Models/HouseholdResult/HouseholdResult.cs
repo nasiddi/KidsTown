@@ -117,8 +117,8 @@ namespace KidsTown.PlanningCenterApiClient.Models.HouseholdResult
 //
      public class Included
      {
-         [JsonProperty(propertyName: "type")]
-         public string? Type { get; set; }
+         // [JsonProperty(propertyName: "type")]
+         // public string? Type { get; set; }
 //
          [JsonProperty(propertyName: "id")]
          [JsonConverter(converterType: typeof(ParseStringConverter))]

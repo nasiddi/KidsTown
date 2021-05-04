@@ -1,4 +1,5 @@
 using System.Collections.Immutable;
+using System.Linq;
 using KidsTown.PlanningCenterApiClient.Models.CheckInsResult;
 using KidsTown.Shared;
 
@@ -8,7 +9,7 @@ namespace KidsTown.IntegrationTests.TestData
     {
         public static IImmutableList<TestData> GetTestData()
         {
-            return ImmutableList.Create(
+            var testData = ImmutableList.Create(
                 new TestData(
                     checkInsFirstName: "Hanna",
                     checkInsLastName: "Hase",
@@ -20,7 +21,9 @@ namespace KidsTown.IntegrationTests.TestData
                     testLocation: TestLocationIds.Haesli,
                     fieldData: ImmutableList<TestFieldData>.Empty,
                     expectedMayLeaveAlone: true,
-                    expectedHasPeopleWithoutPickupPermission: false
+                    expectedHasPeopleWithoutPickupPermission: false,
+                    householdId: 1,
+                    householdName: "Hase Household"
                 ),
                 new TestData(
                     checkInsFirstName: "Sarah",
@@ -46,7 +49,9 @@ namespace KidsTown.IntegrationTests.TestData
                             fieldOptionId: 3,
                             value: "false")),
                     expectedMayLeaveAlone: true,
-                    expectedHasPeopleWithoutPickupPermission: false
+                    expectedHasPeopleWithoutPickupPermission: false,
+                    householdId: 3,
+                    householdName: "Fuchs Household"
                 ),
                 new TestData(
                     checkInsFirstName: "Hans",
@@ -63,7 +68,9 @@ namespace KidsTown.IntegrationTests.TestData
                             fieldOptionId: 4,
                             value: "true")),
                     expectedMayLeaveAlone: false,
-                    expectedHasPeopleWithoutPickupPermission: false
+                    expectedHasPeopleWithoutPickupPermission: false,
+                    householdId: 1,
+                    householdName: "Hase Household"
                 ),
                 new TestData(
                     checkInsFirstName: "Sandro",
@@ -81,7 +88,9 @@ namespace KidsTown.IntegrationTests.TestData
                             value: "true")),
                     expectedMayLeaveAlone: true,
                     expectedHasPeopleWithoutPickupPermission: true,
-                    securityCode: "2S2S"
+                    securityCode: "2S2S",
+                    householdId: 2,
+                    householdName: "Schaf Household"
                 ),
                 new TestData(
                     checkInsFirstName: "Franz",
@@ -102,7 +111,9 @@ namespace KidsTown.IntegrationTests.TestData
                             fieldOptionId: 7,
                             value: "false")),
                     expectedMayLeaveAlone: true,
-                    expectedHasPeopleWithoutPickupPermission: true
+                    expectedHasPeopleWithoutPickupPermission: true,
+                    householdId: 3,
+                    householdName: "Fuchs Household"
                 ),
                 new TestData(
                     checkInsFirstName: "Henry",
@@ -124,6 +135,8 @@ namespace KidsTown.IntegrationTests.TestData
                             value: null)),
                     expectedMayLeaveAlone: true,
                     expectedHasPeopleWithoutPickupPermission: false,
+                    householdId: 1,
+                    householdName: "Hase Household",
                     securityCode: "1H1H"
                 ),
                 new TestData(
@@ -146,6 +159,8 @@ namespace KidsTown.IntegrationTests.TestData
                             value: null)),
                     expectedMayLeaveAlone: true,
                     expectedHasPeopleWithoutPickupPermission: false,
+                    householdId: 1,
+                    householdName: "Hase Household",
                     securityCode: "1H1H"
                 ),
                 new TestData(
@@ -159,7 +174,9 @@ namespace KidsTown.IntegrationTests.TestData
                     peopleLastName: "Erster",
                     fieldData: ImmutableList<TestFieldData>.Empty, 
                     expectedMayLeaveAlone: true,
-                    expectedHasPeopleWithoutPickupPermission: false
+                    expectedHasPeopleWithoutPickupPermission: false,
+                    householdId: 4,
+                    householdName: "KidsChurch Household"
                 ),
                 new TestData(
                     checkInsFirstName: "Zara",
@@ -170,10 +187,11 @@ namespace KidsTown.IntegrationTests.TestData
                     testLocation: TestLocationIds.KidsChurch2Nd,
                     peopleFirstName: "Zara",
                     peopleLastName: "Zweiter",
-                    fieldData: ImmutableList<TestFieldData>.Empty, 
-
+                    fieldData: ImmutableList<TestFieldData>.Empty,
                     expectedMayLeaveAlone: true,
-                    expectedHasPeopleWithoutPickupPermission: false
+                    expectedHasPeopleWithoutPickupPermission: false,
+                    householdId: 4,
+                    householdName: "KidsChurch Household"
                 ),
                 new TestData(
                     checkInsFirstName: "Daniel",
@@ -186,7 +204,9 @@ namespace KidsTown.IntegrationTests.TestData
                     peopleLastName: "Dritter",
                     fieldData: ImmutableList<TestFieldData>.Empty,
                     expectedMayLeaveAlone: true,
-                    expectedHasPeopleWithoutPickupPermission: false
+                    expectedHasPeopleWithoutPickupPermission: false,
+                    householdId: 4,
+                    householdName: "KidsChurch Household"
                 ),
                 new TestData(
                     checkInsFirstName: "Vreni",
@@ -199,7 +219,9 @@ namespace KidsTown.IntegrationTests.TestData
                     peopleLastName: "Vierter",
                     fieldData: ImmutableList<TestFieldData>.Empty,
                     expectedMayLeaveAlone: true,
-                    expectedHasPeopleWithoutPickupPermission: false
+                    expectedHasPeopleWithoutPickupPermission: false,
+                    householdId: 4,
+                    householdName: "KidsChurch Household"
                 ),
                 new TestData(
                     checkInsFirstName: "Freddie",
@@ -212,9 +234,13 @@ namespace KidsTown.IntegrationTests.TestData
                     peopleLastName: "Fünfter",
                     fieldData: ImmutableList<TestFieldData>.Empty,
                     expectedMayLeaveAlone: true,
-                    expectedHasPeopleWithoutPickupPermission: false
+                    expectedHasPeopleWithoutPickupPermission: false,
+                    householdId: 4,
+                    householdName: "KidsChurch Household"
                 )
             );
+
+            return testData;
         }
     }
 }

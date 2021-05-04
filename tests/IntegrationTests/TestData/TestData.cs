@@ -19,34 +19,8 @@ namespace KidsTown.IntegrationTests.TestData
         public readonly bool? ExpectedHasPeopleWithoutPickupPermission;
         public readonly string SecurityCode;
         public readonly int LocationGroupId;
-
-        public TestData(
-            string checkInsFirstName,
-            string checkInsLastName,
-            string peopleFirstName,
-            string peopleLastName,
-            long checkInsId,
-            long? peopleId,
-            AttendeeType attendanceType,
-            TestLocationIds testLocation,
-            IImmutableList<TestFieldData> fieldData,
-            bool expectedMayLeaveAlone,
-            bool expectedHasPeopleWithoutPickupPermission
-        ) : this(
-            checkInsFirstName: checkInsFirstName,
-            checkInsLastName: checkInsLastName,
-            peopleFirstName: peopleFirstName,
-            peopleLastName: peopleLastName,
-            checkInsId: checkInsId,
-            peopleId: peopleId,
-            attendanceType: attendanceType,
-            testLocation: testLocation,
-            fieldData: fieldData,
-            expectedMayLeaveAlone: expectedMayLeaveAlone,
-            expectedHasPeopleWithoutPickupPermission: expectedHasPeopleWithoutPickupPermission,
-            securityCode: null)
-        {
-        }
+        public readonly long? HouseholdId;
+        public readonly string? HouseholdName;
 
         public TestData(
             string checkInsFirstName,
@@ -60,7 +34,9 @@ namespace KidsTown.IntegrationTests.TestData
             IImmutableList<TestFieldData> fieldData,
             bool expectedMayLeaveAlone,
             bool expectedHasPeopleWithoutPickupPermission,
-            string? securityCode
+            long householdId,
+            string householdName,
+            string? securityCode = null
         )
         {
             CheckInsFirstName = checkInsFirstName;
@@ -74,8 +50,11 @@ namespace KidsTown.IntegrationTests.TestData
             ExpectedMayLeaveAlone = expectedMayLeaveAlone;
             ExpectedHasPeopleWithoutPickupPermission = expectedHasPeopleWithoutPickupPermission;
             FieldData = fieldData;
-            SecurityCode = SetSecurityCode(securityCode: securityCode);
 
+            HouseholdId = householdId;
+            HouseholdName = householdName;
+            
+            SecurityCode = SetSecurityCode(securityCode: securityCode);
             LocationGroupId = GetLocationGroup(testLocationId: testLocation);
         }
 
