@@ -7,5 +7,6 @@ namespace KidsTown.BackgroundTasks.Adult
     {
         Task<IImmutableList<Family>> GetFamiliesToUpdate(int daysLookBack, int take);
         Task<int> UpdateAdults(IImmutableList<AdultUpdate> parentUpdates);
+        Task<int> RemovePeopleFromFamilies(ImmutableList<long> peopleIds);
     }
 }

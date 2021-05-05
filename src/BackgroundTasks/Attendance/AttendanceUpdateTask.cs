@@ -24,7 +24,8 @@ namespace KidsTown.BackgroundTasks.Attendance
 
         protected override async Task<int> ExecuteRun()
         {
-            return await _attendanceUpdateService.UpdateAttendance(daysLookBack: DaysLookBack).ConfigureAwait(continueOnCapturedContext: false);
+            return await _attendanceUpdateService.UpdateAttendance(daysLookBack: DaysLookBack)
+                .ConfigureAwait(continueOnCapturedContext: false);
         }
     }
 }

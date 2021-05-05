@@ -5,7 +5,6 @@ using System.Threading.Tasks;
 using KidsTown.PlanningCenterApiClient;
 using KidsTown.PlanningCenterApiClient.Models.HouseholdResult;
 using KidsTown.PlanningCenterApiClient.Models.PeopleResult;
-using Included = KidsTown.PlanningCenterApiClient.Models.HouseholdResult.Included;
 
 namespace KidsTown.BackgroundTasks.Adult
 {
@@ -25,8 +24,28 @@ namespace KidsTown.BackgroundTasks.Adult
         {
             var families = await _adultUpdateRepository.GetFamiliesToUpdate(daysLookBack: daysLookBack, take: batchSize);
             
+            var households = await GetHouseholds(families: families);
+
+            var adultPeopleIds = households.SelectMany(
+                selector: h => h.Members.Where(m => m.IsChild != null && !m.IsChild.Value)
+                    .Select(m => m.PeopleId)).ToImmutableList();
+            var parents = await _planningCenterClient.GetPeopleUpdates(peopleIds: adultPeopleIds);
+            var parentUpdates = MapParents(parents: parents, families: households.ToImmutableList());
+
+            var peopleToRemove = families.SelectMany(f => f.Members.Select(m => m.PeopleId))
+                .Except(households.SelectMany(selector: h => h.Members.Select(m => m.PeopleId)))
+                .ToImmutableList();
+
+            var adultUpdateCount = await _adultUpdateRepository.UpdateAdults(parentUpdates: parentUpdates);
+            var removeCount = await _adultUpdateRepository.RemovePeopleFromFamilies(peopleToRemove);
+
+            return adultUpdateCount + removeCount;
+        }
+
+        private async Task<List<Family>> GetHouseholds(IImmutableList<Family> families)
+        {
             var households = new List<Family>();
-            
+
             foreach (var family in families)
             {
                 var household = await _planningCenterClient.GetHousehold(householdId: family.HouseholdId)
@@ -39,18 +58,16 @@ namespace KidsTown.BackgroundTasks.Adult
                 households.Add(item: MapHousehold(household: household, family: family));
             }
 
-            var peopleIds = households.SelectMany(selector: h => h.PeopleIds).ToImmutableList();
-            var parents = await _planningCenterClient.GetPeopleUpdates(peopleIds: peopleIds);
-            var parentUpdates = MapParents(parents: parents, families: households.ToImmutableList());
-            return await _adultUpdateRepository.UpdateAdults(parentUpdates: parentUpdates);
+            return households;
         }
-        
+
         private static Family MapHousehold(Household household, Family family)
         {
-            var adults = household.Included?.Where(predicate: i => i.Attributes?.Child == false).ToImmutableList()
-                         ?? ImmutableList<Included>.Empty;
+            var members = household.Included?.Select(i => new Person(i.Id, i.Attributes?.Child)).ToImmutableList()
+                         ?? ImmutableList<Person>.Empty;
+            
             return new Family(familyId: family.FamilyId, householdId: family.HouseholdId,
-                peopleIds: adults.Select(selector: a => a.Id).ToImmutableList());
+                members: members);
         }
         
         private static IImmutableList<AdultUpdate> MapParents(
@@ -58,7 +75,7 @@ namespace KidsTown.BackgroundTasks.Adult
             IImmutableList<Family> families
         )
         {
-            var phoneNumbers = parents.SelectMany(selector: p => p.Included ?? new List<KidsTown.PlanningCenterApiClient.Models.PeopleResult.Included>())
+            var phoneNumbers = parents.SelectMany(selector: p => p.Included ?? new List<PlanningCenterApiClient.Models.PeopleResult.Included>())
                 .Where(predicate: i => i.PeopleIncludedType == PeopleIncludedType.PhoneNumber)
                 .ToImmutableList();
 
@@ -72,10 +89,11 @@ namespace KidsTown.BackgroundTasks.Adult
         private static AdultUpdate? MapParent(
             Datum adult,
             IImmutableList<Family> families,
-            IImmutableList<KidsTown.PlanningCenterApiClient.Models.PeopleResult.Included> phoneNumbers
+            IImmutableList<PlanningCenterApiClient.Models.PeopleResult.Included> phoneNumbers
         )
         {
-            var family = families.FirstOrDefault(predicate: f => f.PeopleIds.Contains(value: adult.Id));
+            var family = families.FirstOrDefault(predicate: f => f.Members.Select(m => m.PeopleId)
+                .Contains(value: adult.Id));
             var phoneNumberIds = adult.Relationships?.PhoneNumbers?.Data?.Select(selector: d => d.Id).ToImmutableList()
                                  ?? ImmutableList<long>.Empty;
 
@@ -98,7 +116,7 @@ namespace KidsTown.BackgroundTasks.Adult
         }
         
         private static string? SelectNumber(
-            IImmutableList<KidsTown.PlanningCenterApiClient.Models.PeopleResult.Included> numbers)
+            IImmutableList<PlanningCenterApiClient.Models.PeopleResult.Included> numbers)
         {
             switch (numbers.Count)
             {
