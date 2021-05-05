@@ -7,8 +7,6 @@ using KidsTown.KidsTown.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 
-// ReSharper disable ConvertToUsingDeclaration
-
 namespace KidsTown.Database
 {
     public class OverviewRepository : IOverviewRepository
@@ -23,23 +21,22 @@ namespace KidsTown.Database
         public async Task<IImmutableList<Attendee>> GetActiveAttendees(IImmutableList<int> selectedLocationGroups,
             long eventId, DateTime date)
         {
-            await using (var db = _serviceScopeFactory.CreateScope().ServiceProvider.GetRequiredService<KidsTownContext>())
-            {
-                var people = await (from a in db.Attendances
-                        join p in db.People
-                            on a.PersonId equals p.Id
-                        join at in db.AttendanceTypes
-                            on a.AttendanceTypeId equals at.Id
-                        join l in db.Locations
-                            on a.LocationId equals l.Id
-                        where a.InsertDate.Date == date.Date 
-                              && selectedLocationGroups.Contains(l.LocationGroupId)
-                              && l.EventId == eventId
-                        select MapAttendee(a, p, at, l))
-                    .ToListAsync().ConfigureAwait(continueOnCapturedContext: false);
+            await using var db = CommonRepository.GetDatabase(serviceScopeFactory: _serviceScopeFactory);
+            
+            var people = await (from a in db.Attendances
+                    join p in db.People
+                        on a.PersonId equals p.Id
+                    join at in db.AttendanceTypes
+                        on a.AttendanceTypeId equals at.Id
+                    join l in db.Locations
+                        on a.LocationId equals l.Id
+                    where a.InsertDate.Date == date.Date 
+                          && selectedLocationGroups.Contains(l.LocationGroupId)
+                          && l.EventId == eventId
+                    select MapAttendee(a, p, at, l))
+                .ToListAsync().ConfigureAwait(continueOnCapturedContext: false);
 
-                return people.OrderBy(keySelector: a => a.FirstName).ToImmutableList();
-            }
+            return people.OrderBy(keySelector: a => a.FirstName).ToImmutableList();
         }
 
         public async Task<IImmutableList<Attendee>> GetAttendanceHistoryByLocations(
@@ -74,18 +71,17 @@ namespace KidsTown.Database
 
         public async Task<IImmutableList<KidsTown.Models.Adult>> GetAdults(IImmutableList<int> familyIds)
         {
-            await using (var db = _serviceScopeFactory.CreateScope().ServiceProvider.GetRequiredService<KidsTownContext>())
-            {
-                var adults = await (from a in db.Adults
-                        join p in db.People
-                            on a.PersonId equals p.Id
-                        where p.FamilyId.HasValue && familyIds.Contains(p.FamilyId.Value)
-                        select MapAdult(p, a))
-                    .ToListAsync().ConfigureAwait(continueOnCapturedContext: false);
+            await using var db = CommonRepository.GetDatabase(serviceScopeFactory: _serviceScopeFactory);
+            
+            var adults = await (from a in db.Adults
+                    join p in db.People
+                        on a.PersonId equals p.Id
+                    where p.FamilyId.HasValue && familyIds.Contains(p.FamilyId.Value)
+                    select MapAdult(p, a))
+                .ToListAsync().ConfigureAwait(continueOnCapturedContext: false);
                 
-                return adults?.ToImmutableList()
-                    ?? ImmutableList<KidsTown.Models.Adult>.Empty;
-            }
+            return adults?.ToImmutableList()
+                   ?? ImmutableList<KidsTown.Models.Adult>.Empty;
         }
 
         private static KidsTown.Models.Adult MapAdult(Person person, Adult adult)
@@ -106,25 +102,23 @@ namespace KidsTown.Database
             IImmutableList<int> selectedLocations = null!,
             IImmutableList<int> selectedLocationGroups = null!)
         {
-            await using (var db = _serviceScopeFactory.CreateScope().ServiceProvider.GetRequiredService<KidsTownContext>())
-            {
-                var attendees = await (from a in db.Attendances
-                        join p in db.People
-                            on a.PersonId equals p.Id
-                        join at in db.AttendanceTypes
-                            on a.AttendanceTypeId equals at.Id
-                        join l in db.Locations
-                            on a.LocationId equals l.Id
-                        where (selectedLocations != null && selectedLocations.Contains(l.Id) 
-                               || selectedLocationGroups != null && selectedLocationGroups.Contains(l.LocationGroupId))
-                              && l.EventId == eventId
-                              && a.InsertDate >= startDate.Date
-                              && a.InsertDate <= endDate.Date.AddDays(1)
-                        select MapAttendee(a, p, at, l))
-                    .ToListAsync().ConfigureAwait(continueOnCapturedContext: false);
+            await using var db = _serviceScopeFactory.CreateScope().ServiceProvider.GetRequiredService<KidsTownContext>();
+            var attendees = await (from a in db.Attendances
+                    join p in db.People
+                        on a.PersonId equals p.Id
+                    join at in db.AttendanceTypes
+                        on a.AttendanceTypeId equals at.Id
+                    join l in db.Locations
+                        on a.LocationId equals l.Id
+                    where (selectedLocations != null && selectedLocations.Contains(l.Id) 
+                           || selectedLocationGroups != null && selectedLocationGroups.Contains(l.LocationGroupId))
+                          && l.EventId == eventId
+                          && a.InsertDate >= startDate.Date
+                          && a.InsertDate <= endDate.Date.AddDays(1)
+                    select MapAttendee(a, p, at, l))
+                .ToListAsync().ConfigureAwait(continueOnCapturedContext: false);
 
-                return attendees.ToImmutableList();
-            }
+            return attendees.ToImmutableList();
         }
 
         private static Attendee MapAttendee(

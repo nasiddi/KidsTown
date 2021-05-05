@@ -1,4 +1,4 @@
-namespace KidsTown.BackgroundTasks
+namespace KidsTown.BackgroundTasks.Common
 {
     public interface IBackgroundTask
     {

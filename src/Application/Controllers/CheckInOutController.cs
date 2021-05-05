@@ -3,7 +3,7 @@ using System.Collections.Immutable;
 using System.Linq;
 using System.Threading.Tasks;
 using KidsTown.Application.Models;
-using KidsTown.BackgroundTasks;
+using KidsTown.BackgroundTasks.Common;
 using KidsTown.KidsTown;
 using KidsTown.KidsTown.Models;
 using KidsTown.Shared;

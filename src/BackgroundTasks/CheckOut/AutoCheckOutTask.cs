@@ -1,5 +1,6 @@
 using System.Threading.Tasks;
-using KidsTown.BackgroundTasks.PlanningCenter;
+using KidsTown.BackgroundTasks.Attendance;
+using KidsTown.BackgroundTasks.Common;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 
@@ -7,18 +8,25 @@ namespace KidsTown.BackgroundTasks.CheckOut
 {
     public class AutoCheckOutTask : BackgroundTask
     {
-        private readonly IUpdateRepository _updateRepository;
+        private readonly IAttendanceUpdateRepository _attendanceUpdateRepository;
 
-        public AutoCheckOutTask(IUpdateRepository updateRepository, ILoggerFactory loggerFactory, IConfiguration configuration) : base(updateRepository: updateRepository, loggerFactory: loggerFactory, configuration: configuration)
+        public AutoCheckOutTask(
+            IAttendanceUpdateRepository attendanceUpdateRepository,
+            IBackgroundTaskRepository backgroundTaskRepository,
+            ILoggerFactory loggerFactory,
+            IConfiguration configuration
+        ) : base(backgroundTaskRepository: backgroundTaskRepository,
+            loggerFactory: loggerFactory,
+            configuration: configuration)
         {
-            _updateRepository = updateRepository;
+            _attendanceUpdateRepository = attendanceUpdateRepository;
         }
 
         protected override string TaskName { get; } = nameof(AutoCheckOutTask);
-        protected override int Interval { get; } = 3600000;
+        protected override int Interval { get; } = 2700000;
         protected override Task<int> ExecuteRun()
         {
-            return _updateRepository.AutoCheckoutEveryoneByEndOfDay();
+            return _attendanceUpdateRepository.AutoCheckoutEveryoneByEndOfDay();
         }
     }
 }

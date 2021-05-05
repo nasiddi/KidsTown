@@ -6,5 +6,6 @@ namespace KidsTown.BackgroundTasks.Adult
     public interface IAdultUpdateRepository
     {
         Task<IImmutableList<Family>> GetFamiliesToUpdate(int daysLookBack, int take);
+        Task<int> UpdateAdults(IImmutableList<AdultUpdate> parentUpdates);
     }
 }

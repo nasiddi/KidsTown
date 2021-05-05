@@ -3,7 +3,6 @@ using System.Collections.Immutable;
 using System.Linq;
 using System.Threading.Tasks;
 using KidsTown.BackgroundTasks.Common;
-using KidsTown.BackgroundTasks.PlanningCenter;
 using KidsTown.PlanningCenterApiClient;
 using KidsTown.PlanningCenterApiClient.Models.CheckInsResult;
 
@@ -12,12 +11,13 @@ namespace KidsTown.BackgroundTasks.Attendance
     public class AttendanceUpdateService : IAttendanceUpdateService
     {
         private readonly IPlanningCenterClient _planningCenterClient;
-        private readonly IUpdateRepository _updateRepository;
+        private readonly IAttendanceUpdateRepository _attendanceUpdateRepository;
 
-        public AttendanceUpdateService(IPlanningCenterClient planningCenterClient, IUpdateRepository updateRepository)
+        public AttendanceUpdateService(IPlanningCenterClient planningCenterClient, 
+            IAttendanceUpdateRepository attendanceUpdateRepository)
         {
             _planningCenterClient = planningCenterClient;
-            _updateRepository = updateRepository;
+            _attendanceUpdateRepository = attendanceUpdateRepository;
         }
         
         public async Task<int> UpdateAttendance(int daysLookBack)
@@ -30,27 +30,27 @@ namespace KidsTown.BackgroundTasks.Attendance
                 .ConfigureAwait(continueOnCapturedContext: false);
             var insertCount = await InsertNewPreCheckIns(preCheckIns: preCheckIns).ConfigureAwait(continueOnCapturedContext: false);
 
-            var volunteerCheckCount = await AutoCheckInOutVolunteers().ConfigureAwait(continueOnCapturedContext: false);
+            var volunteerCheckCount = await _attendanceUpdateRepository.AutoCheckInVolunteers().ConfigureAwait(continueOnCapturedContext: false);
 
             return locationUpdateCount + insertCount + volunteerCheckCount;
         }
         
         private async Task<int> InsertNewPreCheckIns(IImmutableList<CheckInsUpdate> preCheckIns)
         {
-            var existingChecksInIds = await _updateRepository.GetExistingCheckInsIds(
+            var existingChecksInIds = await _attendanceUpdateRepository.GetPersistedCheckInsIds(
                     checkinsIds: preCheckIns.Select(selector: i => i.CheckInsId).ToImmutableList())
                 .ConfigureAwait(continueOnCapturedContext: false);
 
             var newCheckins = preCheckIns.Where(predicate: p => !existingChecksInIds.Contains(value: p.CheckInsId))
                 .ToImmutableList();
 
-            return await _updateRepository.InsertPreCheckIns(preCheckIns: newCheckins)
+            return await _attendanceUpdateRepository.InsertAttendances(checkInsUpdates: newCheckins)
                 .ConfigureAwait(continueOnCapturedContext: false);
         }
         
         private async Task<IImmutableList<CheckInsUpdate>> FilterAndMapToPreCheckIns(IImmutableList<CheckIns> checkIns)
         {
-            var persistedLocations = await _updateRepository.GetPersistedLocations()
+            var persistedLocations = await _attendanceUpdateRepository.GetPersistedLocations()
                 .ConfigureAwait(continueOnCapturedContext: false);
             var locationIdsByCheckInsLocationId =
                 persistedLocations.ToImmutableDictionary(keySelector: k => k.CheckInsLocationId,
@@ -122,7 +122,7 @@ namespace KidsTown.BackgroundTasks.Attendance
                    ImmutableList<Included>.Empty);
 
 
-            var persistedLocations = await _updateRepository.GetPersistedLocations()
+            var persistedLocations = await _attendanceUpdateRepository.GetPersistedLocations()
                 .ConfigureAwait(continueOnCapturedContext: false);
             var newLocations = locations
                 .Where(predicate: l => IsNewLocation(persistedLocations: persistedLocations, location: l))
@@ -133,7 +133,7 @@ namespace KidsTown.BackgroundTasks.Attendance
                 return 0;
             }
 
-            var locationUpdateCount = await _updateRepository.UpdateLocations(locationUpdates: newLocations.Select(selector: l
+            var locationUpdateCount = await _attendanceUpdateRepository.UpdateLocations(locationUpdates: newLocations.Select(selector: l
                     => MapLocationUpdate(
                         location: l,
                         attendees: checkIns.Where(predicate: c => c.Attendees != null)
@@ -141,7 +141,7 @@ namespace KidsTown.BackgroundTasks.Attendance
                 .ToImmutableList()).ConfigureAwait(continueOnCapturedContext: false);
 
 
-            await _updateRepository.EnableUnknownLocationGroup().ConfigureAwait(continueOnCapturedContext: false);
+            await _attendanceUpdateRepository.EnableUnknownLocationGroup().ConfigureAwait(continueOnCapturedContext: false);
 
             return locationUpdateCount;
         }
@@ -165,11 +165,6 @@ namespace KidsTown.BackgroundTasks.Attendance
                 checkInsLocationId: location.Id,
                 name: location.Attributes?.Name ?? string.Empty,
                 eventId: attendee?.Relationships?.Event?.Data?.Id ?? 0);
-        }
-        
-        private async Task<int> AutoCheckInOutVolunteers()
-        {
-            return await _updateRepository.AutoCheckInVolunteers().ConfigureAwait(continueOnCapturedContext: false);
         }
     }
 }

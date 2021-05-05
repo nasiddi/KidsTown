@@ -2,11 +2,10 @@ using System;
 using System.Collections.Immutable;
 using System.Linq;
 using System.Threading.Tasks;
-using KidsTown.BackgroundTasks;
 using KidsTown.BackgroundTasks.Adult;
 using KidsTown.BackgroundTasks.Attendance;
+using KidsTown.BackgroundTasks.Common;
 using KidsTown.BackgroundTasks.Kid;
-using KidsTown.BackgroundTasks.PlanningCenter;
 using KidsTown.Database;
 using KidsTown.IntegrationTests.Mocks;
 using KidsTown.IntegrationTests.TestData;
@@ -211,7 +210,7 @@ namespace KidsTown.IntegrationTests
             services.AddSingleton<IAdultUpdateService, AdultUpdateService>();
             services.AddSingleton<IAdultUpdateRepository, AdultUpdateRepository>();
             services.AddSingleton<IAttendanceUpdateService, AttendanceUpdateService>();
-            services.AddSingleton<IUpdateRepository, UpdateRepository>();
+            services.AddSingleton<IBackgroundTaskRepository, BackgroundTaskRepository>();
             services.AddSingleton<ILoggerFactory, LoggerFactory>();
             services.AddSingleton(serviceType: typeof(ILogger), implementationType: typeof(Logger<BackgroundTask>));
         }

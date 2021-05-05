@@ -1,5 +1,5 @@
 using System.Threading.Tasks;
-using KidsTown.BackgroundTasks.PlanningCenter;
+using KidsTown.BackgroundTasks.Common;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 
@@ -11,10 +11,10 @@ namespace KidsTown.BackgroundTasks.Kid
 
         public KidUpdateTask(
             IKidUpdateService kidUpdateService,
-            IUpdateRepository updateRepository,
+            IBackgroundTaskRepository backgroundTaskRepository,
             ILoggerFactory loggerFactory,
             IConfiguration configuration
-        ) : base(updateRepository: updateRepository,
+        ) : base(backgroundTaskRepository: backgroundTaskRepository,
             loggerFactory: loggerFactory,
             configuration: configuration)
         {
@@ -26,7 +26,7 @@ namespace KidsTown.BackgroundTasks.Kid
 
         protected override Task<int> ExecuteRun()
         {
-            return _kidUpdateService.UpdateKids(daysLookBack: DaysLookBack);
+            return _kidUpdateService.UpdateKids(daysLookBack: DaysLookBack, batchSize: 80);
         }
     }
 }

@@ -3,12 +3,11 @@ using System.Net;
 using System.Net.Mail;
 using System.Threading;
 using System.Threading.Tasks;
-using KidsTown.BackgroundTasks.PlanningCenter;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
-namespace KidsTown.BackgroundTasks
+namespace KidsTown.BackgroundTasks.Common
 {
     public abstract class BackgroundTask : IHostedService, IBackgroundTask
     {
@@ -17,7 +16,7 @@ namespace KidsTown.BackgroundTasks
         protected abstract string TaskName { get; }
         protected abstract int Interval { get; }
         
-        private readonly IUpdateRepository _updateRepository;
+        private readonly IBackgroundTaskRepository _backgroundTaskRepository;
         private readonly IConfiguration _configuration;
 
         private bool _taskIsActive = true;
@@ -29,9 +28,9 @@ namespace KidsTown.BackgroundTasks
         private readonly string _environment;
         private readonly ILogger<BackgroundTask> _logger;
 
-        protected BackgroundTask(IUpdateRepository updateRepository, ILoggerFactory loggerFactory, IConfiguration configuration)
+        protected BackgroundTask(IBackgroundTaskRepository backgroundTaskRepository, ILoggerFactory loggerFactory, IConfiguration configuration)
         {
-            _updateRepository = updateRepository;
+            _backgroundTaskRepository = backgroundTaskRepository;
             _configuration = configuration;
             _environment = configuration.GetValue<string>(key: "Environment") ?? "unknown";
             _logger = loggerFactory.CreateLogger<BackgroundTask>();
@@ -151,7 +150,7 @@ namespace KidsTown.BackgroundTasks
 
         private void LogTaskRun(bool success, int updateCount, string environment)
         {
-            _updateRepository.LogTaskRun(success: success, updateCount: updateCount, environment: environment, taskName: TaskName);
+            _backgroundTaskRepository.LogTaskRun(success: success, updateCount: updateCount, environment: environment, taskName: TaskName);
         }
         
         private void SendEmail(string subject, string body, ILogger logger)

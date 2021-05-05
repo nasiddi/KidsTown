@@ -3,7 +3,6 @@ using System.Collections.Immutable;
 using System.Linq;
 using System.Threading.Tasks;
 using KidsTown.BackgroundTasks.Common;
-using KidsTown.BackgroundTasks.PlanningCenter;
 using KidsTown.PlanningCenterApiClient;
 using KidsTown.PlanningCenterApiClient.Models.PeopleResult;
 using KidsTown.Shared;
@@ -13,17 +12,17 @@ namespace KidsTown.BackgroundTasks.Kid
     public class KidUpdateService : IKidUpdateService
     {
         private readonly IPlanningCenterClient _planningCenterClient;
-        private readonly IUpdateRepository _updateRepository;
+        private readonly IKidUpdateRepository _kidUpdateRepository;
 
-        public KidUpdateService(IPlanningCenterClient planningCenterClient, IUpdateRepository updateRepository)
+        public KidUpdateService(IPlanningCenterClient planningCenterClient, IKidUpdateRepository kidUpdateRepository)
         {
             _planningCenterClient = planningCenterClient;
-            _updateRepository = updateRepository;
+            _kidUpdateRepository = kidUpdateRepository;
         }
         
-        public async Task<int> UpdateKids(int daysLookBack)
+        public async Task<int> UpdateKids(int daysLookBack, int batchSize)
         {
-            var typedAttendees = await _updateRepository.GetCurrentPeopleIds(daysLookBack: daysLookBack)
+            var typedAttendees = await _kidUpdateRepository.GetKidsToUpdate(daysLookBack: daysLookBack, take: batchSize)
                 .ConfigureAwait(continueOnCapturedContext: false);
 
             if (typedAttendees.Count == 0)
@@ -41,15 +40,15 @@ namespace KidsTown.BackgroundTasks.Kid
             var householdIds = kidsUpdate.Where(predicate: p => p.HouseholdId.HasValue)
                 .Select(selector: p => p.HouseholdId!.Value).Distinct().ToImmutableList();
 
-            var existingFamilies = await _updateRepository.GetExistingFamilies(householdIds: householdIds);
+            var existingFamilies = await _kidUpdateRepository.GetExistingFamilies(householdIds: householdIds);
             var newHouseholdIds = householdIds
                 .Where(predicate: h => existingFamilies.All(predicate: f => f.HouseholdId != h)).ToImmutableList();
             var newFamilies =
-                await _updateRepository.InsertFamilies(newHouseholdIds: newHouseholdIds, peoples: kidsUpdate);
+                await _kidUpdateRepository.InsertFamilies(newHouseholdIds: newHouseholdIds, peoples: kidsUpdate);
 
             var families = existingFamilies.Union(second: newFamilies).ToImmutableList();
 
-            return await _updateRepository.UpdateKids(kids: kidsUpdate, families: families)
+            return await _kidUpdateRepository.UpdateKids(kids: kidsUpdate, families: families)
                 .ConfigureAwait(continueOnCapturedContext: false);
         }
         

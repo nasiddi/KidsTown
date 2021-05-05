@@ -2,7 +2,6 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using System.Threading.Tasks;
-using KidsTown.BackgroundTasks.PlanningCenter;
 using KidsTown.PlanningCenterApiClient;
 using KidsTown.PlanningCenterApiClient.Models.HouseholdResult;
 using KidsTown.PlanningCenterApiClient.Models.PeopleResult;
@@ -14,16 +13,13 @@ namespace KidsTown.BackgroundTasks.Adult
     {
         private readonly IAdultUpdateRepository _adultUpdateRepository;
         private readonly IPlanningCenterClient _planningCenterClient;
-        private readonly IUpdateRepository _updateRepository;
 
         public AdultUpdateService(
             IAdultUpdateRepository adultUpdateRepository,
-            IPlanningCenterClient planningCenterClient, 
-            IUpdateRepository updateRepository)
+            IPlanningCenterClient planningCenterClient)
         {
             _adultUpdateRepository = adultUpdateRepository;
             _planningCenterClient = planningCenterClient;
-            _updateRepository = updateRepository;
         }
         public async Task<int> UpdateParents(int daysLookBack, int batchSize)
         {
@@ -46,7 +42,7 @@ namespace KidsTown.BackgroundTasks.Adult
             var peopleIds = households.SelectMany(selector: h => h.PeopleIds).ToImmutableList();
             var parents = await _planningCenterClient.GetPeopleUpdates(peopleIds: peopleIds);
             var parentUpdates = MapParents(parents: parents, families: households.ToImmutableList());
-            return await _updateRepository.UpdateParents(parentUpdates: parentUpdates);
+            return await _adultUpdateRepository.UpdateAdults(parentUpdates: parentUpdates);
         }
         
         private static Family MapHousehold(Household household, Family family)

@@ -19,7 +19,8 @@ namespace KidsTown.Database
         
         public async Task<IImmutableList<BackgroundTasks.Adult.Family>> GetFamiliesToUpdate(int daysLookBack, int take)
         {
-            await using var db = _serviceScopeFactory.CreateScope().ServiceProvider.GetRequiredService<KidsTownContext>();
+            await using var db = CommonRepository.GetDatabase(serviceScopeFactory: _serviceScopeFactory);
+            
             var families = await db.Families
                 .Include(navigationPropertyPath: f => f.People)
                 .ThenInclude(navigationPropertyPath: p => p.Adult)
@@ -34,6 +35,101 @@ namespace KidsTown.Database
                 .ToImmutableList();
 
             return filteredFamilies.Select(selector: MapFamily).ToImmutableList();
+        }
+        
+        public async Task<int> UpdateAdults(IImmutableList<AdultUpdate> parentUpdates)
+        {
+            await using var db = CommonRepository.GetDatabase(serviceScopeFactory: _serviceScopeFactory);
+
+            var peopleIds = parentUpdates.Select(selector: p => p.PeopleId).ToImmutableList();
+            var existingParents = await GetExistingParents(peopleIds: peopleIds, db: db).ConfigureAwait(continueOnCapturedContext: false);
+
+            var updates = parentUpdates.Where(
+                    predicate: p => existingParents.Select(selector: e => e.PeopleId).Contains(value: p.PeopleId))
+                .ToImmutableList();
+                
+            foreach (var existingParent in existingParents)
+            {
+                UpdateParent(person: existingParent, updates: updates);
+            }
+                
+            var newEntries = parentUpdates.Except(second: updates).ToImmutableList();
+            var newParents = newEntries.Select(selector: MapParent);
+
+            await SetFamilyUpdateDate(db: db, updates: newEntries);
+                
+            await db.AddRangeAsync(entities: newParents);
+            return await db.SaveChangesAsync();
+        }
+        
+        private static async Task<IImmutableList<Person>> GetExistingParents(
+            IImmutableList<long> peopleIds,
+            KidsTownContext db
+        )
+        {
+            var parents = await db.People
+                .Where(predicate: p => p.PeopleId != null && peopleIds.Contains(p.PeopleId.Value))
+                .Include(navigationPropertyPath: p => p.Adult)
+                .Include(navigationPropertyPath: p => p.Family)
+                .ToListAsync()
+                .ConfigureAwait(continueOnCapturedContext: false);
+            return parents.ToImmutableList();
+        }
+        
+        private static void UpdateParent(Person person, IImmutableList<AdultUpdate> updates)
+        {
+            var update = updates.Single(predicate: u => u.PeopleId == person.PeopleId);
+
+            person.FamilyId = update.FamilyId;
+
+            if (update.FirstName.Length > 0)
+            {
+                person.FirstName = update.FirstName;
+            }
+            
+            if (update.LastName.Length > 0)
+            {
+                person.LastName = update.LastName;
+            }
+            
+            if (update.PhoneNumber.Length > 0)
+            {
+                person.Adult ??= new Adult();
+                person.Adult.PhoneNumber = update.PhoneNumber;
+            }
+
+            var updateDate = DateTime.UtcNow;
+            person.UpdateDate = updateDate;
+            person.Family.UpdateDate = updateDate;
+        }
+
+        private static Person MapParent(AdultUpdate adultUpdate)
+        {
+            var adult = new Adult
+            {
+                PhoneNumber = adultUpdate.PhoneNumber
+            };
+
+            return new Person
+            {
+                PeopleId = adultUpdate.PeopleId,
+                FamilyId = adultUpdate.FamilyId,
+                FirstName = adultUpdate.FirstName,
+                LastName = adultUpdate.LastName,
+                UpdateDate = DateTime.UtcNow,
+                Adult = adult
+            };
+        }
+        
+        private static async Task SetFamilyUpdateDate(KidsTownContext db, ImmutableList<AdultUpdate> updates)
+        {
+            var families = await db.Families
+                .Where(predicate: f => updates.Select(e => e.FamilyId).Contains(f.Id))
+                .ToListAsync()
+                .ConfigureAwait(continueOnCapturedContext: false);
+            
+            var updateDate = DateTime.UtcNow;
+            families.ForEach(action: f => f.UpdateDate = updateDate);
         }
         
         private static BackgroundTasks.Adult.Family MapFamily(Family family)

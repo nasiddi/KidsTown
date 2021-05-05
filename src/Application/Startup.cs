@@ -1,10 +1,9 @@
 using System.Text.Json.Serialization;
-using KidsTown.BackgroundTasks;
 using KidsTown.BackgroundTasks.Adult;
 using KidsTown.BackgroundTasks.Attendance;
 using KidsTown.BackgroundTasks.CheckOut;
+using KidsTown.BackgroundTasks.Common;
 using KidsTown.BackgroundTasks.Kid;
-using KidsTown.BackgroundTasks.PlanningCenter;
 using KidsTown.Database;
 using KidsTown.KidsTown;
 using KidsTown.PlanningCenterApiClient;
@@ -43,12 +42,17 @@ namespace KidsTown.Application
             services.AddSingleton<IBackgroundTask>(implementationFactory: x => x.GetRequiredService<KidUpdateTask>());
             services.AddSingleton<IBackgroundTask>(implementationFactory: x => x.GetRequiredService<AutoCheckOutTask>());
             services.AddSingleton<IBackgroundTask>(implementationFactory: x => x.GetRequiredService<AdultUpdateTask>());
+            
             services.AddSingleton<IPlanningCenterClient, PlanningCenterClient>();
+            
             services.AddSingleton<IAttendanceUpdateService, AttendanceUpdateService>();
             services.AddSingleton<IAdultUpdateService, AdultUpdateService>();
             services.AddSingleton<IKidUpdateService, KidUpdateService>();
+            
+            services.AddSingleton<IAttendanceUpdateRepository, AttendanceUpdateRepository>();
+            services.AddSingleton<IKidUpdateRepository, KidUpdateRepository>();
             services.AddSingleton<IAdultUpdateRepository, AdultUpdateRepository>();
-            services.AddSingleton<IUpdateRepository, UpdateRepository>();
+            services.AddSingleton<IBackgroundTaskRepository, BackgroundTaskRepository>();
 
             services.AddDbContext<KidsTownContext>(optionsAction: o 
                 => o.UseSqlServer(connectionString: Configuration.GetConnectionString(name: "Database")));

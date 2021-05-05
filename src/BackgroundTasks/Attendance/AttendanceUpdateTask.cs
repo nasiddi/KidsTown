@@ -1,5 +1,5 @@
 using System.Threading.Tasks;
-using KidsTown.BackgroundTasks.PlanningCenter;
+using KidsTown.BackgroundTasks.Common;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 
@@ -14,10 +14,10 @@ namespace KidsTown.BackgroundTasks.Attendance
 
         public AttendanceUpdateTask(
             IAttendanceUpdateService attendanceUpdateService,
-            IUpdateRepository updateRepository,
+            IBackgroundTaskRepository backgroundTaskRepository,
             ILoggerFactory loggerFactory,
             IConfiguration configuration
-        ) : base(updateRepository: updateRepository, loggerFactory: loggerFactory, configuration: configuration)
+        ) : base(backgroundTaskRepository: backgroundTaskRepository, loggerFactory: loggerFactory, configuration: configuration)
         {
             _attendanceUpdateService = attendanceUpdateService;
         }

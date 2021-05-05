@@ -1,5 +1,5 @@
 using System.Threading.Tasks;
-using KidsTown.BackgroundTasks.PlanningCenter;
+using KidsTown.BackgroundTasks.Common;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 
@@ -11,10 +11,10 @@ namespace KidsTown.BackgroundTasks.Adult
 
         public AdultUpdateTask(
             IAdultUpdateService adultUpdateService,
-            IUpdateRepository updateRepository,
+            IBackgroundTaskRepository backgroundTaskRepository,
             ILoggerFactory loggerFactory,
             IConfiguration configuration
-        ) : base(updateRepository: updateRepository,
+        ) : base(backgroundTaskRepository: backgroundTaskRepository,
             loggerFactory: loggerFactory,
             configuration: configuration)
         {
@@ -22,10 +22,10 @@ namespace KidsTown.BackgroundTasks.Adult
         }
 
         protected override string TaskName { get; } = nameof(AdultUpdateTask);
-        protected override int Interval { get; } = 5000;
+        protected override int Interval { get; } = 45000;
         protected override Task<int> ExecuteRun()
         {
-            return _adultUpdateService.UpdateParents(daysLookBack: DaysLookBack, batchSize: 5);
+            return _adultUpdateService.UpdateParents(daysLookBack: DaysLookBack, batchSize: 20);
         }
     }
 }
