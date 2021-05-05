@@ -8,8 +8,8 @@ import FormControlLabel from '@material-ui/core/FormControlLabel'
 import Checkbox from '@material-ui/core/Checkbox'
 import { Button, ButtonGroup } from 'reactstrap'
 
-import Tooltip from '@material-ui/core/Tooltip'
 import { withStyles } from '@material-ui/styles'
+import Tooltip from '@material-ui/core/Tooltip'
 
 export async function fetchLocationGroups() {
 	const response = await fetch('configuration/location-groups')

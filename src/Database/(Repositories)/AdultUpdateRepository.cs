@@ -66,10 +66,10 @@ namespace KidsTown.Database
         {
             await using var db = CommonRepository.GetDatabase(serviceScopeFactory: _serviceScopeFactory);
 
-            var people = await db.People.Where(p => p.PeopleId.HasValue && peopleIds.Contains(p.PeopleId.Value))
-                .ToListAsync().ConfigureAwait(false);
+            var people = await db.People.Where(predicate: p => p.PeopleId.HasValue && peopleIds.Contains(p.PeopleId.Value))
+                .ToListAsync().ConfigureAwait(continueOnCapturedContext: false);
             
-            people.ForEach(p => p.FamilyId = null);
+            people.ForEach(action: p => p.FamilyId = null);
             return await db.SaveChangesAsync();
         }
 
@@ -145,7 +145,7 @@ namespace KidsTown.Database
         private static BackgroundTasks.Adult.Family MapFamily(Family family)
         {
             var members = family.People.Where(predicate: p => p.PeopleId != null)
-                .Select(selector: p => new BackgroundTasks.Adult.Person(p.PeopleId!.Value)).ToImmutableList();
+                .Select(selector: p => new BackgroundTasks.Adult.Person(peopleId: p.PeopleId!.Value)).ToImmutableList();
             
             return new BackgroundTasks.Adult.Family(
                 familyId: family.Id,
