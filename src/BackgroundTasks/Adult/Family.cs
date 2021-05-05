@@ -1,6 +1,6 @@
 using System.Collections.Immutable;
 
-namespace KidsTown.BackgroundTasks.Models
+namespace KidsTown.BackgroundTasks.Adult
 {
     public class Family
     {

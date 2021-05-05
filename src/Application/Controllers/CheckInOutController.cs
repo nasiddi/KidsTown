@@ -3,7 +3,7 @@ using System.Collections.Immutable;
 using System.Linq;
 using System.Threading.Tasks;
 using KidsTown.Application.Models;
-using KidsTown.BackgroundTasks.PlanningCenter;
+using KidsTown.BackgroundTasks;
 using KidsTown.KidsTown;
 using KidsTown.KidsTown.Models;
 using KidsTown.Shared;
@@ -16,12 +16,12 @@ namespace KidsTown.Application.Controllers
     public class CheckInOutController : ControllerBase
     {
         private readonly ICheckInOutService _checkInOutService;
-        private readonly IUpdateTask _updateTask;
+        private readonly IBackgroundTask _backgroundTask;
 
-        public CheckInOutController(ICheckInOutService checkInOutService, IUpdateTask updateTask)
+        public CheckInOutController(ICheckInOutService checkInOutService, IBackgroundTask backgroundTask)
         {
             _checkInOutService = checkInOutService;
-            _updateTask = updateTask;
+            _backgroundTask = backgroundTask;
         }
 
         [HttpPost]
@@ -57,7 +57,7 @@ namespace KidsTown.Application.Controllers
         [Produces(contentType: "application/json")]
         public async Task<IActionResult> GetPeople([FromBody] CheckInOutRequest request)
         {
-            _updateTask.ActivateTask();
+            _backgroundTask.ActivateTask();
             
             var people = await _checkInOutService.SearchForPeople(
                 searchParameters: new PeopleSearchParameters(

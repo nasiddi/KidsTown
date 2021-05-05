@@ -114,6 +114,7 @@ namespace KidsTown.PlanningCenterApiClient
 
         private static int ParseHeader(KeyValuePair<string, IEnumerable<string>>? header)
         {
+            #nullable disable
             return int.TryParse(s: header?.Value?.FirstOrDefault(), result: out var number) ? number : 0;
         }
     }

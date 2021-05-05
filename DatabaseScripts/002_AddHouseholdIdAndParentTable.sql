@@ -40,9 +40,9 @@ IF OBJECT_ID('kt.[PK_Family]', 'PK') IS NULL
             WITH (DATA_COMPRESSION=ROW)
     END;
 
-IF OBJECT_ID('[kt].[FK_Adult_FamilyId]', 'F') IS NULL
+IF OBJECT_ID('[kt].[FK_Person_FamilyId]', 'F') IS NULL
     BEGIN
-        ALTER TABLE [kt].[Adult] ADD CONSTRAINT [FK_Adult_FamilyId]
+        ALTER TABLE [kt].[Person] ADD CONSTRAINT [FK_Person_FamilyId]
             FOREIGN KEY ([FamilyId])
                 REFERENCES [kt].[Family] ([Id])
     END;

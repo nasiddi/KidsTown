@@ -1,4 +1,4 @@
-namespace KidsTown.BackgroundTasks.Models
+namespace KidsTown.BackgroundTasks.Attendance
 {
     public class PersistedLocation
     {

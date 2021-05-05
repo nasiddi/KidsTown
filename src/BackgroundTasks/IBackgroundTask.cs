@@ -1,6 +1,6 @@
-namespace KidsTown.BackgroundTasks.PlanningCenter
+namespace KidsTown.BackgroundTasks
 {
-    public interface IUpdateTask
+    public interface IBackgroundTask
     {
         public void ActivateTask();
         //public void DeactivateTask();

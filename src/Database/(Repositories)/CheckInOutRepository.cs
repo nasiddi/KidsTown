@@ -51,7 +51,8 @@ namespace KidsTown.Database
                 var attendances = await GetAttendances(attendanceIds: attendanceIds, db: db).ConfigureAwait(continueOnCapturedContext: false);
                 attendances.ForEach(action: a => a.CheckInDate = DateTime.UtcNow);
                 var result = await db.SaveChangesAsync();
-                return result > 0;            }
+                return result > 0;
+            }
         }
         
         public async Task<bool> CheckOutPeople(IImmutableList<int> attendanceIds)

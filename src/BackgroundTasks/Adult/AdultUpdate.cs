@@ -1,6 +1,6 @@
-namespace KidsTown.BackgroundTasks.Models
+namespace KidsTown.BackgroundTasks.Adult
 {
-    public class ParentUpdate
+    public class AdultUpdate
     {
         public readonly long PeopleId;
         public readonly int FamilyId;
@@ -8,7 +8,7 @@ namespace KidsTown.BackgroundTasks.Models
         public readonly string LastName;
         public readonly string PhoneNumber;
 
-        public ParentUpdate(long peopleId, int familyId, string firstName, string lastName, string phoneNumber)
+        public AdultUpdate(long peopleId, int familyId, string firstName, string lastName, string phoneNumber)
         {
             PeopleId = peopleId;
             FamilyId = familyId;

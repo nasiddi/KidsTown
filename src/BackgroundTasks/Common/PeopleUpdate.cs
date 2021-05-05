@@ -1,4 +1,4 @@
-﻿namespace KidsTown.BackgroundTasks.Models
+﻿namespace KidsTown.BackgroundTasks.Common
 {
     public class PeopleUpdate
     {

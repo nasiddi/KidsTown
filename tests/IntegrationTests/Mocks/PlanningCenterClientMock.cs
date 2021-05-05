@@ -231,22 +231,19 @@ namespace KidsTown.IntegrationTests.Mocks
 
 
             var householdIncluded = testData
-                .Where(t => t.HouseholdId.HasValue)
-                .Select(t =>
+                .Where(predicate: t => t.HouseholdId.HasValue)
+                .Select(selector: t => new PlanningCenterApiClient.Models.PeopleResult.Included
                 {
-                    return new PlanningCenterApiClient.Models.PeopleResult.Included
+                    PeopleIncludedType = PeopleIncludedType.Household,
+                    Id = t.HouseholdId!.Value,
+                    Attributes = new PlanningCenterApiClient.Models.PeopleResult.IncludedAttributes
                     {
-                        PeopleIncludedType = PeopleIncludedType.Household,
-                        Id = t.HouseholdId!.Value,
-                        Attributes = new PlanningCenterApiClient.Models.PeopleResult.IncludedAttributes
-                        {
-                            Name = t.HouseholdName,
-                        },
-                        Relationships = null
-                    };
+                        Name = t.HouseholdName
+                    },
+                    Relationships = null
                 });
 
-            return fieldIncluded.Union(householdIncluded).ToList();
+            return fieldIncluded.Union(second: householdIncluded).ToList();
         }
 
         private static List<Attendee> GetAttendees(IImmutableList<AttendanceData> data)

@@ -1,4 +1,7 @@
-using KidsTown.BackgroundTasks.PlanningCenter;
+using KidsTown.BackgroundTasks.Adult;
+using KidsTown.BackgroundTasks.Attendance;
+using KidsTown.BackgroundTasks.CheckOut;
+using KidsTown.BackgroundTasks.Kid;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -37,8 +40,14 @@ namespace KidsTown.Application
                 })
                 .ConfigureServices(configureDelegate: services =>
                 {
-                    services.AddSingleton<UpdateTask>();
-                    services.AddHostedService(implementationFactory: p => p.GetRequiredService<UpdateTask>());
+                    services.AddSingleton<AttendanceUpdateTask>();
+                    services.AddHostedService(implementationFactory: p => p.GetRequiredService<AttendanceUpdateTask>());
+                    services.AddSingleton<KidUpdateTask>();
+                    services.AddHostedService(implementationFactory: p => p.GetRequiredService<KidUpdateTask>());
+                    services.AddSingleton<AutoCheckOutTask>();
+                    services.AddHostedService(implementationFactory: p => p.GetRequiredService<AutoCheckOutTask>());
+                    services.AddSingleton<AdultUpdateTask>();
+                    services.AddHostedService(implementationFactory: p => p.GetRequiredService<AdultUpdateTask>());
                 });
         }
             

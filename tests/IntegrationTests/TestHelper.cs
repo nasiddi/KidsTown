@@ -2,6 +2,10 @@ using System;
 using System.Collections.Immutable;
 using System.Linq;
 using System.Threading.Tasks;
+using KidsTown.BackgroundTasks;
+using KidsTown.BackgroundTasks.Adult;
+using KidsTown.BackgroundTasks.Attendance;
+using KidsTown.BackgroundTasks.Kid;
 using KidsTown.BackgroundTasks.PlanningCenter;
 using KidsTown.Database;
 using KidsTown.IntegrationTests.Mocks;
@@ -12,7 +16,6 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
 
 namespace KidsTown.IntegrationTests
 {
@@ -26,14 +29,14 @@ namespace KidsTown.IntegrationTests
             var attendances = await db.Attendances.Where(predicate: a => a.CheckInsId < 100).ToListAsync();
             var people = await db.People.Where(predicate: p => attendances.Select(a => a.PersonId)
                 .Contains(p.Id))
-                .Include(p => p.Kid)
-                .Include(p => p.Adult).ToListAsync();
+                .Include(navigationPropertyPath: p => p.Kid)
+                .Include(navigationPropertyPath: p => p.Adult).ToListAsync();
 
-            var kids = people.Where(p => p.Kid != null).Select(p => p.Kid);
-            var adults = people.Where(p => p.Adult != null).Select(p => p.Adult);
+            var kids = people.Where(predicate: p => p.Kid != null).Select(selector: p => p.Kid);
+            var adults = people.Where(predicate: p => p.Adult != null).Select(selector: p => p.Adult);
             
-            db.RemoveRange(kids);
-            db.RemoveRange(adults);
+            db.RemoveRange(entities: kids);
+            db.RemoveRange(entities: adults);
             db.RemoveRange(entities: attendances);
             db.RemoveRange(entities: people);
             await db.SaveChangesAsync();
@@ -188,8 +191,11 @@ namespace KidsTown.IntegrationTests
         
         private static void SetupBackgroundTasksDi(bool mockPlanningCenterClient, IServiceCollection services)
         {
-            services.AddSingleton<ILoggerFactory, NullLoggerFactory>();
-            services.AddHostedService<UpdateTask>();
+            services.AddSingleton<AttendanceUpdateTask>();
+            
+            services.AddSingleton<KidUpdateTask>();
+
+            services.AddSingleton<AdultUpdateTask>();
 
             if (mockPlanningCenterClient)
             {
@@ -200,10 +206,14 @@ namespace KidsTown.IntegrationTests
                 services.AddSingleton<IPlanningCenterClient, PlanningCenterClient>();
             }
 
-            services.AddSingleton<IUpdateService, UpdateService>();
+            services.AddSingleton<IAttendanceUpdateService, AttendanceUpdateService>();
+            services.AddSingleton<IKidUpdateService, KidUpdateService>();
+            services.AddSingleton<IAdultUpdateService, AdultUpdateService>();
+            services.AddSingleton<IAdultUpdateRepository, AdultUpdateRepository>();
+            services.AddSingleton<IAttendanceUpdateService, AttendanceUpdateService>();
             services.AddSingleton<IUpdateRepository, UpdateRepository>();
             services.AddSingleton<ILoggerFactory, LoggerFactory>();
-            services.AddSingleton(serviceType: typeof(ILogger), implementationType: typeof(Logger<UpdateTask>));
+            services.AddSingleton(serviceType: typeof(ILogger), implementationType: typeof(Logger<BackgroundTask>));
         }
     }
 }

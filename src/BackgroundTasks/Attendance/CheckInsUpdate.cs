@@ -1,7 +1,8 @@
 ﻿using System;
+using KidsTown.BackgroundTasks.Common;
 using KidsTown.PlanningCenterApiClient.Models.CheckInsResult;
 
-namespace KidsTown.BackgroundTasks.Models
+namespace KidsTown.BackgroundTasks.Attendance
 {
     public class CheckInsUpdate
     {

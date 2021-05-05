@@ -19,6 +19,7 @@ namespace KidsTown.Database
         public string LastName { get; set; }
         public DateTime UpdateDate { get; set; }
 
+        public virtual Family Family { get; set; }
         public virtual Adult Adult { get; set; }
         public virtual Kid Kid { get; set; }
         public virtual ICollection<Attendance> Attendances { get; set; }

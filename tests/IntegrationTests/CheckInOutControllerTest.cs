@@ -4,7 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using KidsTown.Application.Controllers;
 using KidsTown.Application.Models;
-using KidsTown.BackgroundTasks.PlanningCenter;
+using KidsTown.BackgroundTasks;
 using KidsTown.Database;
 using KidsTown.IntegrationTests.TestData;
 using KidsTown.KidsTown;
@@ -87,8 +87,8 @@ namespace KidsTown.IntegrationTests
             
             await TestHelper.InsertTestData(serviceProvider: _serviceProvider, testData: filteredTestData);
             var checkInOutService = _serviceProvider.GetService<ICheckInOutService>();
-            var updateTaskMock = new Mock<IUpdateTask>();
-            var controller = new CheckInOutController(checkInOutService: checkInOutService!, updateTask: updateTaskMock.Object);
+            var updateTaskMock = new Mock<IBackgroundTask>();
+            var controller = new CheckInOutController(checkInOutService: checkInOutService!, backgroundTask: updateTaskMock.Object);
             
             // Act
             filteredTestData.ForEach(action: async t =>
@@ -142,8 +142,8 @@ namespace KidsTown.IntegrationTests
             await TestHelper.InsertDefaultTestData(serviceProvider: _serviceProvider).ConfigureAwait(continueOnCapturedContext: false);
 
             var checkInOutService = _serviceProvider.GetService<ICheckInOutService>();
-            var updateTaskMock = new Mock<IUpdateTask>();
-            var controller = new CheckInOutController(checkInOutService: checkInOutService!, updateTask: updateTaskMock.Object);
+            var updateTaskMock = new Mock<IBackgroundTask>();
+            var controller = new CheckInOutController(checkInOutService: checkInOutService!, backgroundTask: updateTaskMock.Object);
             return controller;
         }
 

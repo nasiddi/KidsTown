@@ -1,5 +1,4 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
 
 #nullable disable
 
@@ -7,16 +6,13 @@ namespace KidsTown.Database
 {
     public partial class KidsTownContext : DbContext
     {
-        private readonly IConfiguration _configuration;
-
         public KidsTownContext()
         {
         }
 
-        public KidsTownContext(DbContextOptions<KidsTownContext> options, IConfiguration configuration)
+        public KidsTownContext(DbContextOptions<KidsTownContext> options)
             : base(options: options)
         {
-            _configuration = configuration;
         }
 
         public virtual DbSet<Adult> Adults { get; set; }
@@ -24,19 +20,10 @@ namespace KidsTown.Database
         public virtual DbSet<AttendanceType> AttendanceTypes { get; set; }
         public virtual DbSet<Family> Families { get; set; }
         public virtual DbSet<Kid> Kids { get; set; }
-        public virtual DbSet<KidOld> KidOlds { get; set; }
         public virtual DbSet<Location> Locations { get; set; }
         public virtual DbSet<LocationGroup> LocationGroups { get; set; }
         public virtual DbSet<Person> People { get; set; }
         public virtual DbSet<TaskExecution> TaskExecutions { get; set; }
-
-        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-        {
-            if (!optionsBuilder.IsConfigured)
-            {
-                optionsBuilder.UseSqlServer(connectionString: _configuration.GetConnectionString(name: "Database"));
-            }
-        }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -114,6 +101,8 @@ namespace KidsTown.Database
                     .IsRequired()
                     .HasMaxLength(maxLength: 70)
                     .IsUnicode(unicode: false);
+
+                entity.Property(propertyExpression: e => e.UpdateDate).HasDefaultValueSql(sql: "('1980-01-01')");
             });
 
             modelBuilder.Entity<Kid>(buildAction: entity =>
@@ -127,31 +116,13 @@ namespace KidsTown.Database
 
                 entity.Property(propertyExpression: e => e.PersonId).ValueGeneratedNever();
 
+                entity.Property(propertyExpression: e => e.UpdateDate).HasDefaultValueSql(sql: "('1980-01-01')");
+
                 entity.HasOne(navigationExpression: d => d.Person)
                     .WithOne(navigationExpression: p => p.Kid)
                     .HasForeignKey<Kid>(foreignKeyExpression: d => d.PersonId)
                     .OnDelete(deleteBehavior: DeleteBehavior.ClientSetNull)
                     .HasConstraintName(name: "FK_Kid_PersonId");
-            });
-
-            modelBuilder.Entity<KidOld>(buildAction: entity =>
-            {
-                entity.ToTable(name: "KidOld", schema: "kt");
-
-                entity.Property(propertyExpression: e => e.FistName)
-                    .IsRequired()
-                    .HasMaxLength(maxLength: 50)
-                    .IsUnicode(unicode: false);
-
-                entity.Property(propertyExpression: e => e.LastName)
-                    .IsRequired()
-                    .HasMaxLength(maxLength: 50)
-                    .IsUnicode(unicode: false);
-
-                entity.HasOne(navigationExpression: d => d.Family)
-                    .WithMany(navigationExpression: p => p.KidOlds)
-                    .HasForeignKey(foreignKeyExpression: d => d.FamilyId)
-                    .HasConstraintName(name: "FK_Kid_FamilyId");
             });
 
             modelBuilder.Entity<Location>(buildAction: entity =>
@@ -195,6 +166,11 @@ namespace KidsTown.Database
                     .IsRequired()
                     .HasMaxLength(maxLength: 50)
                     .IsUnicode(unicode: false);
+
+                entity.HasOne(navigationExpression: d => d.Family)
+                    .WithMany(navigationExpression: p => p.People)
+                    .HasForeignKey(foreignKeyExpression: d => d.FamilyId)
+                    .HasConstraintName(name: "FK_Person_FamilyId");
             });
 
             modelBuilder.Entity<TaskExecution>(buildAction: entity =>
@@ -205,6 +181,12 @@ namespace KidsTown.Database
                     .IsRequired()
                     .HasMaxLength(maxLength: 20)
                     .IsUnicode(unicode: false);
+
+                entity.Property(propertyExpression: e => e.TaskName)
+                    .IsRequired()
+                    .HasMaxLength(maxLength: 50)
+                    .IsUnicode(unicode: false)
+                    .HasDefaultValueSql(sql: "('UpdateTask')");
             });
 
             OnModelCreatingPartial(modelBuilder: modelBuilder);

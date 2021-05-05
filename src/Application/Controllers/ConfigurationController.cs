@@ -3,7 +3,7 @@ using System.Collections.Immutable;
 using System.Linq;
 using System.Threading.Tasks;
 using KidsTown.Application.Models;
-using KidsTown.BackgroundTasks.PlanningCenter;
+using KidsTown.BackgroundTasks;
 using KidsTown.KidsTown;
 using KidsTown.KidsTown.Models;
 using Microsoft.AspNetCore.Mvc;
@@ -15,12 +15,12 @@ namespace KidsTown.Application.Controllers
     public class ConfigurationController : ControllerBase
     {
         private readonly IConfigurationService _configurationService;
-        private readonly IUpdateTask _updateTask;
+        private readonly IBackgroundTask _backgroundTask;
 
-        public ConfigurationController(IConfigurationService configurationService, IUpdateTask updateTask)
+        public ConfigurationController(IConfigurationService configurationService, IBackgroundTask backgroundTask)
         {
             _configurationService = configurationService;
-            _updateTask = updateTask;
+            _backgroundTask = backgroundTask;
         }
 
         [HttpGet]
@@ -28,7 +28,7 @@ namespace KidsTown.Application.Controllers
         [Produces(contentType: "application/json")]
         public async Task<IImmutableList<SelectOption>> GetLocationGroups()
         {
-            _updateTask.ActivateTask();
+            _backgroundTask.ActivateTask();
             var locations = await _configurationService.GetActiveLocationGroups().ConfigureAwait(continueOnCapturedContext: false);
             return locations.Select(selector: MapOptions).ToImmutableList();
         }

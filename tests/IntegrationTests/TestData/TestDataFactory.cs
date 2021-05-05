@@ -1,5 +1,4 @@
 using System.Collections.Immutable;
-using System.Linq;
 using KidsTown.PlanningCenterApiClient.Models.CheckInsResult;
 using KidsTown.Shared;
 

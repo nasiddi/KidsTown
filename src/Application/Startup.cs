@@ -1,4 +1,9 @@
 using System.Text.Json.Serialization;
+using KidsTown.BackgroundTasks;
+using KidsTown.BackgroundTasks.Adult;
+using KidsTown.BackgroundTasks.Attendance;
+using KidsTown.BackgroundTasks.CheckOut;
+using KidsTown.BackgroundTasks.Kid;
 using KidsTown.BackgroundTasks.PlanningCenter;
 using KidsTown.Database;
 using KidsTown.KidsTown;
@@ -34,9 +39,15 @@ namespace KidsTown.Application
             // In production, the React files will be served from this directory
             services.AddSpaStaticFiles(configuration: configuration => { configuration.RootPath = "ClientApp/build"; });
 
-            services.AddSingleton<IUpdateTask>(implementationFactory: x => x.GetRequiredService<UpdateTask>());
+            services.AddSingleton<IBackgroundTask>(implementationFactory: x => x.GetRequiredService<AttendanceUpdateTask>());
+            services.AddSingleton<IBackgroundTask>(implementationFactory: x => x.GetRequiredService<KidUpdateTask>());
+            services.AddSingleton<IBackgroundTask>(implementationFactory: x => x.GetRequiredService<AutoCheckOutTask>());
+            services.AddSingleton<IBackgroundTask>(implementationFactory: x => x.GetRequiredService<AdultUpdateTask>());
             services.AddSingleton<IPlanningCenterClient, PlanningCenterClient>();
-            services.AddSingleton<IUpdateService, UpdateService>();
+            services.AddSingleton<IAttendanceUpdateService, AttendanceUpdateService>();
+            services.AddSingleton<IAdultUpdateService, AdultUpdateService>();
+            services.AddSingleton<IKidUpdateService, KidUpdateService>();
+            services.AddSingleton<IAdultUpdateRepository, AdultUpdateRepository>();
             services.AddSingleton<IUpdateRepository, UpdateRepository>();
 
             services.AddDbContext<KidsTownContext>(optionsAction: o 

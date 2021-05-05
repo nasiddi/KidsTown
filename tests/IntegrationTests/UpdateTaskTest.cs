@@ -6,17 +6,17 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
-using KidsTown.BackgroundTasks.PlanningCenter;
+using KidsTown.BackgroundTasks;
+using KidsTown.BackgroundTasks.Adult;
+using KidsTown.BackgroundTasks.Attendance;
+using KidsTown.BackgroundTasks.Kid;
 using KidsTown.Database;
 using KidsTown.IntegrationTests.Mocks;
 using KidsTown.PlanningCenterApiClient.Models.CheckInsResult;
 using KidsTown.Shared;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
 using NUnit.Framework;
-using Location = KidsTown.Database.Location;
-using Kid = KidsTown.Database.Kid;
 
 namespace KidsTown.IntegrationTests
 {
@@ -35,8 +35,8 @@ namespace KidsTown.IntegrationTests
         {
             _serviceProvider = TestHelper.SetupServiceProviderWithBackgroundTasksDi();
             
-            var updateTask = _serviceProvider.GetService<IHostedService>() as UpdateTask;
-            await RunTask(updateTask: updateTask!, minExecutionCount: 2).ConfigureAwait(continueOnCapturedContext: false);
+            var updateTask = _serviceProvider.GetService<AttendanceUpdateTask>();
+            await RunTask(backgroundTask: updateTask!, minExecutionCount: 2).ConfigureAwait(continueOnCapturedContext: false);
             
             Assert.That(actual: updateTask.GetExecutionCount(), expression: Is.GreaterThan(expected: 1));
 
@@ -48,26 +48,32 @@ namespace KidsTown.IntegrationTests
             _serviceProvider = TestHelper.SetupServiceProviderWithBackgroundTasksDiAndMockedPlanningCenterClient();
             await TestHelper.CleanDatabase(serviceProvider: _serviceProvider).ConfigureAwait(continueOnCapturedContext: false);
             
-            var updateTask = _serviceProvider.GetService<IHostedService>() as UpdateTask;
-            await RunTask(updateTask: updateTask!).ConfigureAwait(continueOnCapturedContext: false);
+            var attendanceUpdateTask = _serviceProvider.GetService<AttendanceUpdateTask>();
+            await RunTask(backgroundTask: attendanceUpdateTask!).ConfigureAwait(continueOnCapturedContext: false);
+
+            var kidUpdateTask = _serviceProvider.GetService<KidUpdateTask>();
+            await RunTask(backgroundTask: kidUpdateTask!).ConfigureAwait(continueOnCapturedContext: false);
+
+            var adultUpdateTask = _serviceProvider.GetService<AdultUpdateTask>();
+            await RunTask(backgroundTask: adultUpdateTask!).ConfigureAwait(continueOnCapturedContext: false);
 
             await AssertUpdateTask().ConfigureAwait(continueOnCapturedContext: false);
         }
         
-        private static async Task RunTask(UpdateTask updateTask, int minExecutionCount = 1)
+        private static async Task RunTask(BackgroundTask backgroundTask, int minExecutionCount = 1)
         {
-            updateTask.ActivateTask();
+            backgroundTask.ActivateTask();
             
-            var task = updateTask.StartAsync(cancellationToken: CancellationToken.None)
+            var task = backgroundTask.StartAsync(cancellationToken: CancellationToken.None)
                 .ConfigureAwait(continueOnCapturedContext: false);
 
             var watch = Stopwatch.StartNew();
-            while (minExecutionCount > updateTask.GetExecutionCount() && watch.ElapsedMilliseconds < 60000)
+            while (minExecutionCount > backgroundTask.GetExecutionCount() && watch.ElapsedMilliseconds < 60000)
             {
                 await Task.Delay(millisecondsDelay: 100).ConfigureAwait(continueOnCapturedContext: false);
             }
             
-            updateTask.DeactivateTask();
+            backgroundTask.DeactivateTask();
             await task;
         }
         
@@ -77,15 +83,15 @@ namespace KidsTown.IntegrationTests
 
             await using var db = serviceScopeFactory!.CreateScope().ServiceProvider.GetRequiredService<KidsTownContext>();
 
-            var p = await db.Attendances
-                .Include(i => i.Person)
-                .Include(i => i.Person.Kid)
-                .Include(i => i.Location)
-                .Where(p => p.CheckInsId < 100)
-                .Select(p => MapData2(p))
+            var people = await db.Attendances
+                .Include(navigationPropertyPath: i => i.Person)
+                .Include(navigationPropertyPath: i => i.Person.Kid)
+                .Include(navigationPropertyPath: i => i.Location)
+                .Where(predicate: p => p.CheckInsId < 100)
+                .Select(selector: p => MapData(p))
                 .ToListAsync();
             
-            return p.ToImmutableList();
+            return people.ToImmutableList();
         }
 
         private async Task AssertUpdateTask()
@@ -105,21 +111,7 @@ namespace KidsTown.IntegrationTests
             actual.Should().BeEquivalentTo(expectation: expected);
         }
 
-        private static Data MapData(Attendance attendance, Person person, Kid kid, Location location)
-        {
-            return new(
-                firstName: person.FirstName,
-                lastName: person.LastName,
-                checkInsId: attendance.CheckInsId,
-                peopleId: person.PeopleId,
-                attendanceTypeId: (AttendanceTypeId) attendance.AttendanceTypeId,
-                testLocation: location.CheckInsLocationId!.Value,
-                mayLeaveAlone: true, //kid?.MayLeaveAlone ?? true,
-                hasPeopleWithoutPickupPermission: false //kid?.HasPeopleWithoutPickupPermission ?? false
-            );
-        }
-        
-        private static Data MapData2(Attendance attendance)
+        private static Data MapData(Attendance attendance)
         {
             return new(
                 firstName: attendance.Person.FirstName,

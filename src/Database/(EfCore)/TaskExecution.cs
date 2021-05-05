@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 
 #nullable disable
 
@@ -12,5 +11,6 @@ namespace KidsTown.Database
         public bool IsSuccess { get; set; }
         public int UpdateCount { get; set; }
         public string Environment { get; set; }
+        public string TaskName { get; set; }
     }
 }
