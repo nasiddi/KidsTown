@@ -1,3 +1,4 @@
+using System;
 using System.Text.Json.Serialization;
 using KidsTown.BackgroundTasks.Adult;
 using KidsTown.BackgroundTasks.Attendance;
@@ -38,10 +39,24 @@ namespace KidsTown.Application
             // In production, the React files will be served from this directory
             services.AddSpaStaticFiles(configuration: configuration => { configuration.RootPath = "ClientApp/build"; });
 
-            services.AddSingleton<IBackgroundTask>(implementationFactory: x => x.GetRequiredService<AttendanceUpdateTask>());
-            services.AddSingleton<IBackgroundTask>(implementationFactory: x => x.GetRequiredService<KidUpdateTask>());
-            services.AddSingleton<IBackgroundTask>(implementationFactory: x => x.GetRequiredService<AutoCheckOutTask>());
-            services.AddSingleton<IBackgroundTask>(implementationFactory: x => x.GetRequiredService<AdultUpdateTask>());
+            services.AddSingleton<Func<BackgroundTaskType, IBackgroundTask>>(implementationFactory: serviceProvider => key =>  
+            {  
+                switch (key)  
+                {
+                    case BackgroundTaskType.AdultUpdateTask:
+                        return serviceProvider.GetService<AdultUpdateTask>()!;
+                    case BackgroundTaskType.AttendanceUpdateTask:
+                        return serviceProvider.GetService<AttendanceUpdateTask>()!;
+                    case BackgroundTaskType.AutoCheckOutTask:
+                        return serviceProvider.GetService<AutoCheckOutTask>()!;
+                    case BackgroundTaskType.KidUpdateTask:
+                        return serviceProvider.GetService<KidUpdateTask>()!;
+                    default:
+                        return null!;
+                }  
+            });
+
+            services.AddSingleton<ITaskManagementService, TaskManagementService>();
             
             services.AddSingleton<IPlanningCenterClient, PlanningCenterClient>();
             

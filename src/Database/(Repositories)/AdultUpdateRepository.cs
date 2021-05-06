@@ -56,7 +56,7 @@ namespace KidsTown.Database
             var newEntries = parentUpdates.Except(second: updates).ToImmutableList();
             var newParents = newEntries.Select(selector: MapParent);
 
-            await SetFamilyUpdateDate(db: db, updates: parentUpdates);
+            await SetFamilyUpdateDate(db: db, updates: parentUpdates).ConfigureAwait(continueOnCapturedContext: false);
                 
             await db.AddRangeAsync(entities: newParents);
             return await db.SaveChangesAsync();

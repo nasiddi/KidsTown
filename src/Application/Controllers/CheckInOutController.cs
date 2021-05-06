@@ -16,12 +16,12 @@ namespace KidsTown.Application.Controllers
     public class CheckInOutController : ControllerBase
     {
         private readonly ICheckInOutService _checkInOutService;
-        private readonly IBackgroundTask _backgroundTask;
+        private readonly ITaskManagementService _taskManagementService;
 
-        public CheckInOutController(ICheckInOutService checkInOutService, IBackgroundTask backgroundTask)
+        public CheckInOutController(ICheckInOutService checkInOutService, ITaskManagementService taskManagementService)
         {
             _checkInOutService = checkInOutService;
-            _backgroundTask = backgroundTask;
+            _taskManagementService = taskManagementService;
         }
 
         [HttpPost]
@@ -57,7 +57,7 @@ namespace KidsTown.Application.Controllers
         [Produces(contentType: "application/json")]
         public async Task<IActionResult> GetPeople([FromBody] CheckInOutRequest request)
         {
-            _backgroundTask.ActivateTask();
+            _taskManagementService.ActivateBackgroundTasks();
             
             var people = await _checkInOutService.SearchForPeople(
                 searchParameters: new PeopleSearchParameters(

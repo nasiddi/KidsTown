@@ -15,12 +15,12 @@ namespace KidsTown.Application.Controllers
     public class ConfigurationController : ControllerBase
     {
         private readonly IConfigurationService _configurationService;
-        private readonly IBackgroundTask _backgroundTask;
+        private readonly ITaskManagementService _taskManagementService;
 
-        public ConfigurationController(IConfigurationService configurationService, IBackgroundTask backgroundTask)
+        public ConfigurationController(IConfigurationService configurationService, ITaskManagementService taskManagementService)
         {
             _configurationService = configurationService;
-            _backgroundTask = backgroundTask;
+            _taskManagementService = taskManagementService;
         }
 
         [HttpGet]
@@ -28,7 +28,7 @@ namespace KidsTown.Application.Controllers
         [Produces(contentType: "application/json")]
         public async Task<IImmutableList<SelectOption>> GetLocationGroups()
         {
-            _backgroundTask.ActivateTask();
+            _taskManagementService.ActivateBackgroundTasks();
             var locations = await _configurationService.GetActiveLocationGroups().ConfigureAwait(continueOnCapturedContext: false);
             return locations.Select(selector: MapOptions).ToImmutableList();
         }
@@ -98,6 +98,14 @@ namespace KidsTown.Application.Controllers
                 Value = location.Id,
                 Label = location.Name
             };
+        }
+        
+        [HttpGet]
+        [Route(template: "tasks")]
+        [Produces(contentType: "application/json")]
+        public IImmutableList<TaskOverview> GetBackgroundTasks()
+        {
+            return _taskManagementService.GetTaskOverviews();
         }
     }
 }

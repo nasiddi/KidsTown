@@ -22,8 +22,10 @@ namespace KidsTown.BackgroundTasks.CheckOut
             _attendanceUpdateRepository = attendanceUpdateRepository;
         }
 
-        protected override string TaskName { get; } = nameof(AutoCheckOutTask);
+        protected override BackgroundTaskType BackgroundTaskType { get; } = BackgroundTaskType.AutoCheckOutTask;
         protected override int Interval { get; } = 2700000;
+        protected override int LogFrequency { get; } = 1;
+
         protected override Task<int> ExecuteRun()
         {
             return _attendanceUpdateRepository.AutoCheckoutEveryoneByEndOfDay();

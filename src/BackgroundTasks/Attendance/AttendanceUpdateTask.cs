@@ -7,8 +7,9 @@ namespace KidsTown.BackgroundTasks.Attendance
 {
     public class AttendanceUpdateTask : BackgroundTask
     {
-        protected override string TaskName { get; } = nameof(AttendanceUpdateTask);
+        protected override BackgroundTaskType BackgroundTaskType { get; } = BackgroundTaskType.AttendanceUpdateTask;
         protected override int Interval { get; } = 5000;
+        protected override int LogFrequency { get; } = 36;
 
         private readonly IAttendanceUpdateService _attendanceUpdateService;
 

@@ -13,20 +13,26 @@ namespace KidsTown.BackgroundTasks.Common
     {
         protected const int DaysLookBack = 7;
 
-        protected abstract string TaskName { get; }
+        protected abstract BackgroundTaskType BackgroundTaskType { get; }
         protected abstract int Interval { get; }
+        protected abstract int LogFrequency { get; }
         
         private readonly IBackgroundTaskRepository _backgroundTaskRepository;
         private readonly IConfiguration _configuration;
+        private readonly ILogger<BackgroundTask> _logger;
+        private readonly string _environment;
 
-        private bool _taskIsActive = true;
+        private static readonly TimeSpan EmailSendPause = TimeSpan.FromHours(value: 1);
+        
+        private bool _taskIsActive;
+        private bool _isEnabled = true;
+        private bool _taskRunsSuccessfully = true;
+        
         private int _successCount;
         private int _currentFailedCount;
-        private DateTime? _emailSent = DateTime.UnixEpoch;
-        private static readonly TimeSpan EmailSendPause = TimeSpan.FromHours(value: 1);
-        private bool _successState = true;
-        private readonly string _environment;
-        private readonly ILogger<BackgroundTask> _logger;
+        
+        private DateTime _emailSent = DateTime.UnixEpoch;
+        private DateTime? _lastExecution;
 
         protected BackgroundTask(IBackgroundTaskRepository backgroundTaskRepository, ILoggerFactory loggerFactory, IConfiguration configuration)
         {
@@ -36,13 +42,29 @@ namespace KidsTown.BackgroundTasks.Common
             _logger = loggerFactory.CreateLogger<BackgroundTask>();
         }
         
-        public void ActivateTask() => _taskIsActive = true;
+        public void ActivateTask()
+        {
+            if (_isEnabled)
+            {
+                _taskIsActive = true;
+            }
+        }
 
+        public void DisableTask() => _isEnabled = true;
+        public void EnableTask() => _isEnabled = false;
+        public bool IsEnabled() => _isEnabled;
+        public bool TaskRunsSuccessfully() => _taskRunsSuccessfully;
+        
         public void DeactivateTask() => _taskIsActive = false;
 
-        //public bool IsTaskActive() => _taskIsActive;
+        public bool IsTaskActive() => _taskIsActive;
 
         public int GetExecutionCount() => _successCount;
+        public int GetCurrentFailCount() => _currentFailedCount;
+        public BackgroundTaskType GetBackgroundTaskType() => BackgroundTaskType;
+        public int GetInterval() => Interval;
+        public int GetLogFrequency() => LogFrequency;
+        public DateTime? GetLastExecution() => _lastExecution;
         
         public Task StartAsync(CancellationToken cancellationToken)
         {
@@ -53,7 +75,7 @@ namespace KidsTown.BackgroundTasks.Common
         public Task StopAsync(CancellationToken cancellationToken)
         {
             SendEmail(
-                subject: $"{_environment}, {TaskName}: System Shutdown",
+                subject: $"{GetSubjectPrefix()} System Shutdown",
                 body: $"The StopAsync Method was called for UpdateTask at {DateTime.UtcNow}",
                 logger: _logger);
             return Task.CompletedTask;        
@@ -61,18 +83,11 @@ namespace KidsTown.BackgroundTasks.Common
         
         private async Task ExecuteAsync(CancellationToken cancellationToken)
         {
-            var activationTime = _taskIsActive ? DateTime.UtcNow : new DateTime();
-
+            DateTime? activationTime = null;
             while (!cancellationToken.IsCancellationRequested)
             {
-                if (!_taskIsActive)
-                {
-                    activationTime = await WaitForActivation(cancellationToken: cancellationToken)
-                        .ConfigureAwait(continueOnCapturedContext: false);
-                }
-
+                activationTime = await WaitForActivation(activationTime: activationTime, cancellationToken: cancellationToken);
                 await RunTask(logger: _logger).ConfigureAwait(continueOnCapturedContext: false);
-
                 await Sleep(cancellationToken: cancellationToken).ConfigureAwait(continueOnCapturedContext: false);
 
                 if (activationTime < DateTime.UtcNow.Date.AddHours(value: 1))
@@ -86,60 +101,72 @@ namespace KidsTown.BackgroundTasks.Common
         {
             try
             {
+                _lastExecution = DateTime.UtcNow;
                 var updateCount = await ExecuteRun().ConfigureAwait(continueOnCapturedContext: false);
                 _successCount++;
 
-                if (!_successState)
+                if (!_taskRunsSuccessfully)
                 {
-                    _successState = true;
+                    _taskRunsSuccessfully = true;
                     if (_currentFailedCount >= 10)
                     {
                         SendEmail(
-                            subject: $"{_environment}, {TaskName}: UpdateTask ran successfully",
+                            subject: $"{GetSubjectPrefix()} Task ran successfully",
                             body:
-                            $"UpdateTask resumed normal operation at {DateTime.UtcNow} after {_currentFailedCount} failed executions.",
+                            $"Task resumed normal operation at {DateTime.UtcNow} after {_currentFailedCount} failed executions.",
                             logger: _logger);
                     }
-
                 }
 
-                if (_successCount % 10 == 0 || _successCount == 1)
+                if (_successCount % LogFrequency == 0 || _successCount == 1)
                 {
                     LogTaskRun(success: true, updateCount: updateCount, environment: _environment);
                 }
             }
             catch (Exception e)
             {
-                _currentFailedCount = _successState ? 1 : ++_currentFailedCount;
-                _successState = false;
-
-                logger.LogError(eventId: new EventId(id: 0, name: nameof(BackgroundTask)), exception: e,
-                    message: $"{_environment}, {TaskName}: {e.Message}");
-
-                LogTaskRun(success: false, updateCount: 0, environment: _environment);
-
-                if (_currentFailedCount % 10 == 0 && _emailSent < DateTime.UtcNow - EmailSendPause)
-                {
-                    SendEmail(
-                        subject: $"{_environment}, {TaskName}: Task failed the last {_currentFailedCount} executions.",
-                        body: e.Message + e.StackTrace,
-                        logger: _logger);
-
-                    _emailSent = DateTime.UtcNow;
-                }
+                LogException(logger: logger, exception: e);
             }
+        }
+
+        private void LogException(ILogger logger, Exception exception)
+        {
+            _currentFailedCount = _taskRunsSuccessfully ? 1 : ++_currentFailedCount;
+            _taskRunsSuccessfully = false;
+
+            logger.LogError(eventId: new EventId(id: 0, name: nameof(BackgroundTask)), exception: exception,
+                message: $"{GetSubjectPrefix()} {exception.Message}");
+
+            LogTaskRun(success: false, updateCount: 0, environment: _environment);
+
+            if (_currentFailedCount % 10 == 0 && _emailSent < DateTime.UtcNow - EmailSendPause)
+            {
+                SendEmail(
+                    subject: $"{GetSubjectPrefix()} Task failed the last {_currentFailedCount} executions.",
+                    body: exception.Message + exception.StackTrace,
+                    logger: _logger);
+
+                _emailSent = DateTime.UtcNow;
+            }
+        }
+
+        private string GetSubjectPrefix()
+        {
+            return $"{_environment}, {BackgroundTaskType.ToString()}:";
         }
 
         protected abstract Task<int> ExecuteRun();
 
-        private async Task<DateTime> WaitForActivation(CancellationToken cancellationToken)
+        private async Task<DateTime> WaitForActivation(DateTime? activationTime, CancellationToken cancellationToken)
         {
-            while (!_taskIsActive)
+            var waitTask = Task.Run(async () =>
             {
-                await Sleep(cancellationToken: cancellationToken).ConfigureAwait(continueOnCapturedContext: false);
-            }
+                while (!_taskIsActive) await Task.Delay(1000, cancellationToken);
+            }, cancellationToken);
 
-            return DateTime.UtcNow;
+            await Task.WhenAny(waitTask, Task.Delay(-1, cancellationToken));
+
+            return activationTime ?? DateTime.UtcNow;
         }
 
         private async Task Sleep(CancellationToken cancellationToken)
@@ -150,7 +177,11 @@ namespace KidsTown.BackgroundTasks.Common
 
         private void LogTaskRun(bool success, int updateCount, string environment)
         {
-            _backgroundTaskRepository.LogTaskRun(success: success, updateCount: updateCount, environment: environment, taskName: TaskName);
+            _backgroundTaskRepository.LogTaskRun(
+                success: success,
+                updateCount: updateCount,
+                environment: environment,
+                taskName: BackgroundTaskType.ToString());
         }
         
         private void SendEmail(string subject, string body, ILogger logger)

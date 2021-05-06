@@ -26,9 +26,9 @@ namespace KidsTown.BackgroundTasks.Attendance
                 .ConfigureAwait(continueOnCapturedContext: false);
             var locationUpdateCount = await UpdateLocations(checkIns: checkIns).ConfigureAwait(continueOnCapturedContext: false);
             
-            var preCheckIns = await FilterAndMapToPreCheckIns(checkIns: checkIns)
+            var checkInsUpdates = await MapCheckInsUpdates(checkIns: checkIns)
                 .ConfigureAwait(continueOnCapturedContext: false);
-            var insertCount = await InsertNewPreCheckIns(preCheckIns: preCheckIns).ConfigureAwait(continueOnCapturedContext: false);
+            var insertCount = await InsertNewPreCheckIns(preCheckIns: checkInsUpdates).ConfigureAwait(continueOnCapturedContext: false);
 
             var volunteerCheckCount = await _attendanceUpdateRepository.AutoCheckInVolunteers().ConfigureAwait(continueOnCapturedContext: false);
 
@@ -48,7 +48,7 @@ namespace KidsTown.BackgroundTasks.Attendance
                 .ConfigureAwait(continueOnCapturedContext: false);
         }
         
-        private async Task<IImmutableList<CheckInsUpdate>> FilterAndMapToPreCheckIns(IImmutableList<CheckIns> checkIns)
+        private async Task<IImmutableList<CheckInsUpdate>> MapCheckInsUpdates(IImmutableList<CheckIns> checkIns)
         {
             var persistedLocations = await _attendanceUpdateRepository.GetPersistedLocations()
                 .ConfigureAwait(continueOnCapturedContext: false);
@@ -56,17 +56,17 @@ namespace KidsTown.BackgroundTasks.Attendance
                 persistedLocations.ToImmutableDictionary(keySelector: k => k.CheckInsLocationId,
                     elementSelector: v => v.LocationId);
 
-            var attendees = checkIns.Where(predicate: c => c.Attendees != null)
+            var checkInsUpdates = checkIns.Where(predicate: c => c.Attendees != null)
                 .SelectMany(selector: c => c.Attendees!)
-                .Select(selector: a => MapPreCheckIn(
+                .Select(selector: a => MapCheckInsUpdate(
                     attendee: a,
                     locationIdsByCheckInsLocationId: locationIdsByCheckInsLocationId))
                 .ToImmutableList();
 
-            return attendees;
+            return checkInsUpdates;
         }
         
-        private static CheckInsUpdate MapPreCheckIn(
+        private static CheckInsUpdate MapCheckInsUpdate(
             Attendee attendee,
             ImmutableDictionary<long, int> locationIdsByCheckInsLocationId
         )
@@ -75,10 +75,10 @@ namespace KidsTown.BackgroundTasks.Attendance
             var checkInsLocationId = attendee.Relationships?.Locations?.Data?.FirstOrDefault()?.Id;
             var peopleId = attendee.Relationships?.Person?.Data?.Id;
 
-            var people = MapPeopleUpdate(
+            var peopleUpdate = new PeopleUpdate(
                 peopleId: peopleId,
-                firstName: attributes?.FirstName,
-                lastName: attributes?.LastName);
+                firstName: attributes?.FirstName ?? string.Empty,
+                lastName: attributes?.LastName ?? string.Empty);
 
             var locationId = checkInsLocationId.HasValue &&
                              locationIdsByCheckInsLocationId.ContainsKey(key: checkInsLocationId.Value)
@@ -92,29 +92,9 @@ namespace KidsTown.BackgroundTasks.Attendance
                 securityCode: attributes?.SecurityCode ?? string.Empty,
                 locationId: locationId,
                 creationDate: attributes?.CreatedAt ?? DateTime.UtcNow,
-                kid: people);
+                kid: peopleUpdate);
         }
-        
-        private static PeopleUpdate MapPeopleUpdate(
-            long? peopleId,
-            string? firstName,
-            string? lastName,
-            long? householdId = null,
-            string? householdName = null,
-            bool mayLeaveAlone = true,
-            bool hasPeopleWithoutPickupPermission = false
-        )
-        {
-            return new(
-                peopleId: peopleId,
-                householdId: householdId,
-                firstName: firstName ?? string.Empty,
-                lastName: lastName ?? string.Empty,
-                householdName: householdName,
-                mayLeaveAlone: mayLeaveAlone,
-                hasPeopleWithoutPickupPermission: hasPeopleWithoutPickupPermission);
-        }
-        
+
         private async Task<int> UpdateLocations(IImmutableList<CheckIns> checkIns)
         {
             var locations = checkIns.SelectMany(selector: c

@@ -4,6 +4,65 @@ import Checkbox from '@material-ui/core/Checkbox'
 import FormControlLabel from '@material-ui/core/FormControlLabel'
 import { getSelectedEventFromStorage } from './Common'
 import { withAuth } from '../auth/MsalAuthProvider'
+import { Badge, Button, Card, CardBody, CardTitle } from 'reactstrap'
+
+function BoolBadge(props) {
+	return <Badge color={props['color']}>{props['label']}</Badge>
+}
+
+function Task(props) {
+	const task = props['task']
+
+	function GetBadge(isActive, trueColor, trueLabel, falseColor, falseLabel) {
+		if (isActive === true) {
+			return <BoolBadge color={trueColor} label={trueLabel} />
+		}
+
+		return <BoolBadge color={falseColor} label={falseLabel} />
+	}
+
+	return (
+		<Card>
+			<CardBody>
+				<CardTitle tag="h5">{task['backgroundTaskType']}</CardTitle>
+
+				<CardTitle tag="h5">
+					{GetBadge(
+						task['isActive'],
+						'primary',
+						'active',
+						'secondary',
+						'inactive'
+					)}{' '}
+					{GetBadge(
+						task['isEnabled'],
+						'primary',
+						'enabled',
+						'secondary',
+						'disabled'
+					)}{' '}
+					{GetBadge(
+						task['taskRunsSuccessfully'],
+						'success',
+						'success',
+						'danger',
+						'failed'
+					)}
+				</CardTitle>
+
+				<Grid
+					container
+					spacing={1}
+					justify="space-between"
+					alignItems="center"
+				>
+					<Grid item xs={6} />
+				</Grid>
+				<Button>Edit</Button>
+			</CardBody>
+		</Card>
+	)
+}
 
 class Setting extends Component {
 	static displayName = Setting.name
@@ -15,6 +74,7 @@ class Setting extends Component {
 
 		this.state = {
 			events: [],
+			tasks: [],
 			selectedEvent: 0,
 			loading: true,
 		}
@@ -22,6 +82,7 @@ class Setting extends Component {
 
 	async componentDidMount() {
 		await this.fetchAvailableEvents()
+		await this.fetchTasks()
 		this.setState({ loading: false })
 	}
 
@@ -29,7 +90,7 @@ class Setting extends Component {
 		clearTimeout(this.repeat)
 	}
 
-	renderOptions() {
+	renderEvents() {
 		const events = this.state.events.map((e) => (
 			<Grid item xs={12} key={e['eventId']}>
 				<div className="event">
@@ -60,14 +121,40 @@ class Setting extends Component {
 
 		return (
 			<div>
-				<h2>Event</h2>
+				<h2>Events</h2>
+				<Grid
+					container
+					spacing={0}
+					justify="space-between"
+					alignItems="center"
+				>
+					{events}
+				</Grid>
+			</div>
+		)
+	}
+
+	renderTasks() {
+		if (this.state.loading) {
+			return <div />
+		}
+
+		const tasks = this.state.tasks.map((t) => (
+			<Grid item xs={12} key={t['backgroundTaskType']}>
+				<Task task={t} />
+			</Grid>
+		))
+
+		return (
+			<div>
+				<h2>Tasks</h2>
 				<Grid
 					container
 					spacing={1}
 					justify="space-between"
 					alignItems="center"
 				>
-					{events}
+					{tasks}
 				</Grid>
 			</div>
 		)
@@ -89,8 +176,11 @@ class Setting extends Component {
 					<Grid item xs={12}>
 						<h1>Settings</h1>
 					</Grid>
-					<Grid item xs={6}>
-						{this.renderOptions()}
+					<Grid item xs={4}>
+						{this.renderEvents()}
+					</Grid>
+					<Grid item xs={8}>
+						{this.renderTasks()}
 					</Grid>
 				</Grid>
 			</div>
@@ -107,6 +197,12 @@ class Setting extends Component {
 		const events = await response.json()
 		const selected = await getSelectedEventFromStorage()
 		this.setState({ events: events, selectedEvent: selected })
+	}
+
+	async fetchTasks() {
+		const response = await fetch('configuration/tasks')
+		const tasks = await response.json()
+		this.setState({ tasks: tasks })
 	}
 
 	handleChange = (event) => {

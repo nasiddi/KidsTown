@@ -24,7 +24,7 @@ namespace KidsTown.BackgroundTasks.Adult
         {
             var families = await _adultUpdateRepository.GetFamiliesToUpdate(daysLookBack: daysLookBack, take: batchSize);
             
-            var households = await GetHouseholds(families: families);
+            var households = await GetHouseholds(families: families).ConfigureAwait(continueOnCapturedContext: false);
 
             var adultPeopleIds = households.SelectMany(
                 selector: h => h.Members.Where(predicate: m => m.IsChild != null && !m.IsChild.Value)

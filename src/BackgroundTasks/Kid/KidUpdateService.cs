@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using System.Threading.Tasks;
+using KidsTown.BackgroundTasks.Adult;
 using KidsTown.BackgroundTasks.Common;
 using KidsTown.PlanningCenterApiClient;
 using KidsTown.PlanningCenterApiClient.Models.PeopleResult;
@@ -24,19 +25,25 @@ namespace KidsTown.BackgroundTasks.Kid
         {
             var typedAttendees = await _kidUpdateRepository.GetKidsToUpdate(daysLookBack: daysLookBack, take: batchSize)
                 .ConfigureAwait(continueOnCapturedContext: false);
-
-            if (typedAttendees.Count == 0)
+            var kidsPeopleIds = typedAttendees
+                .Where(predicate: a
+                    => a.AttendanceTypeId == AttendanceTypeId.Regular || a.AttendanceTypeId == AttendanceTypeId.Guest)
+                .Select(selector: a => a.PeopleId).ToImmutableList();
+            
+            if (kidsPeopleIds.Count == 0)
             {
                 return 0;
             }
 
-            var kidsPeopleIds = typedAttendees
-                .Where(predicate: a => a.AttendanceTypeId == AttendanceTypeId.Regular || a.AttendanceTypeId == AttendanceTypeId.Guest)
-                .Select(selector: a => a.PeopleId).ToImmutableList();
-            var kids = await _planningCenterClient.GetPeopleUpdates(peopleIds: kidsPeopleIds)
-                .ConfigureAwait(continueOnCapturedContext: false);
-            var kidsUpdate = MapKidsUpdates(peopleUpdates: kids);
+            var kidsUpdate = await FetchKids(kidsPeopleIds: kidsPeopleIds);
+            var families = await GetNewAnPersistedFamilies(kidsUpdate: kidsUpdate);
 
+            return await _kidUpdateRepository.UpdateKids(kids: kidsUpdate, families: families)
+                .ConfigureAwait(continueOnCapturedContext: false);
+        }
+
+        private async Task<ImmutableList<Family>> GetNewAnPersistedFamilies(IImmutableList<PeopleUpdate> kidsUpdate)
+        {
             var householdIds = kidsUpdate.Where(predicate: p => p.HouseholdId.HasValue)
                 .Select(selector: p => p.HouseholdId!.Value).Distinct().ToImmutableList();
 
@@ -47,11 +54,18 @@ namespace KidsTown.BackgroundTasks.Kid
                 await _kidUpdateRepository.InsertFamilies(newHouseholdIds: newHouseholdIds, peoples: kidsUpdate);
 
             var families = existingFamilies.Union(second: newFamilies).ToImmutableList();
-
-            return await _kidUpdateRepository.UpdateKids(kids: kidsUpdate, families: families)
-                .ConfigureAwait(continueOnCapturedContext: false);
+            return families;
         }
-        
+
+        private async Task<IImmutableList<PeopleUpdate>> FetchKids(ImmutableList<long> kidsPeopleIds)
+        {
+            
+            var kids = await _planningCenterClient.GetPeopleUpdates(peopleIds: kidsPeopleIds)
+                .ConfigureAwait(continueOnCapturedContext: false);
+            var kidsUpdate = MapKidsUpdates(peopleUpdates: kids);
+            return kidsUpdate;
+        }
+
         private static IImmutableList<PeopleUpdate> MapKidsUpdates(IImmutableList<People> peopleUpdates)
         {
             var fieldOptions = peopleUpdates.SelectMany(selector: p => p.Included ?? new List<Included>())
@@ -63,70 +77,61 @@ namespace KidsTown.BackgroundTasks.Kid
                 .ToImmutableList();
 
             return peopleUpdates.SelectMany(selector: p => p.Data ?? new List<Datum>())
-                .Select(selector: d => MapPeople(people: d, fieldOptions: fieldOptions, households: households))
+                .Select(selector: d => MapPeopleUpdate(people: d, fieldOptions: fieldOptions, households: households))
                 .ToImmutableList();
         }
 
-        private static PeopleUpdate MapPeople(
+        private static PeopleUpdate MapPeopleUpdate(
             Datum people,
             IImmutableList<Included> fieldOptions,
             IImmutableList<Included> households
         )
         {
-            var fieldDataIds = people.Relationships?.FieldData?.Data?.Select(selector: d => d.Id).ToImmutableList() ??
-                               ImmutableList<long>.Empty;
-            var personalFieldOptions =
-                fieldOptions.Where(predicate: o => fieldDataIds.Contains(value: o.Id)).ToImmutableList();
-
-            var mayLeaveAloneField = personalFieldOptions.SingleOrDefault(
-                predicate: o => o.Relationships?.FieldDefinition?.Data?.Id == (long?) PeopleFieldId.NeedsToBePickedUp);
-            var hasPeopleWithoutPickupPermissionField = personalFieldOptions.SingleOrDefault(
-                predicate: o => o.Relationships?.FieldDefinition?.Data?.Id == (long?) PeopleFieldId.Kab);
+            var personalFieldOptions = GetFieldOptions(people: people, fieldOptions: fieldOptions);
 
             var householdId = people.Relationships?.Households?.Data?.FirstOrDefault()?.Id;
             var household = households.FirstOrDefault(predicate: h => h.Id == householdId);
 
-            return MapPeopleUpdate(
+            return new PeopleUpdate(
                 peopleId: people.Id,
-                firstName: people.Attributes?.FirstName,
-                lastName: people.Attributes?.LastName,
+                firstName: people.Attributes?.FirstName ?? string.Empty,
+                lastName: people.Attributes?.LastName ?? string.Empty,
                 householdId: householdId,
                 householdName: household?.Attributes?.Name,
-                mayLeaveAlone: !ParseCustomBooleanField(field: mayLeaveAloneField, defaultValue: false),
-                hasPeopleWithoutPickupPermission: ParseCustomBooleanField(field: hasPeopleWithoutPickupPermissionField,
-                    defaultValue: false));
+                mayLeaveAlone: !ParseCustomBooleanField(
+                    fieldOptions: personalFieldOptions,
+                    fallback: false,
+                    fieldId: PeopleFieldId.NeedsToBePickedUp),
+                hasPeopleWithoutPickupPermission: ParseCustomBooleanField(
+                    fieldOptions: personalFieldOptions,
+                    fallback: false,
+                    fieldId: PeopleFieldId.Kab));
         }
 
-        private static bool ParseCustomBooleanField(Included? field, bool defaultValue)
+        private static ImmutableList<Included> GetFieldOptions(Datum people, IImmutableList<Included> fieldOptions)
         {
+            var fieldDataIds = people.Relationships?.FieldData?.Data?.Select(selector: d => d.Id).ToImmutableList() ??
+                               ImmutableList<long>.Empty;
+            var personalFieldOptions =
+                fieldOptions.Where(predicate: o => fieldDataIds.Contains(value: o.Id)).ToImmutableList();
+            return personalFieldOptions;
+        }
+
+        private static bool ParseCustomBooleanField(
+            ImmutableList<Included> fieldOptions,
+            bool fallback,
+            PeopleFieldId fieldId
+        )
+        {
+            var field = fieldOptions.SingleOrDefault(
+                predicate: o => o.Relationships?.FieldDefinition?.Data?.Id == (long?) fieldId);
+            
             return field?.Attributes?.Value switch
             {
                 "true" => true,
                 "false" => false,
-                _ => defaultValue
+                _ => fallback
             };
         }
-        
-        private static PeopleUpdate MapPeopleUpdate(
-            long? peopleId,
-            string? firstName,
-            string? lastName,
-            long? householdId = null,
-            string? householdName = null,
-            bool mayLeaveAlone = true,
-            bool hasPeopleWithoutPickupPermission = false
-        )
-        {
-            return new(
-                peopleId: peopleId,
-                householdId: householdId,
-                firstName: firstName ?? string.Empty,
-                lastName: lastName ?? string.Empty,
-                householdName: householdName,
-                mayLeaveAlone: mayLeaveAlone,
-                hasPeopleWithoutPickupPermission: hasPeopleWithoutPickupPermission);
-        }
-        
-        
     }
 }
