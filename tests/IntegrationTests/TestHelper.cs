@@ -209,8 +209,10 @@ namespace KidsTown.IntegrationTests
             services.AddSingleton<IAttendanceUpdateService, AttendanceUpdateService>();
             services.AddSingleton<IKidUpdateService, KidUpdateService>();
             services.AddSingleton<IAdultUpdateService, AdultUpdateService>();
+            
+            services.AddSingleton<IAttendanceUpdateRepository, AttendanceUpdateRepository>();
+            services.AddSingleton<IKidUpdateRepository, KidUpdateRepository>();
             services.AddSingleton<IAdultUpdateRepository, AdultUpdateRepository>();
-            services.AddSingleton<IAttendanceUpdateService, AttendanceUpdateService>();
             services.AddSingleton<IBackgroundTaskRepository, BackgroundTaskRepository>();
             services.AddSingleton<ILoggerFactory, LoggerFactory>();
             services.AddSingleton(serviceType: typeof(ILogger), implementationType: typeof(Logger<BackgroundTask>));
