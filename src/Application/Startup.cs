@@ -69,10 +69,12 @@ namespace KidsTown.Application
             services.AddScoped<ICheckInOutService, CheckInOutService>();
             services.AddScoped<IConfigurationService, ConfigurationService>();
             services.AddScoped<IOverviewService, OverviewService>();
+            services.AddScoped<IPeopleService, PeopleService>();
             
             services.AddScoped<ICheckInOutRepository, CheckInOutRepository>();
             services.AddScoped<IConfigurationRepository, ConfigurationRepository>();
             services.AddScoped<IOverviewRepository, OverviewRepository>();
+            services.AddScoped<IPeopleRepository, PeopleRepository>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

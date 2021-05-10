@@ -69,32 +69,6 @@ namespace KidsTown.Database
                 .ConfigureAwait(false);
         }
 
-        public async Task<IImmutableList<KidsTown.Models.Adult>> GetAdults(IImmutableList<int> familyIds)
-        {
-            await using var db = CommonRepository.GetDatabase(_serviceScopeFactory);
-            
-            var adults = await (from a in db.Adults
-                    join p in db.People
-                        on a.PersonId equals p.Id
-                    where p.FamilyId.HasValue && familyIds.Contains(p.FamilyId.Value)
-                    select MapAdult(p, a))
-                .ToListAsync().ConfigureAwait(false);
-                
-            return adults?.ToImmutableList()
-                   ?? ImmutableList<KidsTown.Models.Adult>.Empty;
-        }
-
-        private static KidsTown.Models.Adult MapAdult(Person person, Adult adult)
-        {
-            return new()
-            {
-                FamilyId = person.FamilyId!.Value,
-                FirstName = person.FirstName,
-                LastName = person.LastName,
-                PhoneNumber = adult.PhoneNumber
-            };
-        }
-
         private async Task<IImmutableList<Attendee>> GetAttendanceHistory(
             long eventId,
             DateTime startDate,

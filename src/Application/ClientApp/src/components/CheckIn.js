@@ -84,6 +84,7 @@ class CheckIn extends Component {
 			checkType: localStorage.getItem('checkType') ?? 'CheckIn',
 			loading: true,
 			lastActionAttendanceIds: [],
+			adults: [],
 		}
 	}
 
@@ -271,6 +272,29 @@ class CheckIn extends Component {
 		)
 	}
 
+	renderAdults() {
+		const adults = this.state.adults.map((a) => (
+			<Grid item xs={12} key={a['phoneNumbers']}>
+				<LargeButton
+					id={a['phoneNumber']}
+					name={`${a['firstName']} ${a['lastName']} ${a['phoneNumber']}`}
+					color="primary"
+				/>
+			</Grid>
+		))
+
+		return (
+			<Grid
+				container
+				spacing={3}
+				justify="space-between"
+				alignItems="center"
+			>
+				{adults}
+			</Grid>
+		)
+	}
+
 	render() {
 		const options = this.state.loading ? (
 			<p>
@@ -285,12 +309,23 @@ class CheckIn extends Component {
 
 		let candidates = <div />
 		if (this.state.singleCheckInOut) {
-			candidates = this.renderSingleCheckout(
-				this.state.checkInOutCandidates
+			candidates = (
+				<Grid item xs={12}>
+					{this.renderSingleCheckout(this.state.checkInOutCandidates)}
+				</Grid>
 			)
 		} else if (this.state.checkInOutCandidates.length > 0) {
 			candidates = this.renderMultiCheckout(
 				this.state.checkInOutCandidates
+			)
+		}
+
+		let adults = <div />
+		if (this.state.adults.length > 0) {
+			adults = (
+				<Grid item xs={12}>
+					{this.renderAdults()}
+				</Grid>
 			)
 		}
 
@@ -306,9 +341,8 @@ class CheckIn extends Component {
 				</Grid>
 				{options}
 				{alert}
-				<Grid item xs={12}>
-					{candidates}
-				</Grid>
+				{candidates}
+				{adults}
 			</Grid>
 		)
 	}
@@ -330,6 +364,8 @@ class CheckIn extends Component {
 	}
 
 	async submitSecurityCode() {
+		this.setState({ adults: [] })
+
 		const selectedLocationIds = this.state.checkInOutLocations.map(
 			(l) => l.value
 		)
@@ -355,6 +391,7 @@ class CheckIn extends Component {
 				})
 				if (j['successfulFastCheckout'] === true) {
 					this.resetView(false)
+					this.loadPhoneNumbers()
 				} else {
 					const candidates = j['checkInOutCandidates'].map(function (
 						el
@@ -393,6 +430,7 @@ class CheckIn extends Component {
 					lastActionAttendanceIds: j['attendanceIds'] ?? [],
 				})
 				this.resetView(false)
+				this.loadPhoneNumbers()
 			})
 	}
 
@@ -417,6 +455,7 @@ class CheckIn extends Component {
 					lastActionAttendanceIds: j['attendanceIds'] ?? [],
 				})
 				this.resetView(false)
+				this.loadPhoneNumbers()
 			})
 	}
 
@@ -433,6 +472,26 @@ class CheckIn extends Component {
 				this.setState({
 					alert: { level: j['alertLevel'], text: j['text'] },
 					lastActionAttendanceIds: [],
+				})
+			})
+	}
+
+	async loadPhoneNumbers() {
+		if (this.state.checkType === 'CheckOut') {
+			return
+		}
+
+		await fetch('people/adults', {
+			body: JSON.stringify(this.state.lastActionAttendanceIds),
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json',
+			},
+		})
+			.then((r) => r.json())
+			.then((j) => {
+				this.setState({
+					adults: j,
 				})
 			})
 	}

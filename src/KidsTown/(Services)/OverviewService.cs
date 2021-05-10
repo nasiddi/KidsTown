@@ -10,10 +10,12 @@ namespace KidsTown.KidsTown
     public class OverviewService : IOverviewService
     {
         private readonly IOverviewRepository _overviewRepository;
+        private readonly IPeopleRepository _peopleRepository;
 
-        public OverviewService(IOverviewRepository overviewRepository)
+        public OverviewService(IOverviewRepository overviewRepository, IPeopleRepository peopleRepository)
         {
             _overviewRepository = overviewRepository;
+            _peopleRepository = peopleRepository;
         }
 
         public async Task<IImmutableList<AttendeesByLocation>> GetActiveAttendees(
@@ -31,7 +33,7 @@ namespace KidsTown.KidsTown
                 .Select(a => a.FamilyId!.Value).
                 ToImmutableList();
             
-            var adults = await _overviewRepository.GetAdults(familyIds);
+            var adults = await _peopleRepository.GetAdults(familyIds);
 
             var attendeesWithAdultsInfo = attendees.Select(attendee =>
             {
