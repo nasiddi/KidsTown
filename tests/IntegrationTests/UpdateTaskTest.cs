@@ -27,7 +27,7 @@ namespace KidsTown.IntegrationTests
         [TearDown]
         public async Task TearDown()
         {
-            await TestHelper.CleanDatabase(serviceProvider: _serviceProvider).ConfigureAwait(continueOnCapturedContext: false);
+            await TestHelper.CleanDatabase(_serviceProvider).ConfigureAwait(false);
         }
         
         [Test]
@@ -36,9 +36,9 @@ namespace KidsTown.IntegrationTests
             _serviceProvider = TestHelper.SetupServiceProviderWithBackgroundTasksDi();
             
             var updateTask = _serviceProvider.GetService<AttendanceUpdateTask>();
-            await RunTask(backgroundTask: updateTask!, minExecutionCount: 2).ConfigureAwait(continueOnCapturedContext: false);
+            await RunTask(backgroundTask: updateTask!, minExecutionCount: 2).ConfigureAwait(false);
             
-            Assert.That(actual: updateTask.GetExecutionCount(), expression: Is.GreaterThan(expected: 1));
+            Assert.That(actual: updateTask!.GetExecutionCount(), expression: Is.GreaterThan(1));
 
         }
 
@@ -46,31 +46,31 @@ namespace KidsTown.IntegrationTests
         public async Task UpdateMockData()
         {
             _serviceProvider = TestHelper.SetupServiceProviderWithBackgroundTasksDiAndMockedPlanningCenterClient();
-            await TestHelper.CleanDatabase(serviceProvider: _serviceProvider).ConfigureAwait(continueOnCapturedContext: false);
+            await TestHelper.CleanDatabase(_serviceProvider).ConfigureAwait(false);
             
             var attendanceUpdateTask = _serviceProvider.GetService<AttendanceUpdateTask>();
-            await RunTask(backgroundTask: attendanceUpdateTask!).ConfigureAwait(continueOnCapturedContext: false);
+            await RunTask(attendanceUpdateTask!).ConfigureAwait(false);
 
             var kidUpdateTask = _serviceProvider.GetService<KidUpdateTask>();
-            await RunTask(backgroundTask: kidUpdateTask!).ConfigureAwait(continueOnCapturedContext: false);
+            await RunTask(kidUpdateTask!).ConfigureAwait(false);
 
             var adultUpdateTask = _serviceProvider.GetService<AdultUpdateTask>();
-            await RunTask(backgroundTask: adultUpdateTask!).ConfigureAwait(continueOnCapturedContext: false);
+            await RunTask(adultUpdateTask!).ConfigureAwait(false);
 
-            await AssertUpdateTask().ConfigureAwait(continueOnCapturedContext: false);
+            await AssertUpdateTask().ConfigureAwait(false);
         }
         
         private static async Task RunTask(BackgroundTask backgroundTask, int minExecutionCount = 1)
         {
             backgroundTask.ActivateTask();
             
-            var task = backgroundTask.StartAsync(cancellationToken: CancellationToken.None)
-                .ConfigureAwait(continueOnCapturedContext: false);
+            var task = backgroundTask.StartAsync(CancellationToken.None)
+                .ConfigureAwait(false);
 
             var watch = Stopwatch.StartNew();
             while (minExecutionCount > backgroundTask.GetExecutionCount() && watch.ElapsedMilliseconds < 60000)
             {
-                await Task.Delay(millisecondsDelay: 100).ConfigureAwait(continueOnCapturedContext: false);
+                await Task.Delay(100).ConfigureAwait(false);
             }
             
             backgroundTask.DeactivateTask();
@@ -84,11 +84,11 @@ namespace KidsTown.IntegrationTests
             await using var db = serviceScopeFactory!.CreateScope().ServiceProvider.GetRequiredService<KidsTownContext>();
 
             var people = await db.Attendances
-                .Include(navigationPropertyPath: i => i.Person)
-                .Include(navigationPropertyPath: i => i.Person.Kid)
-                .Include(navigationPropertyPath: i => i.Location)
-                .Where(predicate: p => p.CheckInsId < 100)
-                .Select(selector: p => MapData(p))
+                .Include(i => i.Person)
+                .Include(i => i.Person.Kid)
+                .Include(i => i.Location)
+                .Where(p => p.CheckInsId < 100)
+                .Select(p => MapData(p))
                 .ToListAsync();
             
             return people.ToImmutableList();
@@ -97,18 +97,18 @@ namespace KidsTown.IntegrationTests
         private async Task AssertUpdateTask()
         {
             var expectedData = GetExpectedData();
-            var actualData = await GetActualData().ConfigureAwait(continueOnCapturedContext: false);
+            var actualData = await GetActualData().ConfigureAwait(false);
 
-            (expectedData as ImmutableList<Data>)?.ForEach(action: e => AssertAttendance(
+            (expectedData as ImmutableList<Data>)?.ForEach(e => AssertAttendance(
                 expected: e,
-                actual: actualData.SingleOrDefault(predicate: a => a.CheckInsId == e.CheckInsId)));
+                actual: actualData.SingleOrDefault(a => a.CheckInsId == e.CheckInsId)));
 
         }
 
         private static void AssertAttendance(Data expected, Data? actual)
         {
             Assert.That(actual: actual, expression: Is.Not.Null);
-            actual.Should().BeEquivalentTo(expectation: expected);
+            actual.Should().BeEquivalentTo(expected);
         }
 
         private static Data MapData(Attendance attendance)
@@ -130,16 +130,16 @@ namespace KidsTown.IntegrationTests
             var attendeesData = PlanningCenterClientMock.GetAttendanceData();
             var peopleData = PlanningCenterClientMock.GetKidsData();
 
-            return attendeesData.Select(selector: a =>
+            return attendeesData.Select(a =>
             {
-                var kid = peopleData.SingleOrDefault(predicate: p => p.PeopleId == a.PeopleId);
+                var kid = peopleData.SingleOrDefault(p => p.PeopleId == a.PeopleId);
 
                 return new Data(
                     firstName: kid?.FirstName ?? a.FirstName,
                     lastName: kid?.LastName ?? a.LastName,
                     checkInsId: a.CheckInsId,
                     peopleId: a.PeopleId,
-                    attendanceTypeId: MapAttendanceType(attendeeType: a.AttendanceType),
+                    attendanceTypeId: MapAttendanceType(a.AttendanceType),
                     testLocation: (int) a.TestLocation,
                     mayLeaveAlone: kid?.MayLeaveAlone ?? true,
                     hasPeopleWithoutPickupPermission: kid?.HasPeopleWithoutPickupPermission ?? false);

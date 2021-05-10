@@ -35,13 +35,6 @@ function Task(props) {
 						'inactive'
 					)}{' '}
 					{GetBadge(
-						task['isEnabled'],
-						'primary',
-						'enabled',
-						'secondary',
-						'disabled'
-					)}{' '}
-					{GetBadge(
 						task['taskRunsSuccessfully'],
 						'success',
 						'success',
@@ -185,11 +178,6 @@ class Setting extends Component {
 				</Grid>
 			</div>
 		)
-	}
-
-	updateOptions = async (options, key) => {
-		localStorage.setItem(key, JSON.stringify(options))
-		this.setState({ [key]: options })
 	}
 
 	async fetchAvailableEvents() {

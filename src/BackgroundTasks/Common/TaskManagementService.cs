@@ -17,7 +17,7 @@ namespace KidsTown.BackgroundTasks.Common
         {
             var tasks = GetAllTasks();
 
-            tasks.ForEach(action: t =>
+            tasks.ForEach(t =>
             {
                 t.ActivateTask();
             });
@@ -25,11 +25,10 @@ namespace KidsTown.BackgroundTasks.Common
 
         public IImmutableList<TaskOverview> GetTaskOverviews()
         {
-            return GetAllTasks().Select(selector: t => new TaskOverview
+            return GetAllTasks().Select(t => new TaskOverview
             {
                 BackgroundTaskType = t.GetBackgroundTaskType(),
                 IsActive = t.IsTaskActive(),
-                IsEnabled = t.IsEnabled(),
                 TaskRunsSuccessfully = t.TaskRunsSuccessfully(),
                 SuccessCount = t.GetExecutionCount(),
                 CurrentFailCount = t.GetCurrentFailCount(),
@@ -41,10 +40,10 @@ namespace KidsTown.BackgroundTasks.Common
         
         private ImmutableList<IBackgroundTask> GetAllTasks()
         {
-            var tasks = Enum.GetValues(enumType: typeof(BackgroundTaskType))
+            var tasks = Enum.GetValues(typeof(BackgroundTaskType))
                 .Cast<BackgroundTaskType>()
                 .ToList()
-                .Select(selector: t => _serviceResolver(arg: t))
+                .Select(t => _serviceResolver(t))
                 .ToImmutableList();
             return tasks;
         }

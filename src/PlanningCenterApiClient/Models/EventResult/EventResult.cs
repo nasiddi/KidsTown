@@ -11,7 +11,7 @@ namespace KidsTown.PlanningCenterApiClient.Models.EventResult
     //     [JsonProperty(propertyName: "links")]
     //     public Links? Links { get; set; }
 
-        [JsonProperty(propertyName: "data")]
+        [JsonProperty("data")]
         public List<Datum>? Data { get; set; }
 
     //     [JsonProperty(propertyName: "included")]
@@ -26,11 +26,11 @@ namespace KidsTown.PlanningCenterApiClient.Models.EventResult
     //     [JsonProperty(propertyName: "type")]
     //     public string? Type { get; set; }
 
-        [JsonProperty(propertyName: "id")]
-        [JsonConverter(converterType: typeof(ParseStringConverter))]
+        [JsonProperty("id")]
+        [JsonConverter(typeof(ParseStringConverter))]
         public long Id { get; set; }
 
-        [JsonProperty(propertyName: "attributes")]
+        [JsonProperty("attributes")]
         public Attributes? Attributes { get; set; }
 
     //     [JsonProperty(propertyName: "links")]
@@ -57,7 +57,7 @@ namespace KidsTown.PlanningCenterApiClient.Models.EventResult
     //     [JsonProperty(propertyName: "location_times_enabled")]
     //     public bool LocationTimesEnabled { get; set; }
 
-        [JsonProperty(propertyName: "name")]
+        [JsonProperty("name")]
         public string? Name { get; set; }
 
     //     [JsonProperty(propertyName: "pre_select_enabled")]
@@ -143,12 +143,12 @@ namespace KidsTown.PlanningCenterApiClient.Models.EventResult
         public override object? ReadJson(JsonReader reader, Type t, object? existingValue, JsonSerializer serializer)
         {
             if (reader.TokenType == JsonToken.Null) return null;
-            var value = serializer.Deserialize<string>(reader: reader);
+            var value = serializer.Deserialize<string>(reader);
             if (long.TryParse(s: value, result: out var l))
             {
                 return l;
             }
-            throw new Exception(message: "Cannot unmarshal type long");
+            throw new Exception("Cannot unmarshal type long");
         }
     
         public override void WriteJson(JsonWriter writer, object? untypedValue, JsonSerializer serializer)

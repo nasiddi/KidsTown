@@ -46,7 +46,10 @@ class Detail extends Component {
 			<Grid container spacing={3}>
 				{this.state.attendees.map((attendees) => (
 					<Grid item xs={12} key={attendees['location']}>
-						<Accordion className="overview-accordion">
+						<Accordion
+							className="overview-accordion"
+							defaultExpanded
+						>
 							<AccordionSummary
 								expandIcon={<ExpandMoreIcon />}
 								aria-controls="panel1a-content"

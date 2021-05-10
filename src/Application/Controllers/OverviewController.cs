@@ -9,7 +9,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace KidsTown.Application.Controllers
 {
     [ApiController]
-    [Route(template: "[controller]")]
+    [Route("[controller]/event/{eventId:long}/attendees")]
     public class OverviewController : ControllerBase
     {
         private readonly IOverviewService _overviewService;
@@ -20,40 +20,39 @@ namespace KidsTown.Application.Controllers
         }
 
         [HttpPost]
-        [Route(template: "event/{eventId}/attendees")]
-        [Produces(contentType: "application/json")]
+        [Produces("application/json")]
         public async Task<IImmutableList<AttendeesByLocation>> GetAttendees(
             [FromRoute] long eventId, 
             [FromQuery] string date,
             [FromBody] IImmutableList<int> selectedLocationGroups)
         {
-            var parsedDate = DateTime.Parse(s: date);
+            var parsedDate = DateTime.Parse(date);
             var attendeesByLocation = await _overviewService.GetActiveAttendees(eventId: eventId, selectedLocationGroups: selectedLocationGroups, date: parsedDate)
-                .ConfigureAwait(continueOnCapturedContext: false);
-            return attendeesByLocation.OrderBy(keySelector: a => a.LocationGroupId).ThenBy(keySelector: a => a.Location).ToImmutableList();
+                .ConfigureAwait(false);
+            return attendeesByLocation.OrderBy(a => a.LocationGroupId).ThenBy(a => a.Location).ToImmutableList();
         }
         
         [HttpPost]
-        [Route(template: "event/{eventId}/attendees/headcounts")]
-        [Produces(contentType: "application/json")]
+        [Route("headcounts")]
+        [Produces("application/json")]
         public async Task<IImmutableList<LiveHeadCounts>> GetAttendeeHeadCounts(
             [FromRoute] long eventId, 
             [FromQuery] string date,
             [FromBody] IImmutableList<int> selectedLocationGroups)
         {
-            var parsedDate = DateTime.Parse(s: date);
+            var parsedDate = DateTime.Parse(date);
             var headCounts = await _overviewService.GetHeadCountsByLocations(
                     eventId: eventId,
                     selectedLocationGroups: selectedLocationGroups,
                     startDate: parsedDate,
                     endDate: parsedDate)
-                .ConfigureAwait(continueOnCapturedContext: false);
+                .ConfigureAwait(false);
             return headCounts;
         }
         
         [HttpPost]
-        [Route(template: "event/{eventId}/attendees/history")]
-        [Produces(contentType: "application/json")]
+        [Route("history")]
+        [Produces("application/json")]
         public async Task<IImmutableList<HeadCounts>> GetAttendanceHistory(
             [FromRoute] long eventId,
             [FromBody] IImmutableList<int> selectedLocations)
@@ -62,7 +61,7 @@ namespace KidsTown.Application.Controllers
                     eventId: eventId,
                     selectedLocations: selectedLocations,
                     startDate: new DateTime())
-                .ConfigureAwait(continueOnCapturedContext: false);
+                .ConfigureAwait(false);
         }
     }
 }

@@ -7,9 +7,9 @@ namespace KidsTown.BackgroundTasks.Attendance
 {
     public class AttendanceUpdateTask : BackgroundTask
     {
-        protected override BackgroundTaskType BackgroundTaskType { get; } = BackgroundTaskType.AttendanceUpdateTask;
-        protected override int Interval { get; } = 5000;
-        protected override int LogFrequency { get; } = 36;
+        protected override BackgroundTaskType BackgroundTaskType => BackgroundTaskType.AttendanceUpdateTask;
+        protected override int Interval => 5000;
+        protected override int LogFrequency => 36;
 
         private readonly IAttendanceUpdateService _attendanceUpdateService;
 
@@ -25,8 +25,8 @@ namespace KidsTown.BackgroundTasks.Attendance
 
         protected override async Task<int> ExecuteRun()
         {
-            return await _attendanceUpdateService.UpdateAttendance(daysLookBack: DaysLookBack)
-                .ConfigureAwait(continueOnCapturedContext: false);
+            return await _attendanceUpdateService.UpdateAttendance(DaysLookBack)
+                .ConfigureAwait(false);
         }
     }
 }

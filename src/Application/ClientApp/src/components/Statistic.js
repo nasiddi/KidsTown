@@ -19,9 +19,8 @@ class Statistic extends Component {
 	constructor(props) {
 		super(props)
 
-		this.updateSelectedLocationGroups = this.updateSelectedLocationGroups.bind(
-			this
-		)
+		this.updateSelectedLocationGroups =
+			this.updateSelectedLocationGroups.bind(this)
 
 		this.state = {
 			locationGroups: [],

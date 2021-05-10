@@ -13,41 +13,41 @@ namespace KidsTown.Application
     {
         public static void Main(string[] args)
         {
-            CreateHostBuilder(args: args).Build().Run();
+            CreateHostBuilder(args).Build().Run();
         }
 
         private static IHostBuilder CreateHostBuilder(string[] args)
         {
             var preLoadedConfig = new ConfigurationBuilder()
                 .AddJsonFile(path: "appsettings.json", optional: false)
-                .AddJsonFile(path: "appsettings.Secrets.json", optional:false)
+                .AddJsonFile(path: "appsettings.Secrets.json", optional: false)
                 .AddJsonFile(path: "appsettings.DevelopementMachine.json", optional: true)
                 .Build();
             
-            return Host.CreateDefaultBuilder(args: args)
-                .ConfigureAppConfiguration(configureDelegate: (_, config) =>
+            return Host.CreateDefaultBuilder(args)
+                .ConfigureAppConfiguration((_, config) =>
                 {
                     config.AddJsonFile(path: "appsettings.Secrets.json", optional: false, reloadOnChange: true)
-                        .AddJsonFile(path: "appsettings.DevelopementMachine.json", optional: true, reloadOnChange:true);
+                        .AddJsonFile(path: "appsettings.DevelopementMachine.json", optional: true, reloadOnChange: true);
 
                     config.AddEnvironmentVariables();
                 })
-                .ConfigureWebHostDefaults(configure: webBuilder =>
+                .ConfigureWebHostDefaults(webBuilder =>
                 {
                     webBuilder
                         .UseStartup<Startup>()
-                        .UseUrls(preLoadedConfig.GetValue<string>(key: "Url"));
+                        .UseUrls(preLoadedConfig.GetValue<string>("Url"));
                 })
-                .ConfigureServices(configureDelegate: services =>
+                .ConfigureServices(services =>
                 {
                     services.AddSingleton<AttendanceUpdateTask>();
-                    services.AddHostedService(implementationFactory: p => p.GetRequiredService<AttendanceUpdateTask>());
+                    services.AddHostedService(p => p.GetRequiredService<AttendanceUpdateTask>());
                     services.AddSingleton<KidUpdateTask>();
-                    services.AddHostedService(implementationFactory: p => p.GetRequiredService<KidUpdateTask>());
+                    services.AddHostedService(p => p.GetRequiredService<KidUpdateTask>());
                     services.AddSingleton<AutoCheckOutTask>();
-                    services.AddHostedService(implementationFactory: p => p.GetRequiredService<AutoCheckOutTask>());
+                    services.AddHostedService(p => p.GetRequiredService<AutoCheckOutTask>());
                     services.AddSingleton<AdultUpdateTask>();
-                    services.AddHostedService(implementationFactory: p => p.GetRequiredService<AdultUpdateTask>());
+                    services.AddHostedService(p => p.GetRequiredService<AdultUpdateTask>());
                 });
         }
             

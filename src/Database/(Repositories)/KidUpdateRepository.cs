@@ -22,18 +22,18 @@ namespace KidsTown.Database
         
         public async Task<ImmutableList<TypedAttendee>> GetKidsToUpdate(int daysLookBack, int take)
         {
-            await using var db = CommonRepository.GetDatabase(serviceScopeFactory: _serviceScopeFactory);
+            await using var db = CommonRepository.GetDatabase(_serviceScopeFactory);
             
             var typedAttendees = await db.Attendances
-                .Include(navigationPropertyPath: a => a.Person)
-                .Where(predicate: i
+                .Include(a => a.Person)
+                .Where(i
                     => i.InsertDate >= DateTime.Today.AddDays(-daysLookBack) && i.Person.PeopleId.HasValue)
-                .OrderBy(keySelector: a => a.Person.UpdateDate)
-                .ThenBy(keySelector: a => a.Person.Id)
-                .Take(count: take)
-                .Select(selector: a => new TypedAttendee(a.Person.PeopleId!.Value, (AttendanceTypeId)a.AttendanceTypeId))
+                .OrderBy(a => a.Person.UpdateDate)
+                .ThenBy(a => a.Person.Id)
+                .Take(take)
+                .Select(a => new TypedAttendee(a.Person.PeopleId!.Value, (AttendanceTypeId)a.AttendanceTypeId))
                 .Distinct()
-                .ToListAsync().ConfigureAwait(continueOnCapturedContext: false);
+                .ToListAsync().ConfigureAwait(false);
 
             return typedAttendees.ToImmutableList();
         }
@@ -43,14 +43,14 @@ namespace KidsTown.Database
             IImmutableList<BackgroundTasks.Adult.Family> families
         )
         {
-            await using var db = CommonRepository.GetDatabase(serviceScopeFactory: _serviceScopeFactory);
+            await using var db = CommonRepository.GetDatabase(_serviceScopeFactory);
 
             var existingKids = await CommonRepository.GetKidsByPeopleIds(db: db,
-                peopleIds: kids.Select(selector: p => p.PeopleId!.Value)
-                    .ToImmutableList()).ConfigureAwait(continueOnCapturedContext: false);
+                peopleIds: kids.Select(p => p.PeopleId!.Value)
+                    .ToImmutableList()).ConfigureAwait(false);
 
             return await UpdateKids(db: db, people: existingKids, updates: kids, families: families)
-                .ConfigureAwait(continueOnCapturedContext: false);
+                .ConfigureAwait(false);
         }
         
         public async Task<IImmutableList<BackgroundTasks.Adult.Family>> InsertFamilies(
@@ -58,29 +58,29 @@ namespace KidsTown.Database
             IImmutableList<PeopleUpdate> peoples
         )
         {
-            await using var db = CommonRepository.GetDatabase(serviceScopeFactory: _serviceScopeFactory);
+            await using var db = CommonRepository.GetDatabase(_serviceScopeFactory);
 
-            var families = newHouseholdIds.Select(selector: h => MapFamily(householdId: h, peoples: peoples));
-            await db.AddRangeAsync(entities: families).ConfigureAwait(continueOnCapturedContext: false);
-            await db.SaveChangesAsync().ConfigureAwait(continueOnCapturedContext: false);
-            return await GetExistingFamilies(householdIds: newHouseholdIds).ConfigureAwait(continueOnCapturedContext: false);
+            var families = newHouseholdIds.Select(h => MapFamily(householdId: h, peoples: peoples));
+            await db.AddRangeAsync(families).ConfigureAwait(false);
+            await db.SaveChangesAsync().ConfigureAwait(false);
+            return await GetExistingFamilies(newHouseholdIds).ConfigureAwait(false);
         }
         
         public async Task<IImmutableList<BackgroundTasks.Adult.Family>> GetExistingFamilies(
             IImmutableList<long> householdIds
         )
         {
-            await using var db = CommonRepository.GetDatabase(serviceScopeFactory: _serviceScopeFactory);
+            await using var db = CommonRepository.GetDatabase(_serviceScopeFactory);
 
-            var families = await db.Families.Where(predicate: f => householdIds.Contains(f.HouseholdId))
-                .ToListAsync().ConfigureAwait(continueOnCapturedContext: false);
+            var families = await db.Families.Where(f => householdIds.Contains(f.HouseholdId))
+                .ToListAsync().ConfigureAwait(false);
 
-            return families.Select(selector: MapFamily).ToImmutableList();
+            return families.Select(MapFamily).ToImmutableList();
         }
 
         private static Family MapFamily(long householdId, IImmutableList<PeopleUpdate> peoples)
         {
-            var name = peoples.First(predicate: p => p.HouseholdId == householdId).HouseholdName;
+            var name = peoples.First(p => p.HouseholdId == householdId).HouseholdName;
 
             return new Family
             {
@@ -104,14 +104,19 @@ namespace KidsTown.Database
             IImmutableList<BackgroundTasks.Adult.Family> families
         )
         {
-            var updatesByPeopleId = updates.Where(predicate: u => u.PeopleId.HasValue)
-                .ToImmutableDictionary(keySelector: k => k.PeopleId!, elementSelector: v => v);
+            var updatesByPeopleId = updates.Where(u => u.PeopleId.HasValue)
+                .ToImmutableDictionary(keySelector: k => k.PeopleId!.Value, elementSelector: v => v);
 
             var updateDate = DateTime.UtcNow;
             
-            people.ForEach(action: p =>
+            people.ForEach(p =>
             {
-                var update = updatesByPeopleId[key: p.PeopleId!];
+                if (p.PeopleId == null)
+                {
+                    return;
+                }
+               
+                var update = updatesByPeopleId[p.PeopleId.Value];
 
                 p.Kid ??= new Kid();
 
@@ -121,11 +126,12 @@ namespace KidsTown.Database
 
                 p.FirstName = update.FirstName;
                 p.LastName = update.LastName;
-                p.FamilyId = families.SingleOrDefault(predicate: f => f.HouseholdId == update.HouseholdId)?.FamilyId;
+                p.FamilyId = families.SingleOrDefault(f => f.HouseholdId == update.HouseholdId)?.FamilyId;
+                
                 p.UpdateDate = updateDate;
             });
             
-            return await db.SaveChangesAsync().ConfigureAwait(continueOnCapturedContext: false);
+            return await db.SaveChangesAsync().ConfigureAwait(false);
         }
     }
 }

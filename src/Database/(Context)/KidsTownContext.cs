@@ -10,7 +10,7 @@ namespace KidsTown.Database
         private readonly IConfiguration _configuration;
 
         public KidsTownContext(DbContextOptions<KidsTownContext> options, IConfiguration configuration)
-            : base(options: options)
+            : base(options)
         {
             _configuration = configuration;
         }
@@ -19,7 +19,7 @@ namespace KidsTown.Database
         {
             if (!optionsBuilder.IsConfigured)
             {
-                optionsBuilder.UseSqlServer(connectionString: _configuration.GetConnectionString(name: "Database"));
+                optionsBuilder.UseSqlServer(_configuration.GetConnectionString("Database"));
             }
         }
     }

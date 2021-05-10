@@ -22,10 +22,9 @@ namespace KidsTown.BackgroundTasks.Common
         private readonly ILogger<BackgroundTask> _logger;
         private readonly string _environment;
 
-        private static readonly TimeSpan EmailSendPause = TimeSpan.FromHours(value: 1);
+        private static readonly TimeSpan EmailSendPause = TimeSpan.FromHours(1);
         
         private bool _taskIsActive;
-        private bool _isEnabled = true;
         private bool _taskRunsSuccessfully = true;
         
         private int _successCount;
@@ -38,21 +37,15 @@ namespace KidsTown.BackgroundTasks.Common
         {
             _backgroundTaskRepository = backgroundTaskRepository;
             _configuration = configuration;
-            _environment = configuration.GetValue<string>(key: "Environment") ?? "unknown";
+            _environment = configuration.GetValue<string>("Environment") ?? "unknown";
             _logger = loggerFactory.CreateLogger<BackgroundTask>();
         }
         
         public void ActivateTask()
         {
-            if (_isEnabled)
-            {
                 _taskIsActive = true;
-            }
         }
-
-        public void DisableTask() => _isEnabled = true;
-        public void EnableTask() => _isEnabled = false;
-        public bool IsEnabled() => _isEnabled;
+        
         public bool TaskRunsSuccessfully() => _taskRunsSuccessfully;
         
         public void DeactivateTask() => _taskIsActive = false;
@@ -68,7 +61,7 @@ namespace KidsTown.BackgroundTasks.Common
         
         public Task StartAsync(CancellationToken cancellationToken)
         {
-            var task = ExecuteAsync(cancellationToken: cancellationToken);
+            var task = ExecuteAsync(cancellationToken);
             return task.IsCompleted ? task : Task.CompletedTask;
         }
 
@@ -87,10 +80,10 @@ namespace KidsTown.BackgroundTasks.Common
             while (!cancellationToken.IsCancellationRequested)
             {
                 activationTime = await WaitForActivation(activationTime: activationTime, cancellationToken: cancellationToken);
-                await RunTask(logger: _logger).ConfigureAwait(continueOnCapturedContext: false);
-                await Sleep(cancellationToken: cancellationToken).ConfigureAwait(continueOnCapturedContext: false);
+                await RunTask(_logger).ConfigureAwait(false);
+                await Sleep(cancellationToken).ConfigureAwait(false);
 
-                if (activationTime < DateTime.UtcNow.Date.AddHours(value: 1))
+                if (activationTime < DateTime.UtcNow.Date.AddHours(1))
                 {
                     _taskIsActive = false;
                 }
@@ -102,7 +95,7 @@ namespace KidsTown.BackgroundTasks.Common
             try
             {
                 _lastExecution = DateTime.UtcNow;
-                var updateCount = await ExecuteRun().ConfigureAwait(continueOnCapturedContext: false);
+                var updateCount = await ExecuteRun().ConfigureAwait(false);
                 _successCount++;
 
                 if (!_taskRunsSuccessfully)
@@ -112,8 +105,7 @@ namespace KidsTown.BackgroundTasks.Common
                     {
                         SendEmail(
                             subject: $"{GetSubjectPrefix()} Task ran successfully",
-                            body:
-                            $"Task resumed normal operation at {DateTime.UtcNow} after {_currentFailedCount} failed executions.",
+                            body: $"Task resumed normal operation at {DateTime.UtcNow} after {_currentFailedCount} failed executions.",
                             logger: _logger);
                     }
                 }
@@ -139,15 +131,17 @@ namespace KidsTown.BackgroundTasks.Common
 
             LogTaskRun(success: false, updateCount: 0, environment: _environment);
 
-            if (_currentFailedCount % 10 == 0 && _emailSent < DateTime.UtcNow - EmailSendPause)
+            if (_currentFailedCount % 10 != 0 || _emailSent >= DateTime.UtcNow - EmailSendPause)
             {
-                SendEmail(
-                    subject: $"{GetSubjectPrefix()} Task failed the last {_currentFailedCount} executions.",
-                    body: exception.Message + exception.StackTrace,
-                    logger: _logger);
-
-                _emailSent = DateTime.UtcNow;
+                return;
             }
+            
+            SendEmail(
+                subject: $"{GetSubjectPrefix()} Task failed the last {_currentFailedCount} executions.",
+                body: exception.Message + exception.StackTrace,
+                logger: _logger);
+
+            _emailSent = DateTime.UtcNow;
         }
 
         private string GetSubjectPrefix()
@@ -159,12 +153,12 @@ namespace KidsTown.BackgroundTasks.Common
 
         private async Task<DateTime> WaitForActivation(DateTime? activationTime, CancellationToken cancellationToken)
         {
-            var waitTask = Task.Run(async () =>
+            var waitTask = Task.Run(function: async () =>
             {
-                while (!_taskIsActive) await Task.Delay(1000, cancellationToken);
-            }, cancellationToken);
+                while (!_taskIsActive) await Task.Delay(millisecondsDelay: 1000, cancellationToken: cancellationToken);
+            }, cancellationToken: cancellationToken);
 
-            await Task.WhenAny(waitTask, Task.Delay(-1, cancellationToken));
+            await Task.WhenAny(task1: waitTask, task2: Task.Delay(millisecondsDelay: -1, cancellationToken: cancellationToken));
 
             return activationTime ?? DateTime.UtcNow;
         }
@@ -172,7 +166,7 @@ namespace KidsTown.BackgroundTasks.Common
         private async Task Sleep(CancellationToken cancellationToken)
         {
             await Task.Delay(millisecondsDelay: Interval, cancellationToken: cancellationToken)
-                .ConfigureAwait(continueOnCapturedContext: false);
+                .ConfigureAwait(false);
         }
 
         private void LogTaskRun(bool success, int updateCount, string environment)
@@ -195,9 +189,9 @@ namespace KidsTown.BackgroundTasks.Common
                     From = new MailAddress(address: "kidstown@gvc.ch", displayName: "KidsTown")
                 };
 
-                message.To.Add(item: new MailAddress(address: "nsiddiqui@gvc.ch", displayName: "Nadina Siddiqui"));
-                var username = _configuration.GetValue<string>(key: "MailAccount:Username");
-                var password = _configuration.GetValue<string>(key: "MailAccount:Password");
+                message.To.Add(new MailAddress(address: "nsiddiqui@gvc.ch", displayName: "Nadina Siddiqui"));
+                var username = _configuration.GetValue<string>("MailAccount:Username");
+                var password = _configuration.GetValue<string>("MailAccount:Password");
 
 
                 SmtpClient client = new()
@@ -207,7 +201,7 @@ namespace KidsTown.BackgroundTasks.Common
                     Port = 587,
                     EnableSsl = true
                 };
-                client.Send(message: message);
+                client.Send(message);
             }
             catch (Exception ex)
             {

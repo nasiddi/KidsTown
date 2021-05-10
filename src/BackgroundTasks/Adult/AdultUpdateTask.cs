@@ -21,9 +21,9 @@ namespace KidsTown.BackgroundTasks.Adult
             _adultUpdateService = adultUpdateService;
         }
 
-        protected override BackgroundTaskType BackgroundTaskType { get; } = BackgroundTaskType.AdultUpdateTask;
-        protected override int Interval { get; } = 45000;
-        protected override int LogFrequency { get; } = 4;
+        protected override BackgroundTaskType BackgroundTaskType => BackgroundTaskType.AdultUpdateTask;
+        protected override int Interval => 45000;
+        protected override int LogFrequency => 4;
 
         protected override Task<int> ExecuteRun()
         {

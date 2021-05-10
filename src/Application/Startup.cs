@@ -31,29 +31,23 @@ namespace KidsTown.Application
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddControllersWithViews().
-                AddJsonOptions(configure: opts =>
+                AddJsonOptions(opts =>
                 {
-                    opts.JsonSerializerOptions.Converters.Add(item: new JsonStringEnumConverter());
+                    opts.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
                 });
-
             // In production, the React files will be served from this directory
-            services.AddSpaStaticFiles(configuration: configuration => { configuration.RootPath = "ClientApp/build"; });
+            services.AddSpaStaticFiles(configuration => { configuration.RootPath = "ClientApp/build"; });
 
-            services.AddSingleton<Func<BackgroundTaskType, IBackgroundTask>>(implementationFactory: serviceProvider => key =>  
-            {  
-                switch (key)  
+            services.AddSingleton<Func<BackgroundTaskType, IBackgroundTask>>(serviceProvider => key =>
+            {
+                return key switch
                 {
-                    case BackgroundTaskType.AdultUpdateTask:
-                        return serviceProvider.GetService<AdultUpdateTask>()!;
-                    case BackgroundTaskType.AttendanceUpdateTask:
-                        return serviceProvider.GetService<AttendanceUpdateTask>()!;
-                    case BackgroundTaskType.AutoCheckOutTask:
-                        return serviceProvider.GetService<AutoCheckOutTask>()!;
-                    case BackgroundTaskType.KidUpdateTask:
-                        return serviceProvider.GetService<KidUpdateTask>()!;
-                    default:
-                        return null!;
-                }  
+                    BackgroundTaskType.AdultUpdateTask => serviceProvider.GetService<AdultUpdateTask>()!,
+                    BackgroundTaskType.AttendanceUpdateTask => serviceProvider.GetService<AttendanceUpdateTask>()!,
+                    BackgroundTaskType.AutoCheckOutTask => serviceProvider.GetService<AutoCheckOutTask>()!,
+                    BackgroundTaskType.KidUpdateTask => serviceProvider.GetService<KidUpdateTask>()!,
+                    _ => null!
+                };
             });
 
             services.AddSingleton<ITaskManagementService, TaskManagementService>();
@@ -69,8 +63,8 @@ namespace KidsTown.Application
             services.AddSingleton<IAdultUpdateRepository, AdultUpdateRepository>();
             services.AddSingleton<IBackgroundTaskRepository, BackgroundTaskRepository>();
 
-            services.AddDbContext<KidsTownContext>(optionsAction: o 
-                => o.UseSqlServer(connectionString: Configuration.GetConnectionString(name: "Database")));
+            services.AddDbContext<KidsTownContext>(o 
+                => o.UseSqlServer(Configuration.GetConnectionString("Database")));
 
             services.AddScoped<ICheckInOutService, CheckInOutService>();
             services.AddScoped<IConfigurationService, ConfigurationService>();
@@ -90,7 +84,7 @@ namespace KidsTown.Application
             }
             else
             {
-                app.UseExceptionHandler(errorHandlingPath: "/Error");
+                app.UseExceptionHandler("/Error");
                 // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
                 app.UseHsts();
             }
@@ -100,20 +94,20 @@ namespace KidsTown.Application
 
             app.UseRouting();
 
-            app.UseEndpoints(configure: endpoints =>
+            app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllerRoute(
                     name: "default",
                     pattern: "{controller}/{action=Index}/{id?}");
             });
 
-            app.UseSpa(configuration: spa =>
+            app.UseSpa(spa =>
             {
                 spa.Options.SourcePath = "ClientApp";
 
                 if (env.IsDevelopment())
                 {
-                    spa.UseReactDevelopmentServer(npmScript: "start");
+                    spa.UseReactDevelopmentServer("start");
                 }
             });
         }
