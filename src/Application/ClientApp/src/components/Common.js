@@ -160,7 +160,7 @@ export function ToggleButtons(props) {
 	)
 }
 
-export function FontAwesomeIcon(props) {
+export function FAIcon(props) {
 	React.useEffect(() => {
 		const node = loadCSS(
 			'https://use.fontawesome.com/releases/v5.12.0/css/all.css',

@@ -1,6 +1,7 @@
 ﻿using System.Collections.Immutable;
 using System.Threading.Tasks;
 using KidsTown.KidsTown;
+using KidsTown.KidsTown.Models;
 using Microsoft.AspNetCore.Mvc;
 
 namespace KidsTown.Application.Controllers
@@ -9,19 +10,30 @@ namespace KidsTown.Application.Controllers
     [Route("[controller]")]
     public class PeopleController : ControllerBase
     {
-        private readonly IPeopleRepository _peopleRepository;
+        private readonly IPeopleService _peopleService;
 
-        public PeopleController(IPeopleRepository peopleRepository)
+        public PeopleController(IPeopleService peopleService)
         {
-            _peopleRepository = peopleRepository;
+            _peopleService = peopleService;
         }
 
         [HttpPost]
         [Route("adults")]
         [Produces("application/json")]
-        public async Task<IActionResult> GetPeople([FromBody] IImmutableList<int> attendanceIds)
+        public async Task<IActionResult> GetAdults([FromBody] IImmutableList<int> attendanceIds)
         {
-            return Ok(await _peopleRepository.GetParents(attendanceIds));
+            return Ok(await _peopleService.GetParents(attendanceIds));
         }
+        
+        [HttpPost]
+        [Route("adults/update")]
+        [Produces("application/json")]
+        public async Task<IActionResult> UpdateAdults([FromBody] IImmutableList<Adult> adults)
+        {
+            await _peopleService.UpdateAdults(adults);
+            return Ok();
+        }
+        
+        
     }
 }

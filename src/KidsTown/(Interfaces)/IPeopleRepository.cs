@@ -8,5 +8,6 @@ namespace KidsTown.KidsTown
     {
         Task<IImmutableList<Adult>> GetParents(IImmutableList<int> attendanceIds);
         Task<IImmutableList<Adult>> GetAdults(IImmutableList<int> familyIds);
+        Task UpdateAdults(IImmutableList<Adult> adults);
     }
 }

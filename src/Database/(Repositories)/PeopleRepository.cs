@@ -40,18 +40,37 @@ namespace KidsTown.Database
                     select MapAdult(p, a))
                 .ToListAsync().ConfigureAwait(false);
                 
-            return adults?.ToImmutableList()
+            return adults?.OrderByDescending(a => a.IsPrimaryContact).ToImmutableList()
                    ?? ImmutableList<KidsTown.Models.Adult>.Empty;
+        }
+        public async Task UpdateAdults(IImmutableList<KidsTown.Models.Adult> adults)
+        {
+            await using var db = CommonRepository.GetDatabase(_serviceScopeFactory);
+            var persistedAdults = await db.Adults.Where(a => adults.Select(ad => ad.PersonId).Contains(a.PersonId))
+                .ToListAsync()
+                .ConfigureAwait(false);
+            
+            persistedAdults.ForEach(a =>
+            {
+                var update = adults.Single(u => u.PersonId == a.PersonId);
+
+                a.IsPrimaryContact = update.IsPrimaryContact;
+                a.PhoneNumber = update.PhoneNumber;
+            });
+
+            await db.SaveChangesAsync();
         }
 
         private static KidsTown.Models.Adult MapAdult(Person person, Adult adult)
         {
             return new()
             {
+                PersonId = adult.PersonId,
                 FamilyId = person.FamilyId!.Value,
                 FirstName = person.FirstName,
                 LastName = person.LastName,
-                PhoneNumber = adult.PhoneNumber
+                PhoneNumber = adult.PhoneNumber,
+                IsPrimaryContact = adult.IsPrimaryContact
             };
         }
     }

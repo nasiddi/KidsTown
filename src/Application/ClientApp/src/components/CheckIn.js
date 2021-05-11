@@ -8,18 +8,21 @@ import {
 	getSelectedOptionsFromStorage,
 	getStateFromLocalStorage,
 	LocationSelect,
-	FontAwesomeIcon,
 	primaryTheme,
+	FAIcon,
 	PrimaryCheckBox,
 	ToggleButtons,
 } from './Common'
 import { Alert, Button } from 'reactstrap'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { withAuth } from '../auth/MsalAuthProvider'
+
+const _ = require('lodash')
 
 function UndoButton(props) {
 	return (
 		<a onClick={props['callback']} className="alert-link">
-			<FontAwesomeIcon name={'fas fa-undo-alt'} />
+			<FAIcon name={'fas fa-undo-alt'} />
 		</a>
 	)
 }
@@ -69,6 +72,7 @@ class CheckIn extends Component {
 		this.invertSelectCandidate = this.invertSelectCandidate.bind(this)
 		this.undoAction = this.undoAction.bind(this)
 		this.handleChange = this.handleChange.bind(this)
+		this.changePrimaryContact = this.changePrimaryContact.bind(this)
 
 		this.state = {
 			locations: [],
@@ -274,12 +278,58 @@ class CheckIn extends Component {
 
 	renderAdults() {
 		const adults = this.state.adults.map((a) => (
-			<Grid item xs={12} key={a['phoneNumbers']}>
-				<LargeButton
-					id={a['phoneNumber']}
-					name={`${a['firstName']} ${a['lastName']} ${a['phoneNumber']}`}
-					color="primary"
-				/>
+			<Grid item xs={12} key={a['personId']}>
+				<Grid
+					container
+					spacing={3}
+					justify="space-between"
+					alignItems="center"
+				>
+					<Grid item xs={1}>
+						<LargeButton
+							id={a['personId']}
+							name={
+								<span id={a['personId']}>
+									<FontAwesomeIcon icon="star" />
+								</span>
+							}
+							color={
+								a['isPrimaryContact'] ? 'success' : 'secondary'
+							}
+							isOutline={!a['isPrimaryContact']}
+							onClick={this.changePrimaryContact}
+						/>
+					</Grid>
+					<Grid item xs={6}>
+						<h4
+							style={{
+								justifyContent: 'center',
+								height: '100%',
+								margin: 0,
+							}}
+						>
+							{`${a['firstName']} ${a['lastName']}`}
+						</h4>
+					</Grid>
+					<Grid item xs={4}>
+						<h4
+							style={{
+								justifyContent: 'center',
+								height: '100%',
+								margin: 0,
+							}}
+						>
+							{a['phoneNumber']}
+						</h4>
+					</Grid>
+					<Grid item xs={1}>
+						<LargeButton
+							id={a['personId']}
+							name="Edit"
+							color="primary"
+						/>
+					</Grid>
+				</Grid>
 			</Grid>
 		))
 
@@ -496,6 +546,16 @@ class CheckIn extends Component {
 			})
 	}
 
+	async savePhoneNumbers(adults) {
+		await fetch('people/adults/update', {
+			body: JSON.stringify(adults),
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json',
+			},
+		}).then()
+	}
+
 	resetView(resetAlert = true) {
 		this.focus()
 		this.setState({ checkInOutCandidates: [], securityCode: '' })
@@ -546,6 +606,38 @@ class CheckIn extends Component {
 		}
 
 		return 'primary'
+	}
+
+	changePrimaryContact(event) {
+		let id = parseInt(event.target.id, 10)
+		if (isNaN(id)) {
+			id = this.GetElementId(event.target)
+		}
+
+		const adults = this.state.adults
+		const primary = _.find(adults, { personId: id })
+
+		if (primary['isPrimaryContact']) {
+			primary['isPrimaryContact'] = false
+		} else {
+			_.forEach(adults, function (a) {
+				a['isPrimaryContact'] = false
+			})
+
+			primary['isPrimaryContact'] = true
+		}
+
+		this.setState({ adults: adults })
+		this.savePhoneNumbers(adults).then()
+	}
+
+	GetElementId(element) {
+		const id = parseInt(element['parentElement']['id'], 10)
+		if (!isNaN(id)) {
+			return id
+		}
+
+		return this.GetElementId(element['parentElement'])
 	}
 }
 

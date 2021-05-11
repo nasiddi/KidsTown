@@ -16,5 +16,9 @@ namespace KidsTown.KidsTown
         {
             return await _peopleRepository.GetParents(attendanceIds);
         }
+        public async Task UpdateAdults(IImmutableList<Adult> adults)
+        {
+            await _peopleRepository.UpdateAdults(adults);
+        }
     }
 }

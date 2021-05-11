@@ -1,4 +1,7 @@
-﻿#nullable disable
+﻿using System;
+using System.Collections.Generic;
+
+#nullable disable
 
 namespace KidsTown.Database
 {
@@ -6,6 +9,7 @@ namespace KidsTown.Database
     {
         public int PersonId { get; set; }
         public string PhoneNumber { get; set; }
+        public bool IsPrimaryContact { get; set; }
 
         public virtual Person Person { get; set; }
     }

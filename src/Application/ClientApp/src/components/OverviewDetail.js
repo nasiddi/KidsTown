@@ -250,14 +250,23 @@ class Detail extends Component {
 	getAdultInfos(row) {
 		return (
 			<div>
-				{row['adults'].map((a) => (
-					<Typography
-						key={`${a['firstName']} ${a['lastName']} ${a['phoneNumber']}`}
-					>
-						{`${a['firstName']} ${a['lastName']} ${a['phoneNumber']}`}
-						<br />
-					</Typography>
-				))}
+				{row['adults'].map((a) => {
+					const primary = a['isPrimaryContact'] ? (
+						<FontAwesomeIcon icon="star" />
+					) : (
+						<div />
+					)
+
+					return (
+						<Typography
+							key={`${a['firstName']} ${a['lastName']} ${a['phoneNumber']}`}
+						>
+							{primary}{' '}
+							{`${a['firstName']} ${a['lastName']} ${a['phoneNumber']}`}
+							<br />
+						</Typography>
+					)
+				})}
 			</div>
 		)
 	}

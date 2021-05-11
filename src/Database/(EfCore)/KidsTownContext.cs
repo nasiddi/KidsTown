@@ -1,4 +1,6 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using System;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata;
 
 #nullable disable
 
@@ -27,18 +29,20 @@ namespace KidsTown.Database
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            modelBuilder.HasAnnotation(annotation: "Relational:Collation", value: "SQL_Latin1_General_CP1_CI_AS");
+            modelBuilder.HasAnnotation("Relational:Collation", "SQL_Latin1_General_CP1_CI_AS");
 
             modelBuilder.Entity<Adult>(entity =>
             {
                 entity.HasKey(e => e.PersonId);
 
-                entity.ToTable(name: "Adult", schema: "kt");
+                entity.ToTable("Adult", "kt");
 
-                entity.HasIndex(indexExpression: e => e.PersonId, name: "XI_Adult_PersonId")
+                entity.HasIndex(e => e.PersonId, "XI_Adult_PersonId")
                     .IsUnique();
 
                 entity.Property(e => e.PersonId).ValueGeneratedNever();
+
+                entity.Property(e => e.IsPrimaryContact).HasColumnName("isPrimaryContact");
 
                 entity.Property(e => e.PhoneNumber)
                     .IsRequired()
@@ -54,7 +58,7 @@ namespace KidsTown.Database
 
             modelBuilder.Entity<Attendance>(entity =>
             {
-                entity.ToTable(name: "Attendance", schema: "kt");
+                entity.ToTable("Attendance", "kt");
 
                 entity.Property(e => e.SecurityCode)
                     .IsRequired()
@@ -82,7 +86,7 @@ namespace KidsTown.Database
 
             modelBuilder.Entity<AttendanceType>(entity =>
             {
-                entity.ToTable(name: "AttendanceType", schema: "kt");
+                entity.ToTable("AttendanceType", "kt");
 
                 entity.Property(e => e.Name)
                     .IsRequired()
@@ -92,9 +96,9 @@ namespace KidsTown.Database
 
             modelBuilder.Entity<Family>(entity =>
             {
-                entity.ToTable(name: "Family", schema: "kt");
+                entity.ToTable("Family", "kt");
 
-                entity.HasIndex(indexExpression: e => e.HouseholdId, name: "UQ_Family_HouseholdId")
+                entity.HasIndex(e => e.HouseholdId, "UQ_Family_HouseholdId")
                     .IsUnique();
 
                 entity.Property(e => e.Name)
@@ -109,14 +113,14 @@ namespace KidsTown.Database
             {
                 entity.HasKey(e => e.PersonId);
 
-                entity.ToTable(name: "Kid", schema: "kt");
+                entity.ToTable("Kid", "kt");
 
-                entity.HasIndex(indexExpression: e => e.PersonId, name: "XI_Kid_PersonId")
+                entity.HasIndex(e => e.PersonId, "XI_Kid_PersonId")
                     .IsUnique();
 
                 entity.Property(e => e.PersonId).ValueGeneratedNever();
 
-                entity.Property(e => e.UpdateDate).HasDefaultValueSql("('1980-01-01')");
+                entity.Property(e => e.UpdateDate).HasDefaultValueSql("('1970-01-01')");
 
                 entity.HasOne(d => d.Person)
                     .WithOne(p => p.Kid)
@@ -127,7 +131,7 @@ namespace KidsTown.Database
 
             modelBuilder.Entity<Location>(entity =>
             {
-                entity.ToTable(name: "Location", schema: "kt");
+                entity.ToTable("Location", "kt");
 
                 entity.Property(e => e.LocationGroupId).HasDefaultValueSql("((5))");
 
@@ -145,7 +149,7 @@ namespace KidsTown.Database
 
             modelBuilder.Entity<LocationGroup>(entity =>
             {
-                entity.ToTable(name: "LocationGroup", schema: "kt");
+                entity.ToTable("LocationGroup", "kt");
 
                 entity.Property(e => e.Name)
                     .IsRequired()
@@ -155,7 +159,7 @@ namespace KidsTown.Database
 
             modelBuilder.Entity<Person>(entity =>
             {
-                entity.ToTable(name: "Person", schema: "kt");
+                entity.ToTable("Person", "kt");
 
                 entity.Property(e => e.FirstName)
                     .IsRequired()
@@ -175,7 +179,7 @@ namespace KidsTown.Database
 
             modelBuilder.Entity<TaskExecution>(entity =>
             {
-                entity.ToTable(name: "TaskExecution", schema: "kt");
+                entity.ToTable("TaskExecution", "kt");
 
                 entity.Property(e => e.Environment)
                     .IsRequired()
