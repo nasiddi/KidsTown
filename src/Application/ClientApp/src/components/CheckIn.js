@@ -73,6 +73,9 @@ class CheckIn extends Component {
 		this.undoAction = this.undoAction.bind(this)
 		this.handleChange = this.handleChange.bind(this)
 		this.changePrimaryContact = this.changePrimaryContact.bind(this)
+		this.setPhoneNumberIsEdit = this.setPhoneNumberIsEdit.bind(this)
+		this.updatePhoneNumber = this.updatePhoneNumber.bind(this)
+		this.savePhoneNumber = this.savePhoneNumber.bind(this)
 
 		this.state = {
 			locations: [],
@@ -89,6 +92,7 @@ class CheckIn extends Component {
 			loading: true,
 			lastActionAttendanceIds: [],
 			adults: [],
+			phoneNumberEditFlags: {},
 		}
 	}
 
@@ -311,24 +315,11 @@ class CheckIn extends Component {
 							{`${a['firstName']} ${a['lastName']}`}
 						</h4>
 					</Grid>
-					<Grid item xs={4}>
-						<h4
-							style={{
-								justifyContent: 'center',
-								height: '100%',
-								margin: 0,
-							}}
-						>
-							{a['phoneNumber']}
-						</h4>
-					</Grid>
-					<Grid item xs={1}>
-						<LargeButton
-							id={a['personId']}
-							name="Edit"
-							color="primary"
-						/>
-					</Grid>
+					{this.renderPhoneNumber(
+						a['personId'],
+						a['phoneNumber'],
+						this.getPhoneNumberIsEdit(a['personId'])
+					)}
 				</Grid>
 			</Grid>
 		))
@@ -343,6 +334,65 @@ class CheckIn extends Component {
 				{adults}
 			</Grid>
 		)
+	}
+
+	renderPhoneNumber(id, phoneNumber, isEdit) {
+		if (isEdit) {
+			const number = (
+				<Grid item xs={3}>
+					<MuiThemeProvider theme={primaryTheme}>
+						<TextField
+							id={id}
+							label="PhoneNumber"
+							variant="outlined"
+							value={phoneNumber}
+							fullWidth={true}
+							onChange={this.updatePhoneNumber}
+						/>
+					</MuiThemeProvider>
+				</Grid>
+			)
+
+			const button = (
+				<Grid item xs={2}>
+					<LargeButton
+						id={id}
+						name="Save"
+						color="success"
+						onClick={this.savePhoneNumber}
+					/>
+				</Grid>
+			)
+
+			return [number, button]
+		}
+
+		const number = (
+			<Grid item xs={3}>
+				<h4
+					style={{
+						justifyContent: 'center',
+						height: '100%',
+						margin: 0,
+					}}
+				>
+					{phoneNumber}
+				</h4>
+			</Grid>
+		)
+
+		const button = (
+			<Grid item xs={2}>
+				<LargeButton
+					id={id}
+					name="Edit"
+					color="primary"
+					onClick={this.setPhoneNumberIsEdit}
+				/>
+			</Grid>
+		)
+
+		return [number, button]
 	}
 
 	render() {
@@ -411,6 +461,15 @@ class CheckIn extends Component {
 
 	updateSecurityCode = (e) => {
 		this.setState({ securityCode: e.target.value })
+	}
+
+	updatePhoneNumber = (e) => {
+		const eventId = this.getEventId(e)
+		const adults = this.state.adults
+		const adult = _.find(adults, { personId: eventId })
+		adult['phoneNumber'] = e.target.value
+
+		this.setState({ adults: adults })
 	}
 
 	async submitSecurityCode() {
@@ -540,8 +599,12 @@ class CheckIn extends Component {
 		})
 			.then((r) => r.json())
 			.then((j) => {
+				const editMap = _.map(j, function (adult) {
+					return { id: adult['personId'], isEdit: false }
+				})
 				this.setState({
 					adults: j,
+					phoneNumberEditFlags: editMap,
 				})
 			})
 	}
@@ -609,10 +672,7 @@ class CheckIn extends Component {
 	}
 
 	changePrimaryContact(event) {
-		let id = parseInt(event.target.id, 10)
-		if (isNaN(id)) {
-			id = this.GetElementId(event.target)
-		}
+		const id = this.getEventId(event)
 
 		const adults = this.state.adults
 		const primary = _.find(adults, { personId: id })
@@ -631,13 +691,48 @@ class CheckIn extends Component {
 		this.savePhoneNumbers(adults).then()
 	}
 
-	GetElementId(element) {
+	getEventId(event) {
+		let id = parseInt(event.target.id, 10)
+		if (isNaN(id)) {
+			id = this.getElementId(event.target)
+		}
+
+		return id
+	}
+
+	getElementId(element) {
 		const id = parseInt(element['parentElement']['id'], 10)
 		if (!isNaN(id)) {
 			return id
 		}
 
-		return this.GetElementId(element['parentElement'])
+		return this.getElementId(element['parentElement'])
+	}
+
+	savePhoneNumber(event) {
+		const eventId = this.getEventId(event)
+		const flags = this.state.phoneNumberEditFlags
+		const flag = _.find(flags, { id: eventId })
+		flag['isEdit'] = false
+
+		this.setState({ phoneNumberEditFlags: flags })
+
+		this.savePhoneNumbers(this.state.adults).then()
+	}
+
+	setPhoneNumberIsEdit(event) {
+		const eventId = this.getEventId(event)
+		const flags = this.state.phoneNumberEditFlags
+		const flag = _.find(flags, { id: eventId })
+		flag['isEdit'] = true
+
+		this.setState({ phoneNumberEditFlags: flags })
+	}
+
+	getPhoneNumberIsEdit(personId) {
+		const flag = _.find(this.state.phoneNumberEditFlags, { id: personId })
+
+		return flag['isEdit']
 	}
 }
 
