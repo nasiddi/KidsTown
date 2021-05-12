@@ -282,7 +282,7 @@ class CheckIn extends Component {
 
 	renderAdults() {
 		const adults = this.state.adults.map((a) => (
-			<Grid item xs={12} key={a['personId']}>
+			<Grid item xs={12} key={a['peopleId']}>
 				<Grid
 					container
 					spacing={3}
@@ -291,9 +291,9 @@ class CheckIn extends Component {
 				>
 					<Grid item xs={1}>
 						<LargeButton
-							id={a['personId']}
+							id={a['peopleId']}
 							name={
-								<span id={a['personId']}>
+								<span id={a['peopleId']}>
 									<FontAwesomeIcon icon="star" />
 								</span>
 							}
@@ -316,9 +316,9 @@ class CheckIn extends Component {
 						</h4>
 					</Grid>
 					{this.renderPhoneNumber(
-						a['personId'],
+						a['peopleId'],
 						a['phoneNumber'],
-						this.getPhoneNumberIsEdit(a['personId'])
+						this.getPhoneNumberIsEdit(a['peopleId'])
 					)}
 				</Grid>
 			</Grid>
@@ -466,7 +466,7 @@ class CheckIn extends Component {
 	updatePhoneNumber = (e) => {
 		const eventId = this.getEventId(e)
 		const adults = this.state.adults
-		const adult = _.find(adults, { personId: eventId })
+		const adult = _.find(adults, { peopleId: eventId })
 		adult['phoneNumber'] = e.target.value
 
 		this.setState({ adults: adults })
@@ -600,7 +600,7 @@ class CheckIn extends Component {
 			.then((r) => r.json())
 			.then((j) => {
 				const editMap = _.map(j, function (adult) {
-					return { id: adult['personId'], isEdit: false }
+					return { id: adult['peopleId'], isEdit: false }
 				})
 				this.setState({
 					adults: j,
@@ -609,8 +609,8 @@ class CheckIn extends Component {
 			})
 	}
 
-	async savePhoneNumbers(adults) {
-		await fetch('people/adults/update', {
+	async savePhoneNumbers(adults, numberChanged) {
+		await fetch(`people/adults/update?updatePhoneNumber=${numberChanged}`, {
 			body: JSON.stringify(adults),
 			method: 'POST',
 			headers: {
@@ -675,7 +675,7 @@ class CheckIn extends Component {
 		const id = this.getEventId(event)
 
 		const adults = this.state.adults
-		const primary = _.find(adults, { personId: id })
+		const primary = _.find(adults, { peopleId: id })
 
 		if (primary['isPrimaryContact']) {
 			primary['isPrimaryContact'] = false
@@ -688,7 +688,8 @@ class CheckIn extends Component {
 		}
 
 		this.setState({ adults: adults })
-		this.savePhoneNumbers(adults).then()
+		this.savePhoneNumbers(adults, false).then()
+		this.focus()
 	}
 
 	getEventId(event) {
@@ -717,7 +718,8 @@ class CheckIn extends Component {
 
 		this.setState({ phoneNumberEditFlags: flags })
 
-		this.savePhoneNumbers(this.state.adults).then()
+		this.savePhoneNumbers(this.state.adults, true).then()
+		this.focus()
 	}
 
 	setPhoneNumberIsEdit(event) {
@@ -729,8 +731,8 @@ class CheckIn extends Component {
 		this.setState({ phoneNumberEditFlags: flags })
 	}
 
-	getPhoneNumberIsEdit(personId) {
-		const flag = _.find(this.state.phoneNumberEditFlags, { id: personId })
+	getPhoneNumberIsEdit(peopleId) {
+		const flag = _.find(this.state.phoneNumberEditFlags, { id: peopleId })
 
 		return flag['isEdit']
 	}

@@ -25,10 +25,7 @@ namespace KidsTown.BackgroundTasks.Kid
         {
             var typedAttendees = await _kidUpdateRepository.GetKidsToUpdate(daysLookBack: daysLookBack, take: batchSize)
                 .ConfigureAwait(false);
-            var kidsPeopleIds = typedAttendees
-                .Where(a
-                    => a.AttendanceTypeId is AttendanceTypeId.Regular or AttendanceTypeId.Guest)
-                .Select(a => a.PeopleId).ToImmutableList();
+            var kidsPeopleIds = typedAttendees.Select(a => a.PeopleId).ToImmutableList();
             
             if (kidsPeopleIds.Count == 0)
             {

@@ -5,10 +5,12 @@ using System.Linq;
 using System.Threading.Tasks;
 using KidsTown.BackgroundTasks.Attendance;
 using KidsTown.BackgroundTasks.Common;
+using KidsTown.Database.EfCore;
 using KidsTown.PlanningCenterApiClient.Models.CheckInsResult;
 using KidsTown.Shared;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Location = KidsTown.Database.EfCore.Location;
 
 namespace KidsTown.Database
 {

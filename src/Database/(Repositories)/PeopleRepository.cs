@@ -1,6 +1,7 @@
 using System.Collections.Immutable;
 using System.Linq;
 using System.Threading.Tasks;
+using KidsTown.Database.EfCore;
 using KidsTown.KidsTown;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -46,13 +47,17 @@ namespace KidsTown.Database
         public async Task UpdateAdults(IImmutableList<KidsTown.Models.Adult> adults)
         {
             await using var db = CommonRepository.GetDatabase(_serviceScopeFactory);
-            var persistedAdults = await db.Adults.Where(a => adults.Select(ad => ad.PersonId).Contains(a.PersonId))
+            var persistedAdults = await db.Adults
+                .Include(a => a.Person)
+                .Where(a => 
+                    a.Person.PeopleId.HasValue 
+                            && adults.Select(ad => ad.PeopleId).Contains(a.Person.PeopleId.Value))
                 .ToListAsync()
                 .ConfigureAwait(false);
             
             persistedAdults.ForEach(a =>
             {
-                var update = adults.Single(u => u.PersonId == a.PersonId);
+                var update = adults.Single(u => u.PeopleId == a.Person.PeopleId);
 
                 a.IsPrimaryContact = update.IsPrimaryContact;
                 a.PhoneNumber = update.PhoneNumber;
@@ -65,8 +70,9 @@ namespace KidsTown.Database
         {
             return new()
             {
-                PersonId = adult.PersonId,
+                PeopleId = person.PeopleId,
                 FamilyId = person.FamilyId!.Value,
+                PhoneNumberId = adult.PhoneNumberId,
                 FirstName = person.FirstName,
                 LastName = person.LastName,
                 PhoneNumber = adult.PhoneNumber,

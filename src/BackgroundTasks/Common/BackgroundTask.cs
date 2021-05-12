@@ -11,7 +11,7 @@ namespace KidsTown.BackgroundTasks.Common
 {
     public abstract class BackgroundTask : IHostedService, IBackgroundTask
     {
-        protected const int DaysLookBack = 7;
+        protected const int DaysLookBack = 180;
 
         protected abstract BackgroundTaskType BackgroundTaskType { get; }
         protected abstract int Interval { get; }

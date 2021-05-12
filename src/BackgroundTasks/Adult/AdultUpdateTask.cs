@@ -22,12 +22,12 @@ namespace KidsTown.BackgroundTasks.Adult
         }
 
         protected override BackgroundTaskType BackgroundTaskType => BackgroundTaskType.AdultUpdateTask;
-        protected override int Interval => 45000;
+        protected override int Interval => 15000;
         protected override int LogFrequency => 4;
 
         protected override Task<int> ExecuteRun()
         {
-            return _adultUpdateService.UpdateParents(daysLookBack: DaysLookBack, batchSize: 20);
+            return _adultUpdateService.UpdateParents(daysLookBack: DaysLookBack, batchSize: 50);
         }
     }
 }

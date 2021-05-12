@@ -27,7 +27,7 @@ namespace KidsTown.BackgroundTasks.Kid
 
         protected override Task<int> ExecuteRun()
         {
-            return _kidUpdateService.UpdateKids(daysLookBack: DaysLookBack, batchSize: 80);
+            return _kidUpdateService.UpdateKids(daysLookBack: DaysLookBack, batchSize: 100);
         }
     }
 }

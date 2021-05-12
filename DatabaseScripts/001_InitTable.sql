@@ -1,3 +1,5 @@
+--dotnet ef dbcontext scaffold Name=ConnectionStrings:Database Microsoft.EntityFrameworkCore.SqlServer -f -o "../Database/EfCore" --namespace KidsTown.Database.EfCore
+
 IF NOT EXISTS(SELECT * FROM sys.databases WHERE name = 'KidsTown')
     BEGIN
         CREATE DATABASE [KidsTown]

@@ -112,12 +112,13 @@ namespace KidsTown.BackgroundTasks.Adult
             return new AdultUpdate(
                 peopleId: adult.Id,
                 familyId: family.FamilyId,
+                phoneNumberId: number.Id,
                 firstName: adult.Attributes?.FirstName ?? string.Empty,
                 lastName: adult.Attributes?.LastName ?? string.Empty,
-                phoneNumber: number);
+                phoneNumber: number.Number);
         }
         
-        private static string? SelectNumber(
+        private static PhoneNumber? SelectNumber(
             IImmutableList<PlanningCenterApiClient.Models.PeopleResult.Included> numbers)
         {
             switch (numbers.Count)
@@ -125,11 +126,13 @@ namespace KidsTown.BackgroundTasks.Adult
                 case < 1:
                     return null;
                 case 1:
-                    return numbers.Single().Attributes?.Number;
+                    var included = numbers.Single();
+                    return included.Attributes?.Number != null ? new PhoneNumber(id: included.Id, number: included.Attributes.Number) : null;
                 case > 1:
                     var mobileNumbers = numbers.Where(n => n.Attributes?.NumberType == "Mobile").ToImmutableList();
-                    var primaryNumber = numbers.FirstOrDefault(n => n.Attributes?.Primary == true)?.Attributes
-                        ?.Number;
+                    var primaryContact = numbers.FirstOrDefault(n => n.Attributes?.Primary == true);
+                    var primaryNumber = primaryContact?.Attributes?.Number != null ? new PhoneNumber(id: primaryContact.Id, number: primaryContact.Attributes.Number) : null;
+                    
                     if (numbers.Count <= mobileNumbers.Count)
                     {
                         return primaryNumber;
@@ -137,6 +140,17 @@ namespace KidsTown.BackgroundTasks.Adult
 
                     var mobileNumber = SelectNumber(mobileNumbers);
                     return mobileNumber ?? primaryNumber;
+            }
+        }
+
+        private class PhoneNumber
+        {
+            public readonly long Id;
+            public readonly string Number;
+            public PhoneNumber(long id, string number)
+            {
+                Id = id;
+                Number = number;
             }
         }
     }

@@ -28,9 +28,9 @@ namespace KidsTown.Application.Controllers
         [HttpPost]
         [Route("adults/update")]
         [Produces("application/json")]
-        public async Task<IActionResult> UpdateAdults([FromBody] IImmutableList<Adult> adults)
+        public async Task<IActionResult> UpdateAdults([FromBody] IImmutableList<Adult> adults, [FromQuery] bool updatePhoneNumber = false)
         {
-            await _peopleService.UpdateAdults(adults);
+            await _peopleService.UpdateAdults(adults: adults, updatePhoneNumber: updatePhoneNumber);
             return Ok();
         }
         

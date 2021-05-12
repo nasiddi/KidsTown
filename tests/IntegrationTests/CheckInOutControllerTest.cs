@@ -6,6 +6,7 @@ using KidsTown.Application.Controllers;
 using KidsTown.Application.Models;
 using KidsTown.BackgroundTasks.Common;
 using KidsTown.Database;
+using KidsTown.Database.EfCore;
 using KidsTown.IntegrationTests.TestData;
 using KidsTown.KidsTown;
 using KidsTown.Shared;

@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using KidsTown.BackgroundTasks.Common;
 using KidsTown.BackgroundTasks.Kid;
+using KidsTown.Database.EfCore;
 using KidsTown.Shared;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -23,19 +24,25 @@ namespace KidsTown.Database
         public async Task<ImmutableList<TypedAttendee>> GetKidsToUpdate(int daysLookBack, int take)
         {
             await using var db = CommonRepository.GetDatabase(_serviceScopeFactory);
-            
-            var typedAttendees = await db.Attendances
-                .Include(a => a.Person)
-                .Where(i
-                    => i.InsertDate >= DateTime.Today.AddDays(-daysLookBack) && i.Person.PeopleId.HasValue)
-                .OrderBy(a => a.Person.UpdateDate)
-                .ThenBy(a => a.Person.Id)
-                .Take(take)
-                .Select(a => new TypedAttendee(a.Person.PeopleId!.Value, (AttendanceTypeId)a.AttendanceTypeId))
+
+            var personIds = await db.Attendances.Where(a
+                    => a.InsertDate >= DateTime.Today.AddDays(-daysLookBack) 
+                       && a.AttendanceTypeId == (int) AttendanceTypeId.Regular)
+                .Select(a => a.PersonId)
                 .Distinct()
                 .ToListAsync().ConfigureAwait(false);
 
-            return typedAttendees.ToImmutableList();
+            var attendees = await db.People
+                .Include(p => p.Kid)
+                .Where(p => p.PeopleId.HasValue
+                && personIds.Contains(p.Id))
+                .OrderBy(p => p.Kid.UpdateDate)
+                .Take(take)
+                .Select(p => new TypedAttendee(p.PeopleId!.Value, AttendanceTypeId.Regular, p.Kid.UpdateDate))
+                .ToListAsync().ConfigureAwait(false);
+            
+            
+            return attendees.ToImmutableList();
         }
 
         public async Task<int> UpdateKids(

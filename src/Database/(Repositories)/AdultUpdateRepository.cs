@@ -3,8 +3,12 @@ using System.Collections.Immutable;
 using System.Linq;
 using System.Threading.Tasks;
 using KidsTown.BackgroundTasks.Adult;
+using KidsTown.Database.EfCore;
+using KidsTown.Shared;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Family = KidsTown.Database.EfCore.Family;
+using Person = KidsTown.Database.EfCore.Person;
 
 namespace KidsTown.Database
 {
@@ -21,20 +25,27 @@ namespace KidsTown.Database
         {
             await using var db = CommonRepository.GetDatabase(_serviceScopeFactory);
             
+            var personIds = await db.Attendances.Where(a
+                    => a.InsertDate >= DateTime.Today.AddDays(-daysLookBack) 
+                       && a.AttendanceTypeId == (int) AttendanceTypeId.Regular)
+                .Select(a => a.PersonId)
+                .Distinct()
+                .ToListAsync().ConfigureAwait(false);
+            
+            var familyIds = await db.People
+                .Where(p => p.FamilyId.HasValue && personIds.Contains(p.Id))
+                .Select(p => p.FamilyId)
+                .Distinct()
+                .ToListAsync().ConfigureAwait(false);
+                
             var families = await db.Families
                 .Include(f => f.People)
-                .ThenInclude(p => p.Adult)
-                .Include(f => f.People)
-                .ThenInclude(p => p.Attendances)
+                .Where(f => familyIds.Contains(f.Id))
+                .OrderBy(f => f.UpdateDate)
+                .Take(take)
                 .ToListAsync();
 
-            var filteredFamilies = families.Where(f => AttendanceIsWithinLookBackWindow(f: f, daysLookBack: daysLookBack))
-                .OrderBy(f => f.UpdateDate)
-                .ThenBy(f => f.Id)
-                .Take(take)
-                .ToImmutableList();
-
-            return filteredFamilies.Select(MapFamily).ToImmutableList();
+            return families.Select(MapFamily).ToImmutableList();
         }
         
         public async Task<int> UpdateAdults(IImmutableList<AdultUpdate> parentUpdates)
@@ -105,7 +116,12 @@ namespace KidsTown.Database
             
             if (update.PhoneNumber.Length > 0)
             {
-                person.Adult ??= new Adult();
+                person.Adult ??= new Adult
+                {
+                    IsPrimaryContact = false
+                };
+
+                person.Adult.PhoneNumberId = update.PhoneNumberId;
                 person.Adult.PhoneNumber = update.PhoneNumber;
             }
 
@@ -117,7 +133,9 @@ namespace KidsTown.Database
         {
             var adult = new Adult
             {
-                PhoneNumber = adultUpdate.PhoneNumber
+                PhoneNumberId = adultUpdate.PhoneNumberId,
+                PhoneNumber = adultUpdate.PhoneNumber,
+                IsPrimaryContact = false
             };
 
             return new Person
@@ -151,13 +169,6 @@ namespace KidsTown.Database
                 familyId: family.Id,
                 householdId: family.HouseholdId,
                 members: members);
-        }
-
-        private static bool AttendanceIsWithinLookBackWindow(Family f, int daysLookBack)
-        {
-            return f.People.Any(
-                p => p.Attendances.Any(
-                    a => a.InsertDate > DateTime.Today.AddDays(-daysLookBack)));
         }
     }
 }

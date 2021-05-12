@@ -150,6 +150,10 @@ namespace KidsTown.IntegrationTests.Mocks
                 Data = GetEventData()
             })!;
         }
+        public Task PatchPhoneNumber(long peopleId, long phoneNumberId, string phoneNumber)
+        {
+            return Task.CompletedTask;
+        }
 
         private static List<PlanningCenterApiClient.Models.EventResult.Datum> GetEventData()
         {

@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Threading.Tasks;
 using KidsTown.BackgroundTasks.Common;
+using KidsTown.Database.EfCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 

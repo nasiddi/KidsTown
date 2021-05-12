@@ -6,6 +6,7 @@ using KidsTown.BackgroundTasks.CheckOut;
 using KidsTown.BackgroundTasks.Common;
 using KidsTown.BackgroundTasks.Kid;
 using KidsTown.Database;
+using KidsTown.Database.EfCore;
 using KidsTown.KidsTown;
 using KidsTown.PlanningCenterApiClient;
 using Microsoft.AspNetCore.Builder;

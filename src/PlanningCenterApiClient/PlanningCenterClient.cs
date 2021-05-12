@@ -10,8 +10,10 @@ using KidsTown.PlanningCenterApiClient.Models.CheckInsResult;
 using KidsTown.PlanningCenterApiClient.Models.EventResult;
 using KidsTown.PlanningCenterApiClient.Models.HouseholdResult;
 using KidsTown.PlanningCenterApiClient.Models.PeopleResult;
+using KidsTown.PlanningCenterApiClient.Models.PhoneNumberPatch;
 using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
+using Attributes = KidsTown.PlanningCenterApiClient.Models.PhoneNumberPatch.Attributes;
 
 namespace KidsTown.PlanningCenterApiClient
 {
@@ -52,6 +54,37 @@ namespace KidsTown.PlanningCenterApiClient
             var endPoint = $"people/v2/households/{householdId}?include=people";
             var households = await FetchData<Household>(endPoint).ConfigureAwait(false);
             return households.SingleOrDefault();
+        }
+        
+        public async Task PatchPhoneNumber(long peopleId, long phoneNumberId, string phoneNumber)
+        {
+            try
+            {
+                var body = new PhoneNumber
+                {
+                    Data = new Data
+                    {
+                        Type = "PhoneNumber",
+                        Id = phoneNumberId,
+                        Attributes = new Attributes
+                        {
+                            Number = phoneNumber
+                        }
+                    }
+                };
+
+                var jsonRequest = body.ToJson();
+                
+                var content = new StringContent(jsonRequest, Encoding.UTF8, "application/json-patch+json");
+
+                
+                var endPoint = $"people/v2/people/{peopleId}/phone_numbers/{phoneNumberId}";
+                await Client.PatchAsync(requestUri: endPoint, content);
+            }
+            catch
+            {
+                // ignored
+            }
         }
 
         private HttpClient InitClient()

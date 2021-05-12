@@ -13,5 +13,7 @@ namespace KidsTown.PlanningCenterApiClient
         Task<IImmutableList<People>> GetPeopleUpdates(IImmutableList<long> peopleIds);
         Task<Household?> GetHousehold(long householdId);
         Task<Event?> GetActiveEvents();
+        Task PatchPhoneNumber(long peopleId, long phoneNumberId, string phoneNumber);
+
     }
 }

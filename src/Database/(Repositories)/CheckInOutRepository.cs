@@ -3,11 +3,13 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using System.Threading.Tasks;
+using KidsTown.Database.EfCore;
 using KidsTown.KidsTown;
 using KidsTown.KidsTown.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using KidsTown.Shared;
+using Kid = KidsTown.Database.EfCore.Kid;
 
 namespace KidsTown.Database
 {
