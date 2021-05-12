@@ -85,8 +85,15 @@ class CheckIn extends Component {
 				[]
 			),
 			securityCode: '',
-			fastCheckInOut: getStateFromLocalStorage('fastCheckInOut'),
-			singleCheckInOut: getStateFromLocalStorage('singleCheckInOut'),
+			fastCheckInOut: getStateFromLocalStorage('fastCheckInOut', true),
+			singleCheckInOut: getStateFromLocalStorage(
+				'singleCheckInOut',
+				false
+			),
+			showPhoneNumbers: getStateFromLocalStorage(
+				'showPhoneNumbers',
+				true
+			),
 			alert: { text: '', level: 1 },
 			checkType: localStorage.getItem('checkType') ?? 'CheckIn',
 			loading: true,
@@ -133,12 +140,14 @@ class CheckIn extends Component {
 			<Grid item xs={12}>
 				<Grid
 					container
-					spacing={3}
+					spacing={1}
 					justify="space-between"
 					alignItems="center"
 				>
-					<ToggleButtons buttons={toggleButtons} />
-					<Grid item md={3} xs={6}>
+					<Grid item md={'auto'} xs={12}>
+						<ToggleButtons buttons={toggleButtons} />
+					</Grid>
+					<Grid item>
 						<PrimaryCheckBox
 							name="fastCheckInOut"
 							checked={this.state.fastCheckInOut}
@@ -146,7 +155,7 @@ class CheckIn extends Component {
 							label={`Fast ${this.state.checkType}`}
 						/>
 					</Grid>
-					<Grid item md={3} xs={6}>
+					<Grid item>
 						<PrimaryCheckBox
 							name="singleCheckInOut"
 							checked={this.state.singleCheckInOut}
@@ -154,7 +163,21 @@ class CheckIn extends Component {
 							label={`Single ${this.state.checkType}`}
 						/>
 					</Grid>
-					<Grid item md={3} xs={12}>
+					<Grid item>
+						<PrimaryCheckBox
+							name="showPhoneNumbers"
+							checked={this.state.showPhoneNumbers}
+							onChange={this.handleChange}
+							label={'Show Numbers'}
+							disabled={this.state.checkType !== 'CheckIn'}
+						/>
+					</Grid>
+					<Grid
+						item
+						md={'auto'}
+						xs={12}
+						style={{ minWidth: '190px' }}
+					>
 						<LocationSelect
 							name={'checkInOutLocations'}
 							onChange={this.updateOptions}
@@ -163,6 +186,9 @@ class CheckIn extends Component {
 							defaultOptions={this.state.checkInOutLocations}
 							minHeight={44}
 						/>
+					</Grid>
+					<Grid item md={12} xs={12}>
+						<br />
 					</Grid>
 					<Grid item md={10} xs={12}>
 						<MuiThemeProvider theme={primaryTheme}>
@@ -289,7 +315,7 @@ class CheckIn extends Component {
 					justify="space-between"
 					alignItems="center"
 				>
-					<Grid item xs={1}>
+					<Grid item md={1} xs={3}>
 						<LargeButton
 							id={a['peopleId']}
 							name={
@@ -304,7 +330,7 @@ class CheckIn extends Component {
 							onClick={this.changePrimaryContact}
 						/>
 					</Grid>
-					<Grid item xs={6}>
+					<Grid item md={6} xs={9}>
 						<h4
 							style={{
 								justifyContent: 'center',
@@ -316,6 +342,11 @@ class CheckIn extends Component {
 						</h4>
 					</Grid>
 					{this.renderPhoneNumber(
+						a['peopleId'],
+						a['phoneNumber'],
+						this.getPhoneNumberIsEdit(a['peopleId'])
+					)}
+					{this.renderPhoneNumberEditButton(
 						a['peopleId'],
 						a['phoneNumber'],
 						this.getPhoneNumberIsEdit(a['peopleId'])
@@ -336,10 +367,36 @@ class CheckIn extends Component {
 		)
 	}
 
+	renderPhoneNumberEditButton(id, phoneNumber, isEdit) {
+		if (isEdit) {
+			return (
+				<Grid item md={2} xs={4}>
+					<LargeButton
+						id={id}
+						name="Save"
+						color="success"
+						onClick={this.savePhoneNumber}
+					/>
+				</Grid>
+			)
+		}
+
+		return (
+			<Grid item md={2} xs={4}>
+				<LargeButton
+					id={id}
+					name="Edit"
+					color="primary"
+					onClick={this.setPhoneNumberIsEdit}
+				/>
+			</Grid>
+		)
+	}
+
 	renderPhoneNumber(id, phoneNumber, isEdit) {
 		if (isEdit) {
-			const number = (
-				<Grid item xs={3}>
+			return (
+				<Grid item md={3} xs={8}>
 					<MuiThemeProvider theme={primaryTheme}>
 						<TextField
 							id={id}
@@ -352,23 +409,10 @@ class CheckIn extends Component {
 					</MuiThemeProvider>
 				</Grid>
 			)
-
-			const button = (
-				<Grid item xs={2}>
-					<LargeButton
-						id={id}
-						name="Save"
-						color="success"
-						onClick={this.savePhoneNumber}
-					/>
-				</Grid>
-			)
-
-			return [number, button]
 		}
 
-		const number = (
-			<Grid item xs={3}>
+		return (
+			<Grid item md={3} xs={8}>
 				<h4
 					style={{
 						justifyContent: 'center',
@@ -380,19 +424,6 @@ class CheckIn extends Component {
 				</h4>
 			</Grid>
 		)
-
-		const button = (
-			<Grid item xs={2}>
-				<LargeButton
-					id={id}
-					name="Edit"
-					color="primary"
-					onClick={this.setPhoneNumberIsEdit}
-				/>
-			</Grid>
-		)
-
-		return [number, button]
 	}
 
 	render() {
@@ -586,7 +617,10 @@ class CheckIn extends Component {
 	}
 
 	async loadPhoneNumbers() {
-		if (this.state.checkType === 'CheckOut') {
+		if (
+			this.state.checkType === 'CheckOut' ||
+			!this.state.showPhoneNumbers
+		) {
 			return
 		}
 

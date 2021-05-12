@@ -21,7 +21,7 @@ namespace KidsTown.Database
             _serviceScopeFactory = serviceScopeFactory;
         }
         
-        public async Task<ImmutableList<TypedAttendee>> GetKidsToUpdate(int daysLookBack, int take)
+        public async Task<ImmutableList<long>> GetKidsPeopleIdToUpdate(int daysLookBack, int take)
         {
             await using var db = CommonRepository.GetDatabase(_serviceScopeFactory);
 
@@ -38,7 +38,7 @@ namespace KidsTown.Database
                 && personIds.Contains(p.Id))
                 .OrderBy(p => p.Kid.UpdateDate)
                 .Take(take)
-                .Select(p => new TypedAttendee(p.PeopleId!.Value, AttendanceTypeId.Regular, p.Kid.UpdateDate))
+                .Select(p => p.PeopleId!.Value)
                 .ToListAsync().ConfigureAwait(false);
             
             

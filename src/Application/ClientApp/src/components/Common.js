@@ -63,10 +63,10 @@ export const primaryTheme = createMuiTheme({
 	},
 })
 
-export function getStateFromLocalStorage(boolean) {
+export function getStateFromLocalStorage(boolean, fallback) {
 	const s = localStorage.getItem(boolean)
 
-	return typeof s === 'undefined' ? false : JSON.parse(s)
+	return s === null ? fallback : JSON.parse(s)
 }
 
 export async function getSelectedEventFromStorage() {
@@ -129,6 +129,7 @@ export function PrimaryCheckBox(props) {
 						color="primary"
 						checked={props['checked']}
 						onChange={props['onChange']}
+						disabled={props['disabled']}
 					/>
 				}
 				label={props['label']}
