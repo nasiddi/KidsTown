@@ -66,9 +66,7 @@ namespace KidsTown.Database
                 
             var newEntries = parentUpdates.Except(updates).ToImmutableList();
             var newParents = newEntries.Select(MapParent);
-
-            await SetFamilyUpdateDate(db: db, updates: parentUpdates).ConfigureAwait(false);
-                
+            
             await db.AddRangeAsync(newParents);
             return await db.SaveChangesAsync();
         }
@@ -81,6 +79,21 @@ namespace KidsTown.Database
                 .ToListAsync().ConfigureAwait(false);
             
             people.ForEach(p => p.FamilyId = null);
+            return await db.SaveChangesAsync();
+        }
+        
+        public async Task<int> SetFamilyUpdateDate(IImmutableList<BackgroundTasks.Adult.Family> families)
+        {
+            await using var db = CommonRepository.GetDatabase(_serviceScopeFactory);
+            
+            var persistedFamilies = await db.Families
+                .Where(f => families.Select(e => e.FamilyId).Contains(f.Id))
+                .ToListAsync()
+                .ConfigureAwait(false);
+            
+            var updateDate = DateTime.UtcNow;
+            persistedFamilies.ForEach(f => f.UpdateDate = updateDate);
+            
             return await db.SaveChangesAsync();
         }
 
@@ -113,17 +126,15 @@ namespace KidsTown.Database
             {
                 person.LastName = update.LastName;
             }
-            
-            if (update.PhoneNumber.Length > 0)
-            {
-                person.Adult ??= new Adult
-                {
-                    IsPrimaryContact = false
-                };
 
-                person.Adult.PhoneNumberId = update.PhoneNumberId;
-                person.Adult.PhoneNumber = update.PhoneNumber;
-            }
+            person.Adult ??= new Adult
+            {
+                IsPrimaryContact = false
+            };
+
+            person.Adult.PhoneNumberId = update.PhoneNumberId;
+            person.Adult.PhoneNumber = update.PhoneNumber;
+            
 
             var updateDate = DateTime.UtcNow;
             person.UpdateDate = updateDate;
@@ -148,18 +159,7 @@ namespace KidsTown.Database
                 Adult = adult
             };
         }
-        
-        private static async Task SetFamilyUpdateDate(KidsTownContext db, IImmutableList<AdultUpdate> updates)
-        {
-            var families = await db.Families
-                .Where(f => updates.Select(e => e.FamilyId).Contains(f.Id))
-                .ToListAsync()
-                .ConfigureAwait(false);
-            
-            var updateDate = DateTime.UtcNow;
-            families.ForEach(f => f.UpdateDate = updateDate);
-        }
-        
+
         private static BackgroundTasks.Adult.Family MapFamily(Family family)
         {
             var members = family.People.Where(p => p.PeopleId != null)

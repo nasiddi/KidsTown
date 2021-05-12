@@ -18,7 +18,7 @@ namespace KidsTown.PlanningCenterApiClient.Models.PhoneNumberPatch
 
         [JsonProperty("id")]
         [JsonConverter(typeof(ParseStringConverter))]
-        public long Id { get; set; }
+        public long? Id { get; set; }
 
         [JsonProperty("attributes")]
         public Attributes? Attributes { get; set; }
@@ -28,16 +28,19 @@ namespace KidsTown.PlanningCenterApiClient.Models.PhoneNumberPatch
     {
         [JsonProperty("number")]
         public string? Number { get; set; }
+
+        [JsonProperty("location")]
+        public string Location = "Mobile";
     }
 
     public partial class PhoneNumber
     {
-        public static PhoneNumber? FromJson(string json) => JsonConvert.DeserializeObject<PhoneNumber>(json, PhoneNumberPatch.Converter.Settings);
+        public static PhoneNumber? FromJson(string json) => JsonConvert.DeserializeObject<PhoneNumber>(value: json, settings: PhoneNumberPatch.Converter.Settings);
     }
 
     public static class Serialize
     {
-        public static string ToJson(this PhoneNumber self) => JsonConvert.SerializeObject(self, PhoneNumberPatch.Converter.Settings);
+        public static string ToJson(this PhoneNumber self) => JsonConvert.SerializeObject(value: self, settings: PhoneNumberPatch.Converter.Settings);
     }
 
     internal static class Converter
@@ -61,7 +64,7 @@ namespace KidsTown.PlanningCenterApiClient.Models.PhoneNumberPatch
         {
             if (reader.TokenType == JsonToken.Null) return null;
             var value = serializer.Deserialize<string>(reader);
-            if (Int64.TryParse(value, out var l))
+            if (Int64.TryParse(s: value, result: out var l))
             {
                 return l;
             }
@@ -72,11 +75,11 @@ namespace KidsTown.PlanningCenterApiClient.Models.PhoneNumberPatch
         {
             if (untypedValue == null)
             {
-                serializer.Serialize(writer, null);
+                serializer.Serialize(jsonWriter: writer, value: null);
                 return;
             }
             var value = (long)untypedValue;
-            serializer.Serialize(writer, value.ToString());
+            serializer.Serialize(jsonWriter: writer, value: value.ToString());
         }
 
         public static readonly ParseStringConverter Singleton = new ParseStringConverter();

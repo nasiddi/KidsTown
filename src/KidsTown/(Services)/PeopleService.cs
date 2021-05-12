@@ -25,14 +25,22 @@ namespace KidsTown.KidsTown
             {
                 foreach (var adult in adults)
                 {
-                    if (!adult.PeopleId.HasValue || !adult.PhoneNumberId.HasValue)
+                    if (!adult.PeopleId.HasValue)
                     {
                         continue;
                     }
 
-                    await _planningCenterClient.PatchPhoneNumber(
-                        peopleId: adult.PeopleId.Value, 
-                        phoneNumberId: adult.PhoneNumberId.Value, 
+                    if (adult.PhoneNumberId.HasValue)
+                    {
+                        await _planningCenterClient.PatchPhoneNumber(
+                            peopleId: adult.PeopleId.Value, 
+                            phoneNumberId: adult.PhoneNumberId.Value, 
+                            phoneNumber: adult.PhoneNumber);
+                        continue;
+                    }
+
+                    await _planningCenterClient.PostPhoneNumber(
+                        peopleId: adult.PeopleId.Value,
                         phoneNumber: adult.PhoneNumber);
                 }
             }

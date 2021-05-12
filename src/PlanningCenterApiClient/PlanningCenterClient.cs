@@ -75,11 +75,41 @@ namespace KidsTown.PlanningCenterApiClient
 
                 var jsonRequest = body.ToJson();
                 
-                var content = new StringContent(jsonRequest, Encoding.UTF8, "application/json-patch+json");
+                var content = new StringContent(content: jsonRequest, encoding: Encoding.UTF8, mediaType: "application/json-patch+json");
 
                 
                 var endPoint = $"people/v2/people/{peopleId}/phone_numbers/{phoneNumberId}";
-                await Client.PatchAsync(requestUri: endPoint, content);
+                await Client.PatchAsync(requestUri: endPoint, content: content);
+            }
+            catch
+            {
+                // ignored
+            }
+        }
+        
+        public async Task PostPhoneNumber(long peopleId, string phoneNumber)
+        {
+            try
+            {
+                var body = new PhoneNumber
+                {
+                    Data = new Data
+                    {
+                        Type = "PhoneNumber",
+                        Attributes = new Attributes
+                        {
+                            Number = phoneNumber
+                        }
+                    }
+                };
+
+                var jsonRequest = body.ToJson();
+                
+                var content = new StringContent(content: jsonRequest, encoding: Encoding.UTF8, mediaType: "application/json-patch+json");
+
+                
+                var endPoint = $"people/v2/people/{peopleId}/phone_numbers/";
+                await Client.PostAsync(requestUri: endPoint, content: content);
             }
             catch
             {

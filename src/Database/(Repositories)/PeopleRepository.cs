@@ -75,7 +75,7 @@ namespace KidsTown.Database
                 PhoneNumberId = adult.PhoneNumberId,
                 FirstName = person.FirstName,
                 LastName = person.LastName,
-                PhoneNumber = adult.PhoneNumber,
+                PhoneNumber = adult.PhoneNumber ?? string.Empty,
                 IsPrimaryContact = adult.IsPrimaryContact
             };
         }

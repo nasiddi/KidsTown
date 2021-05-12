@@ -39,7 +39,9 @@ namespace KidsTown.BackgroundTasks.Adult
             var adultUpdateCount = await _adultUpdateRepository.UpdateAdults(parentUpdates);
             var removeCount = await _adultUpdateRepository.RemovePeopleFromFamilies(peopleToRemove);
 
-            return adultUpdateCount + removeCount;
+            var updateDateCount = await _adultUpdateRepository.SetFamilyUpdateDate(families);
+            
+            return adultUpdateCount + removeCount + updateDateCount;
         }
 
         private async Task<List<Family>> GetHouseholds(IImmutableList<Family> families)
@@ -104,7 +106,7 @@ namespace KidsTown.BackgroundTasks.Adult
 
             var number = SelectNumber(personalNumbers);
 
-            if (family == null || number == null)
+            if (family == null)
             {
                 return null;
             }
@@ -112,10 +114,10 @@ namespace KidsTown.BackgroundTasks.Adult
             return new AdultUpdate(
                 peopleId: adult.Id,
                 familyId: family.FamilyId,
-                phoneNumberId: number.Id,
+                phoneNumberId: number?.Id,
                 firstName: adult.Attributes?.FirstName ?? string.Empty,
                 lastName: adult.Attributes?.LastName ?? string.Empty,
-                phoneNumber: number.Number);
+                phoneNumber: number?.Number);
         }
         
         private static PhoneNumber? SelectNumber(

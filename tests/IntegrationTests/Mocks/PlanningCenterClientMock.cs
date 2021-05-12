@@ -154,6 +154,10 @@ namespace KidsTown.IntegrationTests.Mocks
         {
             return Task.CompletedTask;
         }
+        public Task PostPhoneNumber(long peopleId, string phoneNumber)
+        {
+            return Task.CompletedTask;
+        }
 
         private static List<PlanningCenterApiClient.Models.EventResult.Datum> GetEventData()
         {

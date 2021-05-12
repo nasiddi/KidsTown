@@ -53,7 +53,6 @@ namespace KidsTown.Database.EfCore
                 entity.Property(e => e.IsPrimaryContact).HasColumnName("isPrimaryContact");
 
                 entity.Property(e => e.PhoneNumber)
-                    .IsRequired()
                     .HasMaxLength(30)
                     .IsUnicode(false);
 
