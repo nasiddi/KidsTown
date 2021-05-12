@@ -27,19 +27,6 @@ function UndoButton(props) {
 	)
 }
 
-function SearchButton(props) {
-	return (
-		<Button
-			size="lg"
-			color={props['isSearch'] ? 'secondary' : 'primary'}
-			block
-			onClick={props['isSearch'] ? props['clear'] : props['submit']}
-		>
-			{props['isSearch'] ? 'Clear' : 'Search'}
-		</Button>
-	)
-}
-
 function LargeButton(props) {
 	return (
 		<Button
@@ -190,7 +177,7 @@ class CheckIn extends Component {
 					<Grid item md={12} xs={12}>
 						<br />
 					</Grid>
-					<Grid item md={10} xs={12}>
+					<Grid item md={8} xs={12}>
 						<MuiThemeProvider theme={primaryTheme}>
 							<TextField
 								inputRef={this.securityCodeInput}
@@ -205,12 +192,19 @@ class CheckIn extends Component {
 						</MuiThemeProvider>
 					</Grid>
 					<Grid item md={2} xs={12}>
-						<SearchButton
-							isSearch={
-								this.state.checkInOutCandidates.length > 0
-							}
-							clear={this.resetView}
-							submit={this.submitSecurityCode}
+						<LargeButton
+							id={'search'}
+							name={'Search'}
+							color="primary"
+							onClick={this.submitSecurityCode}
+						/>
+					</Grid>
+					<Grid item md={2} xs={12}>
+						<LargeButton
+							id={'clear'}
+							name={'Clear'}
+							color="secondary"
+							onClick={this.resetView}
 						/>
 					</Grid>
 				</Grid>
@@ -530,7 +524,7 @@ class CheckIn extends Component {
 					lastActionAttendanceIds: j['attendanceIds'] ?? [],
 				})
 				if (j['successfulFastCheckout'] === true) {
-					this.resetView(false)
+					this.resetView(false, false)
 					this.loadPhoneNumbers()
 				} else {
 					const candidates = j['checkInOutCandidates'].map(function (
@@ -569,7 +563,7 @@ class CheckIn extends Component {
 					alert: { level: j['alertLevel'], text: j['text'] },
 					lastActionAttendanceIds: j['attendanceIds'] ?? [],
 				})
-				this.resetView(false)
+				this.resetView(false, false)
 				this.loadPhoneNumbers()
 			})
 	}
@@ -594,7 +588,7 @@ class CheckIn extends Component {
 					alert: { level: j['alertLevel'], text: j['text'] },
 					lastActionAttendanceIds: j['attendanceIds'] ?? [],
 				})
-				this.resetView(false)
+				this.resetView(false, false)
 				this.loadPhoneNumbers()
 			})
 	}
@@ -653,12 +647,19 @@ class CheckIn extends Component {
 		}).then()
 	}
 
-	resetView(resetAlert = true) {
+	resetView(resetAlert = true, resetAdults = true) {
 		this.focus()
-		this.setState({ checkInOutCandidates: [], securityCode: '' })
+		this.setState({
+			checkInOutCandidates: [],
+			securityCode: '',
+		})
 
 		if (resetAlert) {
 			this.setState({ alert: { text: '', level: 1 } })
+		}
+
+		if (resetAdults) {
+			this.setState({ adults: [] })
 		}
 	}
 
