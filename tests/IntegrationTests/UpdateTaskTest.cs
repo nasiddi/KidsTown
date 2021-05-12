@@ -10,7 +10,6 @@ using KidsTown.BackgroundTasks.Adult;
 using KidsTown.BackgroundTasks.Attendance;
 using KidsTown.BackgroundTasks.Common;
 using KidsTown.BackgroundTasks.Kid;
-using KidsTown.Database;
 using KidsTown.Database.EfCore;
 using KidsTown.IntegrationTests.Mocks;
 using KidsTown.PlanningCenterApiClient.Models.CheckInsResult;

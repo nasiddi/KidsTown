@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace KidsTown.Application.Controllers
 {
     [ApiController]
-    [Route("[controller]")]
+    [Route("[controller]/adults")]
     public class PeopleController : ControllerBase
     {
         private readonly IPeopleService _peopleService;
@@ -18,7 +18,6 @@ namespace KidsTown.Application.Controllers
         }
 
         [HttpPost]
-        [Route("adults")]
         [Produces("application/json")]
         public async Task<IActionResult> GetAdults([FromBody] IImmutableList<int> attendanceIds)
         {
@@ -26,7 +25,7 @@ namespace KidsTown.Application.Controllers
         }
         
         [HttpPost]
-        [Route("adults/update")]
+        [Route("update")]
         [Produces("application/json")]
         public async Task<IActionResult> UpdateAdults([FromBody] IImmutableList<Adult> adults, [FromQuery] bool updatePhoneNumber = false)
         {

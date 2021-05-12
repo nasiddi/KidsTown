@@ -23,9 +23,8 @@ namespace KidsTown.BackgroundTasks.Kid
         
         public async Task<int> UpdateKids(int daysLookBack, int batchSize)
         {
-            var typedAttendees = await _kidUpdateRepository.GetKidsToUpdate(daysLookBack: daysLookBack, take: batchSize)
+            var kidsPeopleIds = await _kidUpdateRepository.GetKidsPeopleIdToUpdate(daysLookBack: daysLookBack, take: batchSize)
                 .ConfigureAwait(false);
-            var kidsPeopleIds = typedAttendees.Select(a => a.PeopleId).ToImmutableList();
             
             if (kidsPeopleIds.Count == 0)
             {
