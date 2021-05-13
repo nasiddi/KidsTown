@@ -25,6 +25,7 @@
         <Content Include="ClientApp\node_modules\eslint-plugin-prettier\LICENSE.md" />
         <Content Include="ClientApp\node_modules\eslint-plugin-prettier\package.json" />
         <Content Include="ClientApp\node_modules\eslint-plugin-prettier\README.md" />
+        <Content Include="ClientApp\src\components\CheckIn\CheckInPhoneNumbers.js" />
         <None Include="$(SpaRoot)**" Exclude="$(SpaRoot)node_modules\**" />
         <None Remove="ClientApp\node_modules\eslint-plugin-prettier\**" />
         <Content Remove="ClientApp\node_modules\eslint-plugin-prettier\**" />

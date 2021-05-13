@@ -10,12 +10,7 @@ import { Button, ButtonGroup } from 'reactstrap'
 
 import { withStyles } from '@material-ui/styles'
 import Tooltip from '@material-ui/core/Tooltip'
-
-export async function fetchLocationGroups() {
-	const response = await fetch('configuration/location-groups')
-
-	return await response.json()
-}
+import { fetchDefaultEvent } from '../helpers/BackendClient'
 
 function selectStyles(minHeight, borderColor) {
 	return {
@@ -29,6 +24,30 @@ function selectStyles(minHeight, borderColor) {
 			borderColor: borderColor ?? '#bfbfbf',
 		}),
 	}
+}
+
+export function UndoButton(props) {
+	return (
+		<a onClick={props['callback']} className="alert-link">
+			<FAIcon name={'fas fa-undo-alt'} />
+		</a>
+	)
+}
+
+export function LargeButton(props) {
+	return (
+		<Button
+			id={props['id']}
+			block
+			color={props['color']}
+			size="lg"
+			onClick={props['onClick']}
+			outline={props['isOutline']}
+			disabled={props['disabled']}
+		>
+			{props['name']}
+		</Button>
+	)
 }
 
 export function getSelectedOptionsFromStorage(key, fallback) {
@@ -73,9 +92,7 @@ export async function getSelectedEventFromStorage() {
 	const s = localStorage.getItem('selectedEvent')
 
 	if (s === null) {
-		return await fetch('configuration/events/default')
-			.then((r) => r.json())
-			.then((j) => j['eventId'])
+		return await fetchDefaultEvent()
 	} else {
 		return JSON.parse(s)
 	}
@@ -159,6 +176,24 @@ export function ToggleButtons(props) {
 			</ButtonGroup>
 		</Grid>
 	)
+}
+
+export function getEventId(event) {
+	let id = parseInt(event.currentTarget.id, 10)
+	if (isNaN(id)) {
+		id = this.getElementId(event.currentTarget)
+	}
+
+	return id
+}
+
+export function getElementId(element) {
+	const id = parseInt(element['parentElement']['id'], 10)
+	if (!isNaN(id)) {
+		return id
+	}
+
+	return this.getElementId(element['parentElement'])
 }
 
 export function FAIcon(props) {

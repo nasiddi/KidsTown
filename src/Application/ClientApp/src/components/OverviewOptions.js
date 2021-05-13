@@ -1,7 +1,6 @@
 import React, { Component } from 'react'
 import { Grid } from '@material-ui/core'
 import {
-	fetchLocationGroups,
 	getStringFromSession,
 	getSelectedOptionsFromStorage,
 	getLastSunday,
@@ -9,6 +8,7 @@ import {
 	DatePick,
 } from './Common'
 import { withAuth } from '../auth/MsalAuthProvider'
+import { fetchLocationGroups } from '../helpers/BackendClient'
 
 class Options extends Component {
 	static displayName = Options.name

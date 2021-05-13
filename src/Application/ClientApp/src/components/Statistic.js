@@ -1,7 +1,6 @@
 import React, { Component } from 'react'
 import { Grid } from '@material-ui/core'
 import {
-	fetchLocationGroups,
 	getFormattedDate,
 	getSelectedEventFromStorage,
 	getSelectedOptionsFromStorage,
@@ -9,6 +8,7 @@ import {
 } from './Common'
 import { Table } from 'reactstrap'
 import { withAuth } from '../auth/MsalAuthProvider'
+import { fetchLocationGroups } from '../helpers/BackendClient'
 
 const _ = require('lodash')
 
