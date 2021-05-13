@@ -12,7 +12,7 @@ export class CheckInPhoneNumbers extends Component {
 
 	render() {
 		const adults = this.props.adults.map((a) => (
-			<Grid item xs={12} key={a['peopleId']}>
+			<Grid item xs={12} key={a['personId']}>
 				<Grid
 					container
 					spacing={3}
@@ -21,9 +21,9 @@ export class CheckInPhoneNumbers extends Component {
 				>
 					<Grid item md={1} xs={3}>
 						<LargeButton
-							id={a['peopleId']}
+							id={a['personId']}
 							name={
-								<span id={a['peopleId']}>
+								<span id={a['personId']}>
 									<FontAwesomeIcon icon="star" />
 								</span>
 							}
@@ -46,14 +46,14 @@ export class CheckInPhoneNumbers extends Component {
 						</h4>
 					</Grid>
 					{this.renderPhoneNumber(
-						a['peopleId'],
+						a['personId'],
 						a['phoneNumber'],
-						this.getPhoneNumberIsEdit(a['peopleId'])
+						this.getPhoneNumberIsEdit(a['personId'])
 					)}
 					{this.renderPhoneNumberEditButton(
-						a['peopleId'],
+						a['personId'],
 						a['phoneNumber'],
-						this.getPhoneNumberIsEdit(a['peopleId'])
+						this.getPhoneNumberIsEdit(a['personId'])
 					)}
 				</Grid>
 			</Grid>
@@ -130,8 +130,8 @@ export class CheckInPhoneNumbers extends Component {
 		)
 	}
 
-	getPhoneNumberIsEdit(peopleId) {
-		const flag = _.find(this.props.phoneNumberEditFlags, { id: peopleId })
+	getPhoneNumberIsEdit(personId) {
+		const flag = _.find(this.props.phoneNumberEditFlags, { id: personId })
 
 		return flag['isEdit']
 	}

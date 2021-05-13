@@ -50,11 +50,11 @@ namespace KidsTown.PlanningCenterApiClient.Models.CheckInsResult
          [JsonProperty("created_at")]
          public DateTime CreatedAt { get; set; }
 
-//         [JsonProperty("emergency_contact_name")]
-//         public string EmergencyContactName { get; set; }
+         [JsonProperty("emergency_contact_name")]
+         public string? EmergencyContactName { get; set; }
 
-//         [JsonProperty("emergency_contact_phone_number")]
-//         public string EmergencyContactPhoneNumber { get; set; }
+         [JsonProperty("emergency_contact_phone_number")]
+         public string? EmergencyContactPhoneNumber { get; set; }
 
          [JsonProperty("first_name")]
          public string? FirstName { get; set; }

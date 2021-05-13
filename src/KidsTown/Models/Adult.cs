@@ -5,6 +5,7 @@ namespace KidsTown.KidsTown.Models
     {
         public long? PeopleId { get; init; }
         public long? PhoneNumberId { get; init; }
+        public int PersonId { get; init; }
         public int FamilyId { get; init; }
         public string FirstName { get; init; } = string.Empty;
         public string LastName { get; init; } = string.Empty;

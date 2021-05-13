@@ -49,15 +49,13 @@ namespace KidsTown.Database
             await using var db = CommonRepository.GetDatabase(_serviceScopeFactory);
             var persistedAdults = await db.Adults
                 .Include(a => a.Person)
-                .Where(a => 
-                    a.Person.PeopleId.HasValue 
-                            && adults.Select(ad => ad.PeopleId).Contains(a.Person.PeopleId.Value))
+                .Where(a => adults.Select(ad => ad.PersonId).Contains(a.PersonId))
                 .ToListAsync()
                 .ConfigureAwait(false);
             
             persistedAdults.ForEach(a =>
             {
-                var update = adults.Single(u => u.PeopleId == a.Person.PeopleId);
+                var update = adults.Single(u => u.PersonId == a.PersonId);
 
                 a.IsPrimaryContact = update.IsPrimaryContact;
                 a.PhoneNumber = update.PhoneNumber;
@@ -72,6 +70,7 @@ namespace KidsTown.Database
             {
                 PeopleId = person.PeopleId,
                 FamilyId = person.FamilyId!.Value,
+                PersonId = person.Id,
                 PhoneNumberId = adult.PhoneNumberId,
                 FirstName = person.FirstName,
                 LastName = person.LastName,

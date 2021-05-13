@@ -40,7 +40,8 @@ namespace KidsTown.Database
                 
             var families = await db.Families
                 .Include(f => f.People)
-                .Where(f => familyIds.Contains(f.Id))
+                .Where(f => familyIds.Contains(f.Id)
+                    && f.HouseholdId.HasValue)
                 .OrderBy(f => f.UpdateDate)
                 .Take(take)
                 .ToListAsync();
@@ -167,7 +168,7 @@ namespace KidsTown.Database
             
             return new BackgroundTasks.Adult.Family(
                 familyId: family.Id,
-                householdId: family.HouseholdId,
+                householdId: family.HouseholdId!.Value,
                 members: members);
         }
     }

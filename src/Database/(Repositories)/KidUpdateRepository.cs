@@ -79,7 +79,8 @@ namespace KidsTown.Database
         {
             await using var db = CommonRepository.GetDatabase(_serviceScopeFactory);
 
-            var families = await db.Families.Where(f => householdIds.Contains(f.HouseholdId))
+            var families = await db.Families.Where(f => f.HouseholdId.HasValue 
+                                                        && householdIds.Contains(f.HouseholdId.Value))
                 .ToListAsync().ConfigureAwait(false);
 
             return families.Select(MapFamily).ToImmutableList();
@@ -101,7 +102,7 @@ namespace KidsTown.Database
         {
             return new(
                 familyId: family.Id,
-                householdId: family.HouseholdId);
+                householdId: family.HouseholdId!.Value);
         }
 
         private static async Task<int> UpdateKids(

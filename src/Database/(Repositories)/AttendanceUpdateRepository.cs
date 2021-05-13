@@ -184,9 +184,53 @@ namespace KidsTown.Database
         private static Attendance MapGuestAttendance(CheckInsUpdate guest)
         {
             var person = MapPerson(guest.Kid);
+            var parent = MapParent(guest);
+
+            var family = new Family
+            {
+                Name = "Guest",
+                UpdateDate = DateTime.UtcNow,
+                People = new List<Person>
+                {
+                    parent
+                }
+            };
+
+            person.Family = family;
+            
             return MapToAttendance(checkInsUpdate: guest, people: ImmutableList.Create(person));
         }
-        
+        private static Person MapParent(CheckInsUpdate guest)
+        {
+            var names = guest.EmergencyContactName?.Split(" ");
+
+            var firstName = string.Empty;
+            var lastName = string.Empty;
+
+            if (names?.Length == 2)
+            {
+                firstName = names[0];
+                lastName = names[1];
+            } else if (guest.EmergencyContactName?.Length > 0)
+            {
+                firstName = guest.EmergencyContactName;
+            }
+
+            var adult = new Adult
+            {
+                PhoneNumber = guest.EmergencyContactNumber,
+                IsPrimaryContact = false,
+            };
+            
+            return new Person
+            {
+                FirstName = firstName,
+                LastName = lastName,
+                UpdateDate = DateTime.UtcNow,
+                Adult = adult,
+            };
+        }
+
         private static Person MapPerson(PeopleUpdate peopleUpdate)
         {
             return new()

@@ -92,7 +92,9 @@ namespace KidsTown.BackgroundTasks.Attendance
                 securityCode: attributes?.SecurityCode ?? string.Empty,
                 locationId: locationId,
                 creationDate: attributes?.CreatedAt ?? DateTime.UtcNow,
-                kid: peopleUpdate);
+                kid: peopleUpdate,
+                emergencyContactName: attributes?.EmergencyContactName,
+                emergencyContactNumber: attributes?.EmergencyContactPhoneNumber);
         }
 
         private async Task<int> UpdateLocations(IImmutableList<CheckIns> checkIns)

@@ -212,7 +212,7 @@ class CheckIn extends Component {
 	updatePhoneNumber = (e) => {
 		const eventId = getEventId(e)
 		const adults = this.state.adults
-		const adult = _.find(adults, { peopleId: eventId })
+		const adult = _.find(adults, { personId: eventId })
 		adult['phoneNumber'] = e.target.value
 
 		this.setState({ adults: adults })
@@ -295,7 +295,7 @@ class CheckIn extends Component {
 		)
 
 		const editMap = _.map(json, function (adult) {
-			return { id: adult['peopleId'], isEdit: false }
+			return { id: adult['personId'], isEdit: false }
 		})
 		this.setState({
 			adults: json,
@@ -375,7 +375,7 @@ class CheckIn extends Component {
 		const id = getEventId(event)
 
 		const adults = this.state.adults
-		const primary = _.find(adults, { peopleId: id })
+		const primary = _.find(adults, { personId: id })
 
 		if (primary['isPrimaryContact']) {
 			primary['isPrimaryContact'] = false
