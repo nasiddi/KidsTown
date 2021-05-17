@@ -27,7 +27,7 @@ namespace KidsTown.Database
                 .Distinct()
                 .ToListAsync();
 
-            return await GetAdults(familyIds.ToImmutableList());
+            return await GetAdults(familyIds.ToImmutableList()).ConfigureAwait(false);
         }
         
         public async Task<IImmutableList<KidsTown.Models.Adult>> GetAdults(IImmutableList<int> familyIds)

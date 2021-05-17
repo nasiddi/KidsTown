@@ -31,8 +31,8 @@ namespace KidsTown.BackgroundTasks.Kid
                 return 0;
             }
 
-            var kidsUpdate = await FetchKids(kidsPeopleIds);
-            var families = await GetNewAnPersistedFamilies(kidsUpdate);
+            var kidsUpdate = await FetchKids(kidsPeopleIds).ConfigureAwait(false);
+            var families = await GetNewAnPersistedFamilies(kidsUpdate).ConfigureAwait(false);
 
             return await _kidUpdateRepository.UpdateKids(kids: kidsUpdate, families: families)
                 .ConfigureAwait(false);

@@ -219,7 +219,7 @@ namespace KidsTown.Database
             var adult = new Adult
             {
                 PhoneNumber = guest.EmergencyContactNumber,
-                IsPrimaryContact = false,
+                IsPrimaryContact = false
             };
             
             return new Person
@@ -227,7 +227,7 @@ namespace KidsTown.Database
                 FirstName = firstName,
                 LastName = lastName,
                 UpdateDate = DateTime.UtcNow,
-                Adult = adult,
+                Adult = adult
             };
         }
 

@@ -79,7 +79,7 @@ namespace KidsTown.BackgroundTasks.Common
             DateTime? activationTime = null;
             while (!cancellationToken.IsCancellationRequested)
             {
-                activationTime = await WaitForActivation(activationTime: activationTime, cancellationToken: cancellationToken);
+                activationTime = await WaitForActivation(activationTime: activationTime, cancellationToken: cancellationToken).ConfigureAwait(false);
                 await RunTask(_logger).ConfigureAwait(false);
                 await Sleep(cancellationToken).ConfigureAwait(false);
 
@@ -131,7 +131,7 @@ namespace KidsTown.BackgroundTasks.Common
 
             LogTaskRun(success: false, updateCount: 0, environment: _environment);
 
-            if (_currentFailedCount % 10 != 0 || _emailSent >= DateTime.UtcNow - EmailSendPause)
+            if (_currentFailedCount % 5 != 0 || _emailSent >= DateTime.UtcNow - EmailSendPause)
             {
                 return;
             }
@@ -155,7 +155,10 @@ namespace KidsTown.BackgroundTasks.Common
         {
             var waitTask = Task.Run(function: async () =>
             {
-                while (!_taskIsActive) await Task.Delay(millisecondsDelay: 1000, cancellationToken: cancellationToken);
+                while (!_taskIsActive)
+                {
+                    await Task.Delay(millisecondsDelay: 1000, cancellationToken: cancellationToken).ConfigureAwait(false);
+                }
             }, cancellationToken: cancellationToken);
 
             await Task.WhenAny(task1: waitTask, task2: Task.Delay(millisecondsDelay: -1, cancellationToken: cancellationToken));

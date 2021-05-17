@@ -231,13 +231,14 @@ class CheckIn extends Component {
 			this.state.checkType
 		)
 
+		const attendanceIds = json['attendanceIds'] ?? []
 		if (json['successfulFastCheckout'] === true) {
 			this.resetView(false, false)
-			await this.loadPhoneNumbers()
 			this.setState({
 				alert: { level: json['alertLevel'], text: json['text'] },
-				lastActionAttendanceIds: json['attendanceIds'] ?? [],
+				lastActionAttendanceIds: attendanceIds,
 			})
+			await this.loadPhoneNumbers(attendanceIds)
 		} else {
 			const candidates = json['checkInOutCandidates'].map(function (el) {
 				const o = Object.assign({}, el)
@@ -248,7 +249,7 @@ class CheckIn extends Component {
 
 			this.setState({
 				alert: { level: json['alertLevel'], text: json['text'] },
-				lastActionAttendanceIds: json['attendanceIds'] ?? [],
+				lastActionAttendanceIds: attendanceIds,
 				checkInOutCandidates: candidates,
 			})
 		}
@@ -282,7 +283,7 @@ class CheckIn extends Component {
 		})
 	}
 
-	async loadPhoneNumbers() {
+	async loadPhoneNumbers(attendanceIds) {
 		if (
 			this.state.checkType === 'CheckOut' ||
 			!this.state.showPhoneNumbers
@@ -290,9 +291,7 @@ class CheckIn extends Component {
 			return
 		}
 
-		const json = await fetchParentPhoneNumbers(
-			this.state.lastActionAttendanceIds
-		)
+		const json = await fetchParentPhoneNumbers(attendanceIds)
 
 		const editMap = _.map(json, function (adult) {
 			return { id: adult['personId'], isEdit: false }
@@ -304,12 +303,13 @@ class CheckIn extends Component {
 	}
 
 	async processCheckInOutResult(json) {
+		const attendanceIds = json['attendanceIds'] ?? []
 		this.setState({
 			alert: { level: json['alertLevel'], text: json['text'] },
-			lastActionAttendanceIds: json['attendanceIds'] ?? [],
+			lastActionAttendanceIds: attendanceIds,
 		})
 		this.resetView(false, false)
-		await this.loadPhoneNumbers()
+		await this.loadPhoneNumbers(attendanceIds)
 	}
 
 	resetView(resetAlert = true, resetAdults = true) {
@@ -336,39 +336,12 @@ class CheckIn extends Component {
 		this.setState({ checkInOutCandidates: this.state.checkInOutCandidates })
 	}
 
-	areNoCandidatesSelected() {
-		return (
-			this.state.checkInOutCandidates.filter((c) => c.isSelected)
-				.length <= 0
-		)
-	}
-
-	checkTypeIsActive(checkType) {
-		return !(this.state.checkType === checkType)
-	}
-
 	selectCheckType(event) {
 		if (this.state.checkType !== event.target.id) {
 			this.setState({ checkType: event.target.id })
 			localStorage.setItem('checkType', event.target.id)
 			this.resetView()
 		}
-	}
-
-	getNameButtonColor(candidate) {
-		if (this.state.checkType === 'CheckIn') {
-			return 'primary'
-		}
-
-		if (candidate['hasPeopleWithoutPickupPermission']) {
-			return 'danger'
-		}
-
-		if (!candidate['mayLeaveAlone']) {
-			return 'warning'
-		}
-
-		return 'primary'
 	}
 
 	async changePrimaryContact(event) {

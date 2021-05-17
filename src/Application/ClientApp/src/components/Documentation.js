@@ -36,7 +36,7 @@ export class Documentation extends Component {
 							{
 								text:
 									"Das App bietet verschiedene Typen von Station. Wir brauchen die 'Self' Station und die 'Manned' Station.\n" +
-									"                        Bei 'Self' Stationen können Eltern die Label für ihre Kinder selber drucken. 'Manned' Stationen müssen aus Datenschutzgründen immer von Mitarbeitern betreut werden.",
+									"Bei 'Self' Stationen können Eltern die Label für ihre Kinder selber drucken. 'Manned' Stationen müssen aus Datenschutzgründen immer von Mitarbeitern betreut werden.",
 							},
 						]}
 					/>
