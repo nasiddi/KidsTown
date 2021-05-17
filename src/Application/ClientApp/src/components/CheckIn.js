@@ -67,6 +67,7 @@ class CheckIn extends Component {
 			lastActionAttendanceIds: [],
 			adults: [],
 			phoneNumberEditFlags: {},
+			lastCodeSubmission: new Date(),
 		}
 	}
 
@@ -81,7 +82,13 @@ class CheckIn extends Component {
 			prevState.securityCode.length !== 4 &&
 			this.state.securityCode.length === 4
 		) {
-			this.submitSecurityCode().then()
+			const currentDate = new Date()
+			if (currentDate - this.state.lastCodeSubmission > 2000) {
+				this.setState({ lastCodeSubmission: new Date() })
+				this.submitSecurityCode().then()
+			} else {
+				this.resetView(false, false)
+			}
 		}
 	}
 
