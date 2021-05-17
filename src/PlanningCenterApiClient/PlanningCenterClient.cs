@@ -121,7 +121,8 @@ namespace KidsTown.PlanningCenterApiClient
         {
             var client = new HttpClient
             {
-                BaseAddress = new Uri("https://api.planningcenteronline.com")
+                BaseAddress = new Uri("https://api.planningcenteronline.com"),
+                Timeout = TimeSpan.FromSeconds(15)
             };
 
             var authorization = _configuration.GetSection("PlanningCenterClient");

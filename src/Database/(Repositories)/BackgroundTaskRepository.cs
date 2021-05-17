@@ -30,7 +30,7 @@ namespace KidsTown.Database
                 TaskName = taskName
             };
 
-            var taskExecutionCount = await db.TaskExecutions.Where(t => t.TaskName == taskName).CountAsync();
+            var taskExecutionCount = await db.TaskExecutions.Where(t => t.TaskName == taskName && t.Environment == environment).CountAsync();
 
             if (taskExecutionCount >= 100)
             {

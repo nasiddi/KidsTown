@@ -101,7 +101,7 @@ namespace KidsTown.BackgroundTasks.Common
                 if (!_taskRunsSuccessfully)
                 {
                     _taskRunsSuccessfully = true;
-                    if (_currentFailedCount >= 10)
+                    if (_currentFailedCount >= 5)
                     {
                         SendEmail(
                             subject: $"{GetSubjectPrefix()} Task ran successfully",
