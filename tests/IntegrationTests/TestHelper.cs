@@ -7,6 +7,7 @@ using KidsTown.BackgroundTasks.Attendance;
 using KidsTown.BackgroundTasks.Common;
 using KidsTown.BackgroundTasks.Kid;
 using KidsTown.Database;
+using KidsTown.Database.EfCore;
 using KidsTown.IntegrationTests.Mocks;
 using KidsTown.IntegrationTests.TestData;
 using KidsTown.KidsTown;
@@ -15,7 +16,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Person = KidsTown.Database.Person;
+using Person = KidsTown.Database.EfCore.Person;
 
 namespace KidsTown.IntegrationTests
 {
