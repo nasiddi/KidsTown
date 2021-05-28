@@ -26,7 +26,7 @@ namespace KidsTown.IntegrationTests
             await using var db = serviceProvider!.GetRequiredService<KidsTownContext>();
             await EstablishConnectionToDatabase(db: db).ConfigureAwait(continueOnCapturedContext: false);
                 
-            var attendances = await db.Attendances.Where(predicate: a => a.CheckInsId < 100).ToListAsync();
+            var attendances = await db.Attendances.Where(predicate: a => 0 < a.CheckInsId && a.CheckInsId < 100).ToListAsync();
             var people = await db.People.Where(predicate: p => attendances.Select(a => a.PersonId)
                 .Contains(p.Id))
                 .Include(navigationPropertyPath: p => p.Kid)

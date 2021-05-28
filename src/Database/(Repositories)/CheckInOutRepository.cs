@@ -30,27 +30,12 @@ namespace KidsTown.Database
                 .ThenInclude(p => p.Kid)
                 .Include(a => a.Location)
                 .Where(a => a.SecurityCode == peopleSearchParameters.SecurityCode
+                            && peopleSearchParameters.LocationGroups.Contains(a.Location.LocationGroupId)
                             && a.InsertDate >= DateTime.Today.AddDays(-3)
                             && a.Location.EventId == peopleSearchParameters.EventId)
                 .ToListAsync();
 
             return attendances.Select(MapKid).ToImmutableList();
-
-            // var people = await (from a in db.Attendances
-            //         join p in db.People
-            //             on a.PersonId equals p.Id
-            //         join k in db.Kids.DefaultIfEmpty()
-            //             on p.Id equals k.PersonId
-            //         join l in db.Locations
-            //             on a.LocationId equals l.Id
-            //         where a.SecurityCode == peopleSearchParameters.SecurityCode
-            //               && peopleSearchParameters.LocationGroups.Contains(l.LocationGroupId)
-            //               && a.InsertDate >= DateTime.Today.AddDays(-3)
-            //               && l.EventId == peopleSearchParameters.EventId
-            //         select MapKidOld(a, p, k, l))
-            //     .ToListAsync().ConfigureAwait(continueOnCapturedContext: false);
-            //
-            // return people.ToImmutableList();
         }
 
         public async Task<bool> CheckInPeople(IImmutableList<int> attendanceIds)
@@ -173,30 +158,6 @@ namespace KidsTown.Database
                 CheckOutTime = attendance.CheckOutDate,
                 MayLeaveAlone = attendance.Person.Kid?.MayLeaveAlone ?? true,
                 HasPeopleWithoutPickupPermission = attendance.Person.Kid?.HasPeopleWithoutPickupPermission ?? false,
-                CheckState = checkState
-            };
-        }
-        
-        private static KidsTown.Models.Kid MapKidOld(
-            Attendance attendance,
-            Person person,
-            Kid? kid,
-            Location location
-        )
-        {
-            var checkState = MappingService.GetCheckState(attendance: attendance);
-
-            return new KidsTown.Models.Kid
-            {
-                AttendanceId = attendance.Id,
-                SecurityCode = attendance.SecurityCode,
-                Location = location.Name,
-                FirstName = person.FirstName,
-                LastName = person.LastName,
-                CheckInTime = attendance.CheckInDate,
-                CheckOutTime = attendance.CheckOutDate,
-                MayLeaveAlone = kid?.MayLeaveAlone ?? true,
-                HasPeopleWithoutPickupPermission = kid?.HasPeopleWithoutPickupPermission ?? false,
                 CheckState = checkState
             };
         }
