@@ -2,10 +2,12 @@ using System;
 using System.Collections.Immutable;
 using System.Linq;
 using System.Threading.Tasks;
+using KidsTown.Database.EfCore;
 using KidsTown.KidsTown;
 using KidsTown.KidsTown.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Location = KidsTown.Database.EfCore.Location;
 
 namespace KidsTown.Database
 {
@@ -21,7 +23,7 @@ namespace KidsTown.Database
         public async Task<IImmutableList<Attendee>> GetActiveAttendees(IImmutableList<int> selectedLocationGroups,
             long eventId, DateTime date)
         {
-            await using var db = CommonRepository.GetDatabase(serviceScopeFactory: _serviceScopeFactory);
+            await using var db = CommonRepository.GetDatabase(_serviceScopeFactory);
             
             var people = await (from a in db.Attendances
                     join p in db.People
@@ -34,9 +36,9 @@ namespace KidsTown.Database
                           && selectedLocationGroups.Contains(l.LocationGroupId)
                           && l.EventId == eventId
                     select MapAttendee(a, p, at, l))
-                .ToListAsync().ConfigureAwait(continueOnCapturedContext: false);
+                .ToListAsync().ConfigureAwait(false);
 
-            return people.OrderBy(keySelector: a => a.FirstName).ToImmutableList();
+            return people.OrderBy(a => a.FirstName).ToImmutableList();
         }
 
         public async Task<IImmutableList<Attendee>> GetAttendanceHistoryByLocations(
@@ -51,7 +53,7 @@ namespace KidsTown.Database
                 startDate: startDate,
                 endDate: endDate,
                 selectedLocations: selectedLocations)
-                .ConfigureAwait(continueOnCapturedContext: false);   
+                .ConfigureAwait(false);   
         }
 
         public async Task<IImmutableList<Attendee>> GetAttendanceHistoryByLocationGroups(
@@ -66,33 +68,7 @@ namespace KidsTown.Database
                 startDate: startDate,
                 endDate: endDate,
                 selectedLocationGroups: selectedLocationGroups)
-                .ConfigureAwait(continueOnCapturedContext: false);
-        }
-
-        public async Task<IImmutableList<KidsTown.Models.Adult>> GetAdults(IImmutableList<int> familyIds)
-        {
-            await using var db = CommonRepository.GetDatabase(serviceScopeFactory: _serviceScopeFactory);
-            
-            var adults = await (from a in db.Adults
-                    join p in db.People
-                        on a.PersonId equals p.Id
-                    where p.FamilyId.HasValue && familyIds.Contains(p.FamilyId.Value)
-                    select MapAdult(p, a))
-                .ToListAsync().ConfigureAwait(continueOnCapturedContext: false);
-                
-            return adults?.ToImmutableList()
-                   ?? ImmutableList<KidsTown.Models.Adult>.Empty;
-        }
-
-        private static KidsTown.Models.Adult MapAdult(Person person, Adult adult)
-        {
-            return new()
-            {
-                FamilyId = person.FamilyId!.Value,
-                FirstName = person.FirstName,
-                LastName = person.LastName,
-                PhoneNumber = adult.PhoneNumber
-            };
+                .ConfigureAwait(false);
         }
 
         private async Task<IImmutableList<Attendee>> GetAttendanceHistory(
@@ -116,7 +92,7 @@ namespace KidsTown.Database
                           && a.InsertDate >= startDate.Date
                           && a.InsertDate <= endDate.Date.AddDays(1)
                     select MapAttendee(a, p, at, l))
-                .ToListAsync().ConfigureAwait(continueOnCapturedContext: false);
+                .ToListAsync().ConfigureAwait(false);
 
             return attendees.ToImmutableList();
         }
@@ -128,7 +104,7 @@ namespace KidsTown.Database
             Location location
         )
         {
-            var checkState = MappingService.GetCheckState(attendance: attendance);
+            var checkState = MappingService.GetCheckState(attendance);
 
             return new Attendee
             {

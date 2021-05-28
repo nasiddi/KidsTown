@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 using KidsTown.Application.Controllers;
 using KidsTown.Application.Models;
 using KidsTown.BackgroundTasks.Common;
-using KidsTown.Database;
+using KidsTown.Database.EfCore;
 using KidsTown.IntegrationTests.TestData;
 using KidsTown.KidsTown;
 using KidsTown.Shared;
@@ -24,30 +24,30 @@ namespace KidsTown.IntegrationTests
         [TearDown]
         public async Task TearDown()
         {
-            await Task.Delay(millisecondsDelay: 1000).ConfigureAwait(continueOnCapturedContext: false);
-            await CleanDatabase().ConfigureAwait(continueOnCapturedContext: false);
+            await Task.Delay(1000).ConfigureAwait(false);
+            await CleanDatabase().ConfigureAwait(false);
         }
 
         [Test]
         public async Task GetPeople_ExistingData_AllFound()
         {
             // Arrange
-            var controller = await SetupTestEnvironment().ConfigureAwait(continueOnCapturedContext: false);
+            var controller = await SetupTestEnvironment().ConfigureAwait(false);
             var testData = TestDataFactory.GetTestData();
 
             // Act & Assert
-            (testData as ImmutableList<TestData.TestData>)?.ForEach(action: async t =>
+            (testData as ImmutableList<TestData.TestData>)?.ForEach(async t =>
             {
                 var checkInOutResult = await SendRequest(
                     securityCode: t.SecurityCode,
-                    selectedLocationIds: ImmutableList.Create(item: t.LocationGroupId),
+                    selectedLocationIds: ImmutableList.Create(t.LocationGroupId),
                     isFastCheckInOut: false,
                     controller: controller)
-                    .ConfigureAwait(continueOnCapturedContext: false);
+                    .ConfigureAwait(false);
                 
-                var candidates = checkInOutResult!.CheckInOutCandidates.Select(selector: c => c.Name).ToArray<object>();
+                var candidates = checkInOutResult!.CheckInOutCandidates.Select(c => c.Name).ToArray<object>();
                 Assert.That(actual: $"{t.PeopleFirstName ?? t.CheckInsFirstName} {t.PeopleLastName ?? t.CheckInsLastName}", 
-                    expression: Is.AnyOf(expected: candidates));
+                    expression: Is.AnyOf(candidates));
             });
         }
 
@@ -55,20 +55,20 @@ namespace KidsTown.IntegrationTests
         public async Task GetPeople_NoLocationGroupSet_NothingFound()
         {
             // Arrange
-            var controller = await SetupTestEnvironment().ConfigureAwait(continueOnCapturedContext: false);
+            var controller = await SetupTestEnvironment().ConfigureAwait(false);
             var testData = TestDataFactory.GetTestData();
             
             // Act & Assert
-            (testData as ImmutableList<TestData.TestData>)?.ForEach(action: async t =>
+            (testData as ImmutableList<TestData.TestData>)?.ForEach(async t =>
             {
                 var checkInOutResult = await SendRequest(
                     securityCode: t.SecurityCode,
                     selectedLocationIds: ImmutableList<int>.Empty,
                     isFastCheckInOut: false,
                     controller: controller)
-                    .ConfigureAwait(continueOnCapturedContext: false);
+                    .ConfigureAwait(false);
 
-                Assert.That(actual: checkInOutResult?.AlertLevel, expression: Is.EqualTo(expected: AlertLevel.Danger));
+                Assert.That(actual: checkInOutResult.AlertLevel, expression: Is.EqualTo(AlertLevel.Danger));
             });
         }
 
@@ -77,12 +77,12 @@ namespace KidsTown.IntegrationTests
         {
             // Arrange
             _serviceProvider = TestHelper.SetupServiceProviderWithKidsTownDi();
-            await CleanDatabase().ConfigureAwait(continueOnCapturedContext: false);
+            await CleanDatabase().ConfigureAwait(false);
             
-            var testData = TestDataFactory.GetTestData().GroupBy(keySelector: t => t.SecurityCode).ToImmutableList();
-            var filteredTestData = testData.Where(predicate: t => t.Count() == 1)
-                .SelectMany(selector: g => g.ToImmutableList())
-                .Where(predicate: a => a.PeopleId == 1)
+            var testData = TestDataFactory.GetTestData().GroupBy(t => t.SecurityCode).ToImmutableList();
+            var filteredTestData = testData.Where(t => t.Count() == 1)
+                .SelectMany(g => g.ToImmutableList())
+                .Where(a => a.PeopleId == 1)
                 .ToImmutableList();
             
             await TestHelper.InsertTestData(serviceProvider: _serviceProvider, testData: filteredTestData);
@@ -91,25 +91,25 @@ namespace KidsTown.IntegrationTests
             var controller = new CheckInOutController(checkInOutService: checkInOutService!, taskManagementService: taskManagementServiceMock.Object);
             
             // Act
-            filteredTestData.ForEach(action: async t =>
+            filteredTestData.ForEach(async t =>
             {
                 var checkInOutResult = await SendRequest(
                     securityCode: t.SecurityCode,
-                    selectedLocationIds: ImmutableList.Create(item: t.LocationGroupId),
+                    selectedLocationIds: ImmutableList.Create(t.LocationGroupId),
                     isFastCheckInOut: true,
                     controller: controller)
-                    .ConfigureAwait(continueOnCapturedContext: false);
+                    .ConfigureAwait(false);
 
-                Assert.That(actual: checkInOutResult.AlertLevel, expression: Is.EqualTo(expected: AlertLevel.Success));
+                Assert.That(actual: checkInOutResult.AlertLevel, expression: Is.EqualTo(AlertLevel.Success));
                 Assert.That(actual: checkInOutResult.SuccessfulFastCheckout, expression: Is.True);
             });
 
             // Assert
-            var actualData = await GetActualData(checkInsIds: filteredTestData.Select(selector: t => t.CheckInsId)
+            var actualData = await GetActualData(filteredTestData.Select(t => t.CheckInsId)
                     .ToImmutableList())
-                .ConfigureAwait(continueOnCapturedContext: false);
-            Assert.That(actual: actualData.Count(predicate: a => a.CheckInDate == null), expression: Is.Zero);
-            Assert.That(actual: actualData.Count, expression: Is.EqualTo(expected: filteredTestData.Count));
+                .ConfigureAwait(false);
+            Assert.That(actual: actualData.Count(a => a.CheckInDate == null), expression: Is.Zero);
+            Assert.That(actual: actualData.Count, expression: Is.EqualTo(filteredTestData.Count));
         }
 
         private static async Task<CheckInOutResult> SendRequest(
@@ -129,7 +129,7 @@ namespace KidsTown.IntegrationTests
                 CheckInOutCandidates = ImmutableList<CheckInOutCandidate>.Empty
             };
 
-            var actionResult = await controller.GetPeople(request: request);
+            var actionResult = await controller.GetPeople(request);
             var okResult = actionResult as OkObjectResult;
             var checkInOutResult = okResult!.Value as CheckInOutResult;
             return checkInOutResult!;
@@ -138,8 +138,8 @@ namespace KidsTown.IntegrationTests
         private async Task<CheckInOutController> SetupTestEnvironment()
         {
             _serviceProvider = TestHelper.SetupServiceProviderWithKidsTownDi();
-            await CleanDatabase().ConfigureAwait(continueOnCapturedContext: false);
-            await TestHelper.InsertDefaultTestData(serviceProvider: _serviceProvider).ConfigureAwait(continueOnCapturedContext: false);
+            await CleanDatabase().ConfigureAwait(false);
+            await TestHelper.InsertDefaultTestData(_serviceProvider).ConfigureAwait(false);
 
             var checkInOutService = _serviceProvider.GetService<ICheckInOutService>();
             var taskManagementServiceMock = new Mock<ITaskManagementService>();
@@ -149,7 +149,7 @@ namespace KidsTown.IntegrationTests
 
         private async Task<IImmutableList<Data>> GetActualData(IImmutableList<long> checkInsIds)
         {
-            await Task.Delay(millisecondsDelay: 500).ConfigureAwait(continueOnCapturedContext: false);
+            await Task.Delay(500).ConfigureAwait(false);
             
             var serviceScopeFactory = _serviceProvider.GetService<IServiceScopeFactory>();
 
@@ -158,12 +158,12 @@ namespace KidsTown.IntegrationTests
             var attendances = await (from a in db.Attendances
                     where a.CheckInsId < 100 && checkInsIds.Contains(a.CheckInsId)
                     select MapData(a))
-                .ToListAsync().ConfigureAwait(continueOnCapturedContext: false);
+                .ToListAsync().ConfigureAwait(false);
 
             return attendances.ToImmutableList();
         }
 
-        private static Data MapData(Attendance attendance) => new(checkInDate: attendance.CheckInDate);
+        private static Data MapData(Attendance attendance) => new(attendance.CheckInDate);
 
         private class Data
         {
@@ -177,7 +177,7 @@ namespace KidsTown.IntegrationTests
         
         private async Task CleanDatabase()
         {
-            await TestHelper.CleanDatabase(serviceProvider: _serviceProvider);
+            await TestHelper.CleanDatabase(_serviceProvider);
         }
     }
 }

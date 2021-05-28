@@ -8,13 +8,13 @@ namespace KidsTown.PlanningCenterApiClient.Models.PeopleResult
 {
      public class People : IPlanningCenterResponse
      {
-         [JsonProperty(propertyName: "links")]
+         [JsonProperty("links")]
          public DatumLinks? Links { get; set; }
 
-         [JsonProperty(propertyName: "data")]
+         [JsonProperty("data")]
          public List<Datum>? Data { get; set; }
 
-         [JsonProperty(propertyName: "included")]
+         [JsonProperty("included")]
          public List<Included>? Included { get; set; }
 
 //         //[JsonProperty("meta")]
@@ -27,14 +27,14 @@ namespace KidsTown.PlanningCenterApiClient.Models.PeopleResult
 //         [JsonProperty("type")]
 //         public PeopleIncludedType PeopleIncludedType { get; set; }
 
-         [JsonProperty(propertyName: "id")]
-         [JsonConverter(converterType: typeof(ParseStringConverter))]
+         [JsonProperty("id")]
+         [JsonConverter(typeof(ParseStringConverter))]
          public long Id { get; set; }
 
-         [JsonProperty(propertyName: "attributes")]
+         [JsonProperty("attributes")]
          public DatumAttributes? Attributes { get; set; }
 
-         [JsonProperty(propertyName: "relationships")]
+         [JsonProperty("relationships")]
          public DatumRelationships? Relationships { get; set; }
 
 //         [JsonProperty("links")]
@@ -67,7 +67,7 @@ namespace KidsTown.PlanningCenterApiClient.Models.PeopleResult
 //         [JsonProperty("directory_status")]
 //         public string DirectoryStatus { get; set; }
 
-         [JsonProperty(propertyName: "first_name")]
+         [JsonProperty("first_name")]
          public string? FirstName { get; set; }
 
 //         [JsonProperty("gender")]
@@ -85,7 +85,7 @@ namespace KidsTown.PlanningCenterApiClient.Models.PeopleResult
 //         [JsonProperty("inactivated_at")]
 //         public object InactivatedAt { get; set; }
 
-         [JsonProperty(propertyName: "last_name")]
+         [JsonProperty("last_name")]
          public string? LastName { get; set; }
 
 //         [JsonProperty("medical_notes")]
@@ -130,7 +130,7 @@ namespace KidsTown.PlanningCenterApiClient.Models.PeopleResult
          // [JsonProperty("self")]
          // public Uri? Self { get; set; }
          
-         [JsonProperty(propertyName: "next")]
+         [JsonProperty("next")]
          public Uri? Next { get; set; }
          
          // [JsonProperty("prev")]
@@ -142,13 +142,13 @@ namespace KidsTown.PlanningCenterApiClient.Models.PeopleResult
 //         [JsonProperty("primary_campus")]
 //         public PrimaryCampus PrimaryCampus { get; set; }
 
-         [JsonProperty(propertyName: "field_data")]
+         [JsonProperty("field_data")]
          public DatumRelationship? FieldData { get; set; }
          
-         [JsonProperty(propertyName: "households")]
+         [JsonProperty("households")]
          public DatumRelationship? Households { get; set; }
          
-         [JsonProperty(propertyName: "phone_numbers")]
+         [JsonProperty("phone_numbers")]
          public DatumRelationship? PhoneNumbers { get; set; }
      }
 
@@ -157,7 +157,7 @@ namespace KidsTown.PlanningCenterApiClient.Models.PeopleResult
 //         [JsonProperty("links")]
 //         public FieldDataLinks Links { get; set; }
 
-         [JsonProperty(propertyName: "data")]
+         [JsonProperty("data")]
          public List<Parent>? Data { get; set; }
      }
 
@@ -166,8 +166,8 @@ namespace KidsTown.PlanningCenterApiClient.Models.PeopleResult
 //         [JsonProperty("type")]
 //         public PeopleIncludedType PeopleIncludedType { get; set; }
 
-         [JsonProperty(propertyName: "id")]
-         [JsonConverter(converterType: typeof(ParseStringConverter))]
+         [JsonProperty("id")]
+         [JsonConverter(typeof(ParseStringConverter))]
          public long Id { get; set; }
      }
 
@@ -179,23 +179,23 @@ namespace KidsTown.PlanningCenterApiClient.Models.PeopleResult
 
      public class Relationship
      {
-         [JsonProperty(propertyName: "data")]
+         [JsonProperty("data")]
          public Parent? Data { get; set; }
      }
 
      public class Included
      {
-         [JsonProperty(propertyName: "type")]
+         [JsonProperty("type")]
          public PeopleIncludedType PeopleIncludedType { get; set; }
 
-         [JsonProperty(propertyName: "id")]
-         [JsonConverter(converterType: typeof(ParseStringConverter))]
+         [JsonProperty("id")]
+         [JsonConverter(typeof(ParseStringConverter))]
          public long Id { get; set; }
 
-         [JsonProperty(propertyName: "attributes")]
+         [JsonProperty("attributes")]
          public IncludedAttributes? Attributes { get; set; }
 
-         [JsonProperty(propertyName: "relationships")]
+         [JsonProperty("relationships")]
          public IncludedRelationships? Relationships { get; set; }
 
 //         [JsonProperty("links")]
@@ -216,19 +216,19 @@ namespace KidsTown.PlanningCenterApiClient.Models.PeopleResult
 //         [JsonProperty("file_size")]
 //         public long? FileSize { get; set; }
 
-         [JsonProperty(propertyName: "value")]
+         [JsonProperty("value")]
          public string? Value { get; set; }
          
-         [JsonProperty(propertyName: "name")]
+         [JsonProperty("name")]
          public string? Name { get; set; }
          
-         [JsonProperty(propertyName: "number")]
+         [JsonProperty("number")]
          public string? Number { get; set; }
          
-         [JsonProperty(propertyName: "location")]
+         [JsonProperty("location")]
          public string? NumberType { get; set; }
          
-         [JsonProperty(propertyName: "primary")]
+         [JsonProperty("primary")]
          public bool? Primary { get; set; }
      }
 
@@ -240,7 +240,7 @@ namespace KidsTown.PlanningCenterApiClient.Models.PeopleResult
 
      public class IncludedRelationships
      {
-         [JsonProperty(propertyName: "field_definition")]
+         [JsonProperty("field_definition")]
          public Relationship? FieldDefinition { get; set; }
 
 //         [JsonProperty("customizable")]
@@ -296,12 +296,12 @@ namespace KidsTown.PlanningCenterApiClient.Models.PeopleResult
          public override object? ReadJson(JsonReader reader, Type t, object? existingValue, JsonSerializer serializer)
          {
              if (reader.TokenType == JsonToken.Null) return null;
-             var value = serializer.Deserialize<string>(reader: reader);
+             var value = serializer.Deserialize<string>(reader);
              if (long.TryParse(s: value, result: out var l))
              {
                  return l;
              }
-             throw new Exception(message: "Cannot unmarshal type long");
+             throw new Exception("Cannot unmarshal type long");
          }
 
          public override void WriteJson(JsonWriter writer, object? untypedValue, JsonSerializer serializer)
@@ -326,7 +326,7 @@ namespace KidsTown.PlanningCenterApiClient.Models.PeopleResult
         public override object? ReadJson(JsonReader reader, Type t, object? existingValue, JsonSerializer serializer)
         {
             if (reader.TokenType == JsonToken.Null) return null;
-            var value = serializer.Deserialize<string>(reader: reader);
+            var value = serializer.Deserialize<string>(reader);
             return value switch
             {
                 "FieldDatum" => PeopleIncludedType.FieldDatum,
@@ -336,7 +336,7 @@ namespace KidsTown.PlanningCenterApiClient.Models.PeopleResult
                 "PrimaryCampus" => PeopleIncludedType.PrimaryCampus,
                 "Household" => PeopleIncludedType.Household,
                 "PhoneNumber" => PeopleIncludedType.PhoneNumber,
-                _ => throw new Exception(message: "Cannot unmarshal type TypeEnum")
+                _ => throw new Exception("Cannot unmarshal type TypeEnum")
             };
         }
 
@@ -372,7 +372,7 @@ namespace KidsTown.PlanningCenterApiClient.Models.PeopleResult
                     serializer.Serialize(jsonWriter: writer, value: "PhoneNumber");
                     return;
                 default:
-                    throw new Exception(message: "Cannot marshal type TypeEnum");
+                    throw new Exception("Cannot marshal type TypeEnum");
             }
         }
 

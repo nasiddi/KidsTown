@@ -1,8 +1,9 @@
 ﻿using System;
+using System.Collections.Generic;
 
 #nullable disable
 
-namespace KidsTown.Database
+namespace KidsTown.Database.EfCore
 {
     public partial class Kid
     {

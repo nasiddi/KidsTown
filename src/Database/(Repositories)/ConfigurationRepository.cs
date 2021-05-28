@@ -1,6 +1,7 @@
 using System.Collections.Immutable;
 using System.Linq;
 using System.Threading.Tasks;
+using KidsTown.Database.EfCore;
 using KidsTown.KidsTown;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -18,14 +19,14 @@ namespace KidsTown.Database
         
         public async Task<IImmutableList<KidsTown.Models.LocationGroup>> GetActiveLocationGroups()
         {
-            await using var db = CommonRepository.GetDatabase(serviceScopeFactory: _serviceScopeFactory);
+            await using var db = CommonRepository.GetDatabase(_serviceScopeFactory);
             
             var locations = await db.LocationGroups
-                .Where(predicate: l => l.IsEnabled)
+                .Where(l => l.IsEnabled)
                 .ToListAsync()
-                .ConfigureAwait(continueOnCapturedContext: false);
+                .ConfigureAwait(false);
                 
-            return locations.Select(selector: l => new KidsTown.Models.LocationGroup(id: l.Id, name: l.Name))
+            return locations.Select(l => new KidsTown.Models.LocationGroup(id: l.Id, name: l.Name))
                 .ToImmutableList();
         }
 
@@ -34,15 +35,15 @@ namespace KidsTown.Database
             IImmutableList<int>? selectedLocationGroups
         )
         {
-            await using var db = CommonRepository.GetDatabase(serviceScopeFactory: _serviceScopeFactory);
+            await using var db = CommonRepository.GetDatabase(_serviceScopeFactory);
             
             var locations = await db.Locations
-                .Where(predicate: l => l.EventId == eventId 
+                .Where(l => l.EventId == eventId 
                                        && (selectedLocationGroups == null || selectedLocationGroups.Contains(l.LocationGroupId)))
                 .ToListAsync()
-                .ConfigureAwait(continueOnCapturedContext: false);
+                .ConfigureAwait(false);
                 
-            return locations.Select(selector: MapLocation)
+            return locations.Select(MapLocation)
                 .ToImmutableList();
         }
 

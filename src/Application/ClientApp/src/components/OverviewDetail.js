@@ -46,7 +46,10 @@ class Detail extends Component {
 			<Grid container spacing={3}>
 				{this.state.attendees.map((attendees) => (
 					<Grid item xs={12} key={attendees['location']}>
-						<Accordion className="overview-accordion">
+						<Accordion
+							className="overview-accordion"
+							defaultExpanded
+						>
 							<AccordionSummary
 								expandIcon={<ExpandMoreIcon />}
 								aria-controls="panel1a-content"
@@ -247,14 +250,23 @@ class Detail extends Component {
 	getAdultInfos(row) {
 		return (
 			<div>
-				{row['adults'].map((a) => (
-					<Typography
-						key={`${a['firstName']} ${a['lastName']} ${a['phoneNumber']}`}
-					>
-						{`${a['firstName']} ${a['lastName']} ${a['phoneNumber']}`}
-						<br />
-					</Typography>
-				))}
+				{row['adults'].map((a) => {
+					const primary = a['isPrimaryContact'] ? (
+						<FontAwesomeIcon icon="star" />
+					) : (
+						<div />
+					)
+
+					return (
+						<Typography
+							key={`${a['firstName']} ${a['lastName']} ${a['phoneNumber']}`}
+						>
+							{primary}{' '}
+							{`${a['firstName']} ${a['lastName']} ${a['phoneNumber']}`}
+							<br />
+						</Typography>
+					)
+				})}
 			</div>
 		)
 	}

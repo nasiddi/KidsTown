@@ -1,4 +1,5 @@
 using System;
+// ReSharper disable UnusedAutoPropertyAccessor.Global
 
 namespace KidsTown.BackgroundTasks.Common
 {
@@ -6,7 +7,6 @@ namespace KidsTown.BackgroundTasks.Common
     {
         public BackgroundTaskType BackgroundTaskType { get; init; }
         public bool IsActive { get; init; }
-        public bool IsEnabled { get; init; }
         public bool TaskRunsSuccessfully { get; init; }
         public int SuccessCount { get; init; }
         public int CurrentFailCount { get; init; }

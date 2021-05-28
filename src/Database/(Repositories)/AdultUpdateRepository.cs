@@ -3,8 +3,12 @@ using System.Collections.Immutable;
 using System.Linq;
 using System.Threading.Tasks;
 using KidsTown.BackgroundTasks.Adult;
+using KidsTown.Database.EfCore;
+using KidsTown.Shared;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Family = KidsTown.Database.EfCore.Family;
+using Person = KidsTown.Database.EfCore.Person;
 
 namespace KidsTown.Database
 {
@@ -19,33 +23,41 @@ namespace KidsTown.Database
         
         public async Task<IImmutableList<BackgroundTasks.Adult.Family>> GetFamiliesToUpdate(int daysLookBack, int take)
         {
-            await using var db = CommonRepository.GetDatabase(serviceScopeFactory: _serviceScopeFactory);
+            await using var db = CommonRepository.GetDatabase(_serviceScopeFactory);
             
+            var personIds = await db.Attendances.Where(a
+                    => a.InsertDate >= DateTime.Today.AddDays(-daysLookBack) 
+                       && a.AttendanceTypeId == (int) AttendanceTypeId.Regular)
+                .Select(a => a.PersonId)
+                .Distinct()
+                .ToListAsync().ConfigureAwait(false);
+            
+            var familyIds = await db.People
+                .Where(p => p.FamilyId.HasValue && personIds.Contains(p.Id))
+                .Select(p => p.FamilyId)
+                .Distinct()
+                .ToListAsync().ConfigureAwait(false);
+                
             var families = await db.Families
-                .Include(navigationPropertyPath: f => f.People)
-                .ThenInclude(navigationPropertyPath: p => p.Adult)
-                .Include(navigationPropertyPath: f => f.People)
-                .ThenInclude(navigationPropertyPath: p => p.Attendances)
+                .Include(f => f.People)
+                .Where(f => familyIds.Contains(f.Id)
+                    && f.HouseholdId.HasValue)
+                .OrderBy(f => f.UpdateDate)
+                .Take(take)
                 .ToListAsync();
 
-            var filteredFamilies = families.Where(predicate: f => AttendanceIsWithinLookBackWindow(f: f, daysLookBack: daysLookBack))
-                .OrderBy(keySelector: f => f.UpdateDate)
-                .ThenBy(keySelector: f => f.Id)
-                .Take(count: take)
-                .ToImmutableList();
-
-            return filteredFamilies.Select(selector: MapFamily).ToImmutableList();
+            return families.Select(MapFamily).ToImmutableList();
         }
         
         public async Task<int> UpdateAdults(IImmutableList<AdultUpdate> parentUpdates)
         {
-            await using var db = CommonRepository.GetDatabase(serviceScopeFactory: _serviceScopeFactory);
+            await using var db = CommonRepository.GetDatabase(_serviceScopeFactory);
 
-            var peopleIds = parentUpdates.Select(selector: p => p.PeopleId).ToImmutableList();
-            var existingParents = await GetExistingParents(peopleIds: peopleIds, db: db).ConfigureAwait(continueOnCapturedContext: false);
+            var peopleIds = parentUpdates.Select(p => p.PeopleId).ToImmutableList();
+            var existingParents = await GetExistingParents(peopleIds: peopleIds, db: db).ConfigureAwait(false);
 
             var updates = parentUpdates.Where(
-                    predicate: p => existingParents.Select(selector: e => e.PeopleId).Contains(value: p.PeopleId))
+                    p => existingParents.Select(e => e.PeopleId).Contains(p.PeopleId))
                 .ToImmutableList();
                 
             foreach (var existingParent in existingParents)
@@ -53,23 +65,36 @@ namespace KidsTown.Database
                 UpdateParent(person: existingParent, updates: updates);
             }
                 
-            var newEntries = parentUpdates.Except(second: updates).ToImmutableList();
-            var newParents = newEntries.Select(selector: MapParent);
-
-            await SetFamilyUpdateDate(db: db, updates: parentUpdates).ConfigureAwait(continueOnCapturedContext: false);
-                
-            await db.AddRangeAsync(entities: newParents);
+            var newEntries = parentUpdates.Except(updates).ToImmutableList();
+            var newParents = newEntries.Select(MapParent);
+            
+            await db.AddRangeAsync(newParents);
             return await db.SaveChangesAsync();
         }
 
         public async Task<int> RemovePeopleFromFamilies(ImmutableList<long> peopleIds)
         {
-            await using var db = CommonRepository.GetDatabase(serviceScopeFactory: _serviceScopeFactory);
+            await using var db = CommonRepository.GetDatabase(_serviceScopeFactory);
 
-            var people = await db.People.Where(predicate: p => p.PeopleId.HasValue && peopleIds.Contains(p.PeopleId.Value))
-                .ToListAsync().ConfigureAwait(continueOnCapturedContext: false);
+            var people = await db.People.Where(p => p.PeopleId.HasValue && peopleIds.Contains(p.PeopleId.Value))
+                .ToListAsync().ConfigureAwait(false);
             
-            people.ForEach(action: p => p.FamilyId = null);
+            people.ForEach(p => p.FamilyId = null);
+            return await db.SaveChangesAsync();
+        }
+        
+        public async Task<int> SetFamilyUpdateDate(IImmutableList<BackgroundTasks.Adult.Family> families)
+        {
+            await using var db = CommonRepository.GetDatabase(_serviceScopeFactory);
+            
+            var persistedFamilies = await db.Families
+                .Where(f => families.Select(e => e.FamilyId).Contains(f.Id))
+                .ToListAsync()
+                .ConfigureAwait(false);
+            
+            var updateDate = DateTime.UtcNow;
+            persistedFamilies.ForEach(f => f.UpdateDate = updateDate);
+            
             return await db.SaveChangesAsync();
         }
 
@@ -79,17 +104,17 @@ namespace KidsTown.Database
         )
         {
             var parents = await db.People
-                .Where(predicate: p => p.PeopleId != null && peopleIds.Contains(p.PeopleId.Value))
-                .Include(navigationPropertyPath: p => p.Adult)
-                .Include(navigationPropertyPath: p => p.Family)
+                .Where(p => p.PeopleId != null && peopleIds.Contains(p.PeopleId.Value))
+                .Include(p => p.Adult)
+                .Include(p => p.Family)
                 .ToListAsync()
-                .ConfigureAwait(continueOnCapturedContext: false);
+                .ConfigureAwait(false);
             return parents.ToImmutableList();
         }
         
         private static void UpdateParent(Person person, IImmutableList<AdultUpdate> updates)
         {
-            var update = updates.Single(predicate: u => u.PeopleId == person.PeopleId);
+            var update = updates.Single(u => u.PeopleId == person.PeopleId);
 
             person.FamilyId = update.FamilyId;
 
@@ -102,12 +127,15 @@ namespace KidsTown.Database
             {
                 person.LastName = update.LastName;
             }
-            
-            if (update.PhoneNumber.Length > 0)
+
+            person.Adult ??= new Adult
             {
-                person.Adult ??= new Adult();
-                person.Adult.PhoneNumber = update.PhoneNumber;
-            }
+                IsPrimaryContact = false
+            };
+
+            person.Adult.PhoneNumberId = update.PhoneNumberId;
+            person.Adult.PhoneNumber = update.PhoneNumber;
+            
 
             var updateDate = DateTime.UtcNow;
             person.UpdateDate = updateDate;
@@ -117,7 +145,9 @@ namespace KidsTown.Database
         {
             var adult = new Adult
             {
-                PhoneNumber = adultUpdate.PhoneNumber
+                PhoneNumberId = adultUpdate.PhoneNumberId,
+                PhoneNumber = adultUpdate.PhoneNumber,
+                IsPrimaryContact = false
             };
 
             return new Person
@@ -130,34 +160,16 @@ namespace KidsTown.Database
                 Adult = adult
             };
         }
-        
-        private static async Task SetFamilyUpdateDate(KidsTownContext db, IImmutableList<AdultUpdate> updates)
-        {
-            var families = await db.Families
-                .Where(predicate: f => updates.Select(e => e.FamilyId).Contains(f.Id))
-                .ToListAsync()
-                .ConfigureAwait(continueOnCapturedContext: false);
-            
-            var updateDate = DateTime.UtcNow;
-            families.ForEach(action: f => f.UpdateDate = updateDate);
-        }
-        
+
         private static BackgroundTasks.Adult.Family MapFamily(Family family)
         {
-            var members = family.People.Where(predicate: p => p.PeopleId != null)
-                .Select(selector: p => new BackgroundTasks.Adult.Person(peopleId: p.PeopleId!.Value)).ToImmutableList();
+            var members = family.People.Where(p => p.PeopleId != null)
+                .Select(p => new BackgroundTasks.Adult.Person(p.PeopleId!.Value)).ToImmutableList();
             
             return new BackgroundTasks.Adult.Family(
                 familyId: family.Id,
-                householdId: family.HouseholdId,
+                householdId: family.HouseholdId!.Value,
                 members: members);
-        }
-
-        private static bool AttendanceIsWithinLookBackWindow(Family f, int daysLookBack)
-        {
-            return f.People.Any(
-                predicate: p => p.Attendances.Any(
-                    predicate: a => a.InsertDate > DateTime.Today.AddDays(value: -daysLookBack)));
         }
     }
 }

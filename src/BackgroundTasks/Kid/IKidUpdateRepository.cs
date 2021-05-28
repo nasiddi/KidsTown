@@ -7,7 +7,7 @@ namespace KidsTown.BackgroundTasks.Kid
 {
     public interface IKidUpdateRepository
     {
-        Task<ImmutableList<TypedAttendee>> GetKidsToUpdate(int daysLookBack, int take);
+        Task<ImmutableList<long>> GetKidsPeopleIdToUpdate(int daysLookBack, int take);
         Task<int> UpdateKids(IImmutableList<PeopleUpdate> kids, IImmutableList<Family> families);
         Task<IImmutableList<Family>> GetExistingFamilies(IImmutableList<long> householdIds);
         Task<IImmutableList<Family>> InsertFamilies(IImmutableList<long> newHouseholdIds, IImmutableList<PeopleUpdate> peoples);

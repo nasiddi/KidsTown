@@ -54,8 +54,8 @@ namespace KidsTown.IntegrationTests.TestData
             HouseholdId = householdId;
             HouseholdName = householdName;
             
-            SecurityCode = SetSecurityCode(securityCode: securityCode);
-            LocationGroupId = GetLocationGroup(testLocationId: testLocation);
+            SecurityCode = SetSecurityCode(securityCode);
+            LocationGroupId = GetLocationGroup(testLocation);
         }
 
         public TestData(
@@ -74,16 +74,16 @@ namespace KidsTown.IntegrationTests.TestData
             PeopleId = peopleId;
             AttendanceType = attendanceType;
             TestLocation = testLocation;
-            SecurityCode = SetSecurityCode(securityCode: securityCode);
+            SecurityCode = SetSecurityCode(securityCode);
             FieldData = ImmutableList<TestFieldData>.Empty;
 
-            LocationGroupId = GetLocationGroup(testLocationId: testLocation);
+            LocationGroupId = GetLocationGroup(testLocation);
         }
 
         private string SetSecurityCode(string? securityCode)
         {
             return securityCode ??
-                   $"{TestLocation.ToString().Substring(startIndex: 0, length: 1)}{CheckInsId}{AttendanceType.ToString().Substring(startIndex: 0, length: 1)}{PeopleId ?? 0}";
+                   $"{TestLocation.ToString()[..1]}{CheckInsId}{AttendanceType.ToString()[..1]}{PeopleId ?? 0}";
         }
 
         private static int GetLocationGroup(TestLocationIds testLocationId)

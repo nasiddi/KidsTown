@@ -14,6 +14,7 @@
     <ItemGroup>
         <PackageReference Include="MailKit" Version="2.11.0" />
         <PackageReference Include="Microsoft.AspNetCore.SpaServices.Extensions" Version="5.0.0" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="5.0.3" />
     </ItemGroup>
 
     <ItemGroup>
@@ -24,6 +25,7 @@
         <Content Include="ClientApp\node_modules\eslint-plugin-prettier\LICENSE.md" />
         <Content Include="ClientApp\node_modules\eslint-plugin-prettier\package.json" />
         <Content Include="ClientApp\node_modules\eslint-plugin-prettier\README.md" />
+        <Content Include="ClientApp\src\components\CheckIn\CheckInPhoneNumbers.js" />
         <None Include="$(SpaRoot)**" Exclude="$(SpaRoot)node_modules\**" />
         <None Remove="ClientApp\node_modules\eslint-plugin-prettier\**" />
         <Content Remove="ClientApp\node_modules\eslint-plugin-prettier\**" />

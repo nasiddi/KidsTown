@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 #nullable disable
 
-namespace KidsTown.Database
+namespace KidsTown.Database.EfCore
 {
     public partial class Family
     {
@@ -13,7 +13,7 @@ namespace KidsTown.Database
         }
 
         public int Id { get; set; }
-        public long HouseholdId { get; set; }
+        public long? HouseholdId { get; set; }
         public string Name { get; set; }
         public DateTime UpdateDate { get; set; }
 

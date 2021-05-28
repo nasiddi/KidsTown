@@ -1,57 +1,27 @@
 import React, { Component } from 'react'
-import TextField from '@material-ui/core/TextField'
 import 'bootstrap/dist/css/bootstrap.css'
-import { Grid, MuiThemeProvider } from '@material-ui/core'
+import { Grid } from '@material-ui/core'
 import {
-	fetchLocationGroups,
-	getSelectedEventFromStorage,
+	getEventId,
 	getSelectedOptionsFromStorage,
 	getStateFromLocalStorage,
-	LocationSelect,
-	FontAwesomeIcon,
-	primaryTheme,
-	PrimaryCheckBox,
-	ToggleButtons,
 } from './Common'
-import { Alert, Button } from 'reactstrap'
 import { withAuth } from '../auth/MsalAuthProvider'
+import { CheckInOptions } from './CheckIn/CheckInOptions'
+import { CheckInInput } from './CheckIn/CheckInInput'
+import { CheckInAlert } from './CheckIn/CheckInAlert'
+import { CheckInPhoneNumbers } from './CheckIn/CheckInPhoneNumbers'
+import { CheckInCandidates } from './CheckIn/CheckInCandidates'
+import {
+	fetchLocationGroups,
+	fetchParentPhoneNumbers,
+	postCheckInOut,
+	postPhoneNumbers,
+	postSecurityCode,
+	postUndo,
+} from '../helpers/BackendClient'
 
-function UndoButton(props) {
-	return (
-		<a onClick={props['callback']} className="alert-link">
-			<FontAwesomeIcon name={'fas fa-undo-alt'} />
-		</a>
-	)
-}
-
-function SearchButton(props) {
-	return (
-		<Button
-			size="lg"
-			color={props['isSearch'] ? 'secondary' : 'primary'}
-			block
-			onClick={props['isSearch'] ? props['clear'] : props['submit']}
-		>
-			{props['isSearch'] ? 'Clear' : 'Search'}
-		</Button>
-	)
-}
-
-function LargeButton(props) {
-	return (
-		<Button
-			id={props['id']}
-			block
-			color={props['color']}
-			size="lg"
-			onClick={props['onClick']}
-			outline={props['isOutline']}
-			disabled={props['disabled']}
-		>
-			{props['name']}
-		</Button>
-	)
-}
+const _ = require('lodash')
 
 class CheckIn extends Component {
 	static displayName = CheckIn.name
@@ -69,6 +39,10 @@ class CheckIn extends Component {
 		this.invertSelectCandidate = this.invertSelectCandidate.bind(this)
 		this.undoAction = this.undoAction.bind(this)
 		this.handleChange = this.handleChange.bind(this)
+		this.changePrimaryContact = this.changePrimaryContact.bind(this)
+		this.setPhoneNumberIsEdit = this.setPhoneNumberIsEdit.bind(this)
+		this.updatePhoneNumber = this.updatePhoneNumber.bind(this)
+		this.savePhoneNumber = this.savePhoneNumber.bind(this)
 
 		this.state = {
 			locations: [],
@@ -78,12 +52,22 @@ class CheckIn extends Component {
 				[]
 			),
 			securityCode: '',
-			fastCheckInOut: getStateFromLocalStorage('fastCheckInOut'),
-			singleCheckInOut: getStateFromLocalStorage('singleCheckInOut'),
+			fastCheckInOut: getStateFromLocalStorage('fastCheckInOut', true),
+			singleCheckInOut: getStateFromLocalStorage(
+				'singleCheckInOut',
+				false
+			),
+			showPhoneNumbers: getStateFromLocalStorage(
+				'showPhoneNumbers',
+				true
+			),
 			alert: { text: '', level: 1 },
 			checkType: localStorage.getItem('checkType') ?? 'CheckIn',
 			loading: true,
 			lastActionAttendanceIds: [],
+			adults: [],
+			phoneNumberEditFlags: {},
+			lastCodeSubmission: new Date(),
 		}
 	}
 
@@ -98,7 +82,13 @@ class CheckIn extends Component {
 			prevState.securityCode.length !== 4 &&
 			this.state.securityCode.length === 4
 		) {
-			this.submitSecurityCode().then()
+			const currentDate = new Date()
+			if (currentDate - this.state.lastCodeSubmission > 2000) {
+				this.setState({ lastCodeSubmission: new Date() })
+				this.submitSecurityCode().then()
+			} else {
+				this.resetView(false, false)
+			}
 		}
 	}
 
@@ -106,193 +96,90 @@ class CheckIn extends Component {
 		this.securityCodeInput.current.focus()
 	}
 
-	renderOptionsAndInput() {
-		const toggleButtons = [
-			{
-				label: 'CheckIn',
-				onClick: this.selectCheckType,
-				isSelected: this.state.checkType === 'CheckIn',
-			},
-			{
-				label: 'CheckOut',
-				onClick: this.selectCheckType,
-				isSelected: this.state.checkType === 'CheckOut',
-			},
-		]
+	renderOptions() {
+		return this.state.loading ? (
+			<p>
+				<em>Loading...</em>
+			</p>
+		) : (
+			<CheckInOptions
+				onClick={this.selectCheckType}
+				checkType={this.state.checkType}
+				fastCheckInOut={this.state.fastCheckInOut}
+				singleCheckInOut={this.state.singleCheckInOut}
+				showPhoneNumbers={this.state.showPhoneNumbers}
+				onCheckBoxChange={this.handleChange}
+				onLocationChange={this.updateOptions}
+				locations={this.state.locations}
+				checkInOutLocations={this.state.checkInOutLocations}
+			/>
+		)
+	}
 
-		return (
-			<Grid item xs={12}>
-				<Grid
-					container
-					spacing={3}
-					justify="space-between"
-					alignItems="center"
-				>
-					<ToggleButtons buttons={toggleButtons} />
-					<Grid item md={3} xs={6}>
-						<PrimaryCheckBox
-							name="fastCheckInOut"
-							checked={this.state.fastCheckInOut}
-							onChange={this.handleChange}
-							label={`Fast ${this.state.checkType}`}
-						/>
-					</Grid>
-					<Grid item md={3} xs={6}>
-						<PrimaryCheckBox
-							name="singleCheckInOut"
-							checked={this.state.singleCheckInOut}
-							onChange={this.handleChange}
-							label={`Single ${this.state.checkType}`}
-						/>
-					</Grid>
-					<Grid item md={3} xs={12}>
-						<LocationSelect
-							name={'checkInOutLocations'}
-							onChange={this.updateOptions}
-							isMulti={true}
-							options={this.state.locations}
-							defaultOptions={this.state.checkInOutLocations}
-							minHeight={44}
-						/>
-					</Grid>
-					<Grid item md={10} xs={12}>
-						<MuiThemeProvider theme={primaryTheme}>
-							<TextField
-								inputRef={this.securityCodeInput}
-								id="outlined-basic"
-								label="SecurityCode"
-								variant="outlined"
-								value={this.state.securityCode}
-								onChange={this.updateSecurityCode}
-								fullWidth={true}
-								autoFocus
-							/>
-						</MuiThemeProvider>
-					</Grid>
-					<Grid item md={2} xs={12}>
-						<SearchButton
-							isSearch={
-								this.state.checkInOutCandidates.length > 0
-							}
-							clear={this.resetView}
-							submit={this.submitSecurityCode}
-						/>
-					</Grid>
-				</Grid>
-			</Grid>
+	renderInput() {
+		return this.state.loading ? (
+			<div />
+		) : (
+			<CheckInInput
+				inputRef={this.securityCodeInput}
+				securityCode={this.state.securityCode}
+				onChange={this.updateSecurityCode}
+				onSubmit={this.submitSecurityCode}
+				onClear={this.resetView}
+			/>
 		)
 	}
 
 	renderAlert() {
-		const undoLink =
-			this.state.lastActionAttendanceIds.length > 0 ? (
-				<UndoButton callback={this.undoAction} />
-			) : (
-				<div />
-			)
+		return this.state.alert.text.length <= 0 ? (
+			<div />
+		) : (
+			<CheckInAlert
+				showUndoLink={this.state.lastActionAttendanceIds.length > 0}
+				onUndo={this.undoAction}
+				alert={this.state.alert}
+			/>
+		)
+	}
 
-		return (
+	renderCandidates() {
+		return this.state.checkInOutCandidates.length <= 0 ? (
+			<div />
+		) : (
+			<CheckInCandidates
+				candidates={this.state.checkInOutCandidates}
+				isSingleCheckInOut={this.state.singleCheckInOut}
+				invertSelectCandidate={this.invertSelectCandidate}
+				checkType={this.state.checkType}
+				onCheckInOutMultiple={this.checkInOutMultiple}
+				onCheckInOutSingle={this.checkInOutSingle}
+			/>
+		)
+	}
+
+	renderAdults() {
+		return this.state.adults.length <= 0 ? (
+			<div />
+		) : (
 			<Grid item xs={12}>
-				<Alert color={this.state.alert.level.toLowerCase()}>
-					<Grid
-						container
-						direction="row"
-						justify="space-between"
-						alignItems="center"
-						spacing={1}
-					>
-						<Grid item xs={11}>
-							{this.state.alert.text}
-						</Grid>
-						<Grid item xs={1}>
-							{undoLink}
-						</Grid>
-					</Grid>
-				</Alert>
-			</Grid>
-		)
-	}
-
-	renderSingleCheckout(checkInOutCandidates) {
-		const candidates = checkInOutCandidates.map((c) => (
-			<Grid item xs={12} key={c['attendanceId']}>
-				<LargeButton
-					id={c['attendanceId']}
-					name={c['name']}
-					color={this.getNameButtonColor(c)}
-					onClick={this.checkInOutSingle}
+				<CheckInPhoneNumbers
+					adults={this.state.adults}
+					onPrimaryContactChange={this.changePrimaryContact}
+					onSave={this.savePhoneNumber}
+					onEdit={this.setPhoneNumberIsEdit}
+					onChange={this.updatePhoneNumber}
+					phoneNumberEditFlags={this.state.phoneNumberEditFlags}
 				/>
-			</Grid>
-		))
-
-		return (
-			<Grid
-				container
-				spacing={3}
-				justify="space-between"
-				alignItems="center"
-			>
-				{candidates}
-			</Grid>
-		)
-	}
-
-	renderMultiCheckout(checkInOutCandidates) {
-		const candidates = checkInOutCandidates.map((c) => (
-			<Grid item xs={12} key={c['attendanceId']}>
-				<LargeButton
-					id={c['attendanceId']}
-					name={c['name']}
-					color={this.getNameButtonColor(c)}
-					onClick={this.invertSelectCandidate}
-					isOutline={!c.isSelected}
-				/>
-			</Grid>
-		))
-
-		return (
-			<Grid container spacing={3}>
-				{candidates}
-				<Grid item xs={12}>
-					<LargeButton
-						id={'submit'}
-						name={this.state.checkType}
-						color={
-							this.areNoCandidatesSelected()
-								? 'secondary'
-								: 'success'
-						}
-						onClick={this.checkInOutMultiple}
-						isOutline={false}
-						disabled={this.areNoCandidatesSelected()}
-					/>
-				</Grid>
 			</Grid>
 		)
 	}
 
 	render() {
-		const options = this.state.loading ? (
-			<p>
-				<em>Loading...</em>
-			</p>
-		) : (
-			this.renderOptionsAndInput()
-		)
-
-		const alert =
-			this.state.alert.text.length > 0 ? this.renderAlert() : <div />
-
-		let candidates = <div />
-		if (this.state.singleCheckInOut) {
-			candidates = this.renderSingleCheckout(
-				this.state.checkInOutCandidates
-			)
-		} else if (this.state.checkInOutCandidates.length > 0) {
-			candidates = this.renderMultiCheckout(
-				this.state.checkInOutCandidates
-			)
-		}
+		const options = this.renderOptions()
+		const input = this.renderInput()
+		const alert = this.renderAlert()
+		const candidates = this.renderCandidates()
+		const adults = this.renderAdults()
 
 		return (
 			<Grid
@@ -305,10 +192,10 @@ class CheckIn extends Component {
 					<h1 id="title">{this.state.checkType}</h1>
 				</Grid>
 				{options}
+				{input}
 				{alert}
-				<Grid item xs={12}>
-					{candidates}
-				</Grid>
+				{candidates}
+				{adults}
 			</Grid>
 		)
 	}
@@ -329,120 +216,122 @@ class CheckIn extends Component {
 		this.setState({ securityCode: e.target.value })
 	}
 
+	updatePhoneNumber = (e) => {
+		const eventId = getEventId(e)
+		const adults = this.state.adults
+		const adult = _.find(adults, { personId: eventId })
+		adult['phoneNumber'] = e.target.value
+
+		this.setState({ adults: adults })
+	}
+
 	async submitSecurityCode() {
+		this.setState({ adults: [] })
+
 		const selectedLocationIds = this.state.checkInOutLocations.map(
 			(l) => l.value
 		)
-		await fetch('checkinout/people', {
-			body: JSON.stringify({
-				securityCode: this.state.securityCode,
-				eventId: await getSelectedEventFromStorage(),
-				selectedLocationIds: selectedLocationIds,
-				isFastCheckInOut: this.state.fastCheckInOut ?? false,
-				checkType: this.state.checkType,
-				attendanceIds: [],
-			}),
-			method: 'POST',
-			headers: {
-				'Content-Type': 'application/json',
-			},
-		})
-			.then((r) => r.json())
-			.then((j) => {
-				this.setState({
-					alert: { level: j['alertLevel'], text: j['text'] },
-					lastActionAttendanceIds: j['attendanceIds'] ?? [],
-				})
-				if (j['successfulFastCheckout'] === true) {
-					this.resetView(false)
-				} else {
-					const candidates = j['checkInOutCandidates'].map(function (
-						el
-					) {
-						const o = Object.assign({}, el)
-						o.isSelected = true
+		const json = await postSecurityCode(
+			this.state.securityCode,
+			selectedLocationIds,
+			this.state.fastCheckInOut,
+			this.state.checkType
+		)
 
-						return o
-					})
-
-					this.setState({ checkInOutCandidates: candidates })
-				}
+		const attendanceIds = json['attendanceIds'] ?? []
+		if (json['successfulFastCheckout'] === true) {
+			this.resetView(false, false)
+			this.setState({
+				alert: { level: json['alertLevel'], text: json['text'] },
+				lastActionAttendanceIds: attendanceIds,
 			})
+			await this.loadPhoneNumbers(attendanceIds)
+		} else {
+			const candidates = json['checkInOutCandidates'].map(function (el) {
+				const o = Object.assign({}, el)
+				o.isSelected = true
+
+				return o
+			})
+
+			this.setState({
+				alert: { level: json['alertLevel'], text: json['text'] },
+				lastActionAttendanceIds: attendanceIds,
+				checkInOutCandidates: candidates,
+			})
+		}
 	}
 
 	async checkInOutSingle(event) {
-		await fetch('checkinout/manual', {
-			body: JSON.stringify({
-				checkType: this.state.checkType,
-				checkInOutCandidates: [
-					this.state.checkInOutCandidates.find(
-						(c) =>
-							c['attendanceId'] === parseInt(event.target.id, 10)
-					),
-				],
-			}),
-			method: 'POST',
-			headers: {
-				'Content-Type': 'application/json',
-			},
-		})
-			.then((r) => r.json())
-			.then((j) => {
-				this.setState({
-					alert: { level: j['alertLevel'], text: j['text'] },
-					lastActionAttendanceIds: j['attendanceIds'] ?? [],
-				})
-				this.resetView(false)
-			})
+		const candidate = this.state.checkInOutCandidates.find(
+			(c) => c['attendanceId'] === parseInt(event.target.id, 10)
+		)
+		const json = await postCheckInOut([candidate], this.state.checkType)
+		await this.processCheckInOutResult(json)
 	}
 
 	async checkInOutMultiple() {
 		const candidates = this.state.checkInOutCandidates.filter(
 			(c) => c.isSelected
 		)
-		await fetch('checkinout/manual', {
-			body: JSON.stringify({
-				checkType: this.state.checkType,
-				checkInOutCandidates: candidates,
-			}),
-			method: 'POST',
-			headers: {
-				'Content-Type': 'application/json',
-			},
-		})
-			.then((r) => r.json())
-			.then((j) => {
-				this.setState({
-					alert: { level: j['alertLevel'], text: j['text'] },
-					lastActionAttendanceIds: j['attendanceIds'] ?? [],
-				})
-				this.resetView(false)
-			})
+		const json = await postCheckInOut(candidates, this.state.checkType)
+		await this.processCheckInOutResult(json)
 	}
 
 	async undoAction() {
-		await fetch(`checkinout/undo/${this.state.checkType}`, {
-			body: JSON.stringify(this.state.lastActionAttendanceIds),
-			method: 'POST',
-			headers: {
-				'Content-Type': 'application/json',
-			},
+		const json = await postUndo(
+			this.state.lastActionAttendanceIds,
+			this.state.checkType
+		)
+
+		this.setState({
+			alert: { level: json['alertLevel'], text: json['text'] },
+			lastActionAttendanceIds: [],
 		})
-			.then((r) => r.json())
-			.then((j) => {
-				this.setState({
-					alert: { level: j['alertLevel'], text: j['text'] },
-					lastActionAttendanceIds: [],
-				})
-			})
 	}
 
-	resetView(resetAlert = true) {
+	async loadPhoneNumbers(attendanceIds) {
+		if (
+			this.state.checkType === 'CheckOut' ||
+			!this.state.showPhoneNumbers
+		) {
+			return
+		}
+
+		const json = await fetchParentPhoneNumbers(attendanceIds)
+
+		const editMap = _.map(json, function (adult) {
+			return { id: adult['personId'], isEdit: false }
+		})
+		this.setState({
+			adults: json,
+			phoneNumberEditFlags: editMap,
+		})
+	}
+
+	async processCheckInOutResult(json) {
+		const attendanceIds = json['attendanceIds'] ?? []
+		this.setState({
+			alert: { level: json['alertLevel'], text: json['text'] },
+			lastActionAttendanceIds: attendanceIds,
+		})
+		this.resetView(false, false)
+		await this.loadPhoneNumbers(attendanceIds)
+	}
+
+	resetView(resetAlert = true, resetAdults = true) {
 		this.focus()
-		this.setState({ checkInOutCandidates: [], securityCode: '' })
+		this.setState({
+			checkInOutCandidates: [],
+			securityCode: '',
+		})
 
 		if (resetAlert) {
 			this.setState({ alert: { text: '', level: 1 } })
+		}
+
+		if (resetAdults) {
+			this.setState({ adults: [] })
 		}
 	}
 
@@ -454,17 +343,6 @@ class CheckIn extends Component {
 		this.setState({ checkInOutCandidates: this.state.checkInOutCandidates })
 	}
 
-	areNoCandidatesSelected() {
-		return (
-			this.state.checkInOutCandidates.filter((c) => c.isSelected)
-				.length <= 0
-		)
-	}
-
-	checkTypeIsActive(checkType) {
-		return !(this.state.checkType === checkType)
-	}
-
 	selectCheckType(event) {
 		if (this.state.checkType !== event.target.id) {
 			this.setState({ checkType: event.target.id })
@@ -473,20 +351,45 @@ class CheckIn extends Component {
 		}
 	}
 
-	getNameButtonColor(candidate) {
-		if (this.state.checkType === 'CheckIn') {
-			return 'primary'
+	async changePrimaryContact(event) {
+		const id = getEventId(event)
+
+		const adults = this.state.adults
+		const primary = _.find(adults, { personId: id })
+
+		if (primary['isPrimaryContact']) {
+			primary['isPrimaryContact'] = false
+		} else {
+			_.forEach(adults, function (a) {
+				a['isPrimaryContact'] = false
+			})
+
+			primary['isPrimaryContact'] = true
 		}
 
-		if (candidate['hasPeopleWithoutPickupPermission']) {
-			return 'danger'
-		}
+		this.setState({ adults: adults })
+		await postPhoneNumbers(adults, false)
+		this.focus()
+	}
 
-		if (!candidate['mayLeaveAlone']) {
-			return 'warning'
-		}
+	async savePhoneNumber(event) {
+		const eventId = getEventId(event)
+		const flags = this.state.phoneNumberEditFlags
+		const flag = _.find(flags, { id: eventId })
+		flag['isEdit'] = false
 
-		return 'primary'
+		this.setState({ phoneNumberEditFlags: flags })
+		await postPhoneNumbers(this.state.adults, true)
+		this.focus()
+	}
+
+	setPhoneNumberIsEdit(event) {
+		const eventId = getEventId(event)
+		const flags = this.state.phoneNumberEditFlags
+		const flag = _.find(flags, { id: eventId })
+		flag['isEdit'] = true
+
+		this.setState({ phoneNumberEditFlags: flags })
 	}
 }
 

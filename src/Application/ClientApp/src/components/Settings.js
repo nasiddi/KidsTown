@@ -21,44 +21,98 @@ function Task(props) {
 		return <BoolBadge color={falseColor} label={falseLabel} />
 	}
 
+	const failedCount = []
+
+	if (!task['taskRunsSuccessfully']) {
+		failedCount.push(
+			<Grid xs={12}>
+				<hr />
+			</Grid>
+		)
+		failedCount.push(
+			<Grid item md={6} xs={12}>
+				<b>Failed Executions</b>
+			</Grid>
+		)
+		failedCount.push(
+			<Grid item md={6} xs={12}>
+				{task['currentFailCount']}
+			</Grid>
+		)
+	}
+
 	return (
 		<Card>
 			<CardBody>
-				<CardTitle tag="h5">{task['backgroundTaskType']}</CardTitle>
-
-				<CardTitle tag="h5">
-					{GetBadge(
-						task['isActive'],
-						'primary',
-						'active',
-						'secondary',
-						'inactive'
-					)}{' '}
-					{GetBadge(
-						task['isEnabled'],
-						'primary',
-						'enabled',
-						'secondary',
-						'disabled'
-					)}{' '}
-					{GetBadge(
-						task['taskRunsSuccessfully'],
-						'success',
-						'success',
-						'danger',
-						'failed'
-					)}
-				</CardTitle>
-
 				<Grid
 					container
 					spacing={1}
 					justify="space-between"
 					alignItems="center"
 				>
-					<Grid item xs={6} />
+					<Grid md={6} xs={12}>
+						<CardTitle tag="h5">
+							{task['backgroundTaskType']}
+						</CardTitle>
+					</Grid>
+					<Grid md={6} xs={12}>
+						<CardTitle tag="h5">
+							{GetBadge(
+								task['isActive'],
+								'primary',
+								'active',
+								'secondary',
+								'inactive'
+							)}{' '}
+							{GetBadge(
+								task['taskRunsSuccessfully'],
+								'success',
+								'success',
+								'danger',
+								'failed'
+							)}
+						</CardTitle>
+					</Grid>
+					<Grid xs={12}>
+						<hr />
+					</Grid>
+					<Grid item md={6} xs={12}>
+						<b>Last Execution</b>
+					</Grid>
+					<Grid item md={6} xs={12}>
+						{new Date(task['lastExecution']).toLocaleString(
+							'de-Ch'
+						)}
+					</Grid>
+					<Grid xs={12}>
+						<hr />
+					</Grid>
+					<Grid item md={6} xs={12}>
+						<b>Successful Executions</b>
+					</Grid>
+					<Grid item md={6} xs={12}>
+						{task['successCount']}
+					</Grid>
+					{failedCount}
+					<Grid xs={12}>
+						<hr />
+					</Grid>
+					<Grid item md={6} xs={12}>
+						<b>Interval</b>
+					</Grid>
+					<Grid item md={6} xs={12}>
+						{task['interval']} milliseconds
+					</Grid>
+					<Grid xs={12}>
+						<hr />
+					</Grid>
+					<Grid item md={6} xs={12}>
+						<b>Log Frequency</b>
+					</Grid>
+					<Grid item md={6} xs={12}>
+						Every {task['logFrequency']} executions
+					</Grid>
 				</Grid>
-				<Button>Edit</Button>
 			</CardBody>
 		</Card>
 	)
@@ -185,11 +239,6 @@ class Setting extends Component {
 				</Grid>
 			</div>
 		)
-	}
-
-	updateOptions = async (options, key) => {
-		localStorage.setItem(key, JSON.stringify(options))
-		this.setState({ [key]: options })
 	}
 
 	async fetchAvailableEvents() {

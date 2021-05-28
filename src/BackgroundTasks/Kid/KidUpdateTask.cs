@@ -21,13 +21,13 @@ namespace KidsTown.BackgroundTasks.Kid
             _kidUpdateService = kidUpdateService;
         }
 
-        protected override BackgroundTaskType BackgroundTaskType { get; } = BackgroundTaskType.KidUpdateTask;
-        protected override int Interval { get; } = 30000;
-        protected override int LogFrequency { get; } = 15;
+        protected override BackgroundTaskType BackgroundTaskType => BackgroundTaskType.KidUpdateTask;
+        protected override int Interval => 30000;
+        protected override int LogFrequency => 15;
 
         protected override Task<int> ExecuteRun()
         {
-            return _kidUpdateService.UpdateKids(daysLookBack: DaysLookBack, batchSize: 80);
+            return _kidUpdateService.UpdateKids(daysLookBack: DaysLookBack, batchSize: 100);
         }
     }
 }

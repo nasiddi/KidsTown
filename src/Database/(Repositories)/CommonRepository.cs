@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using System.Threading.Tasks;
+using KidsTown.Database.EfCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -15,10 +16,10 @@ namespace KidsTown.Database
         )
         {
             return await db.People
-                .Where(predicate: p => p.PeopleId.HasValue && peopleIds.Contains(p.PeopleId.Value))
-                .Include(navigationPropertyPath: p => p.Kid)
+                .Where(p => p.PeopleId.HasValue && peopleIds.Contains(p.PeopleId.Value))
+                .Include(p => p.Kid)
                 .ToListAsync()
-                .ConfigureAwait(continueOnCapturedContext: false);
+                .ConfigureAwait(false);
         }
 
         public static KidsTownContext GetDatabase(IServiceScopeFactory serviceScopeFactory)

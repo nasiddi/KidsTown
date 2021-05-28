@@ -5,7 +5,7 @@ import { Grid, MuiThemeProvider } from '@material-ui/core'
 import {
 	getSelectedEventFromStorage,
 	LocationSelect,
-	FontAwesomeIcon,
+	FAIcon,
 	primaryTheme,
 	ToggleButtons,
 } from './Common'
@@ -15,7 +15,7 @@ import { withAuth } from '../auth/MsalAuthProvider'
 function UndoButton(props) {
 	return (
 		<a onClick={props['callback']} className="alert-link">
-			<FontAwesomeIcon name={'fas fa-undo-alt'} />
+			<FAIcon name={'fas fa-undo-alt'} />
 		</a>
 	)
 }

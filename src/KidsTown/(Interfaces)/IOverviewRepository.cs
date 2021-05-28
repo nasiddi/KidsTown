@@ -23,7 +23,5 @@ namespace KidsTown.KidsTown
             DateTime endDate,
             IImmutableList<int> selectedLocationGroups
         );
-
-        Task<IImmutableList<Adult>> GetAdults(IImmutableList<int> familyIds);
     }
 }
