@@ -133,60 +133,53 @@ export class NavMenu extends Component {
 
 	render() {
 		return (
-			<header>
-				<Navbar
-					className="navbar-expand-sm navbar-toggleable-sm ng-white border-bottom box-shadow mb-3"
-					light
-				>
-					<Container>
-						<NavbarBrand tag={Link} to="/">
-							Kidstown
-						</NavbarBrand>
-						<NavbarToggler
-							onClick={this.toggleNavbar}
-							className="mr-2"
-						/>
-						<Collapse
-							className="d-sm-inline-flex flex-sm-row-reverse"
-							isOpen={!this.state.collapsed}
-							navbar
-						>
-							<ul className="navbar-nav flex-grow">
-								<Nav
-									className={this.state.checkInOutClass}
-									to={'/checkin'}
-									onClick={this.checkInActive}
-									label={'CheckIn/Out'}
-								/>
-								<Nav
-									className={this.state.guestCheckInClass}
-									to="/guest"
-									onClick={this.guestCheckInActive}
-									label={'GuestCheckIn'}
-								/>
-								<Nav
-									className={this.state.overViewClass}
-									to="/overview"
-									onClick={this.overviewActive}
-									label={'Overview'}
-								/>
-								<Nav
-									className={this.state.statisticClass}
-									to="/statistic"
-									onClick={this.statisticActive}
-									label={'Statistic'}
-								/>
-								<Nav
-									className={this.state.manualClass}
-									to="/"
-									onClick={this.manualActive}
-									label={'Anleitung'}
-								/>
-							</ul>
-						</Collapse>
-					</Container>
-				</Navbar>
-			</header>
+			<Navbar
+				className="navbar-expand-sm navbar-toggleable-sm ng-white border-bottom box-shadow mb-3 sticky-nav"
+				light
+				sticky="top"
+			>
+				<Container>
+					<NavbarBrand tag={Link} to="/">
+						Kidstown
+					</NavbarBrand>
+					<NavbarToggler
+						onClick={this.toggleNavbar}
+						className="mr-2"
+					/>
+					<Collapse
+						className="d-sm-inline-flex flex-sm-row-reverse"
+						isOpen={!this.state.collapsed}
+						navbar
+					>
+						<ul className="navbar-nav flex-grow">
+							<Nav
+								className={this.state.checkInOutClass}
+								to={'/checkin'}
+								onClick={this.checkInActive}
+								label={'CheckIn/Out'}
+							/>
+							<Nav
+								className={this.state.overViewClass}
+								to="/overview"
+								onClick={this.overviewActive}
+								label={'Overview'}
+							/>
+							<Nav
+								className={this.state.statisticClass}
+								to="/statistic"
+								onClick={this.statisticActive}
+								label={'Statistic'}
+							/>
+							<Nav
+								className={this.state.manualClass}
+								to="/"
+								onClick={this.manualActive}
+								label={'Anleitung'}
+							/>
+						</ul>
+					</Collapse>
+				</Container>
+			</Navbar>
 		)
 	}
 }
