@@ -38,7 +38,7 @@ namespace KidsTown.Database
                     select MapAttendee(a, p, at, l))
                 .ToListAsync().ConfigureAwait(false);
 
-            return people.OrderBy(a => a.FirstName).ToImmutableList();
+            return people.OrderBy(a => a.LastName).ToImmutableList();
         }
 
         public async Task<IImmutableList<Attendee>> GetAttendanceHistoryByLocations(
