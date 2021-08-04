@@ -16,10 +16,10 @@ namespace KidsTown.Database
         )
         {
             return await db.People
-                .Where(p => p.PeopleId.HasValue && peopleIds.Contains(p.PeopleId.Value))
-                .Include(p => p.Kid)
+                .Where(predicate: p => p.PeopleId.HasValue && peopleIds.Contains(p.PeopleId.Value))
+                .Include(navigationPropertyPath: p => p.Kid)
                 .ToListAsync()
-                .ConfigureAwait(false);
+                .ConfigureAwait(continueOnCapturedContext: false);
         }
 
         public static KidsTownContext GetDatabase(IServiceScopeFactory serviceScopeFactory)

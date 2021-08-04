@@ -8,6 +8,6 @@ namespace KidsTown.Application.CheckInOut
     { 
         public string RequestId => string.Empty;
 
-        public bool ShowRequestId => !string.IsNullOrEmpty(RequestId);
+        public bool ShowRequestId => !string.IsNullOrEmpty(value: RequestId);
     }
 }

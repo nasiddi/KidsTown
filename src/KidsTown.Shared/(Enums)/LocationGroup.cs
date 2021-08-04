@@ -8,6 +8,5 @@ namespace KidsTown.Shared
         Fuechsli = 3,
         KidsChurch = 4,
         Unknown = 5
-
     }
 }

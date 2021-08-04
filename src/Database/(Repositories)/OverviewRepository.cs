@@ -23,7 +23,7 @@ namespace KidsTown.Database
         public async Task<IImmutableList<Attendee>> GetActiveAttendees(IImmutableList<int> selectedLocationGroups,
             long eventId, DateTime date)
         {
-            await using var db = CommonRepository.GetDatabase(_serviceScopeFactory);
+            await using var db = CommonRepository.GetDatabase(serviceScopeFactory: _serviceScopeFactory);
             
             var people = await (from a in db.Attendances
                     join p in db.People
@@ -36,9 +36,9 @@ namespace KidsTown.Database
                           && selectedLocationGroups.Contains(l.LocationGroupId)
                           && l.EventId == eventId
                     select MapAttendee(a, p, at, l))
-                .ToListAsync().ConfigureAwait(false);
+                .ToListAsync().ConfigureAwait(continueOnCapturedContext: false);
 
-            return people.OrderBy(a => a.LastName).ToImmutableList();
+            return people.OrderBy(keySelector: a => a.LastName).ToImmutableList();
         }
 
         public async Task<IImmutableList<Attendee>> GetAttendanceHistoryByLocations(
@@ -53,7 +53,7 @@ namespace KidsTown.Database
                 startDate: startDate,
                 endDate: endDate,
                 selectedLocations: selectedLocations)
-                .ConfigureAwait(false);   
+                .ConfigureAwait(continueOnCapturedContext: false);   
         }
 
         public async Task<IImmutableList<Attendee>> GetAttendanceHistoryByLocationGroups(
@@ -68,7 +68,7 @@ namespace KidsTown.Database
                 startDate: startDate,
                 endDate: endDate,
                 selectedLocationGroups: selectedLocationGroups)
-                .ConfigureAwait(false);
+                .ConfigureAwait(continueOnCapturedContext: false);
         }
 
         private async Task<IImmutableList<Attendee>> GetAttendanceHistory(
@@ -92,7 +92,7 @@ namespace KidsTown.Database
                           && a.InsertDate >= startDate.Date
                           && a.InsertDate <= endDate.Date.AddDays(1)
                     select MapAttendee(a, p, at, l))
-                .ToListAsync().ConfigureAwait(false);
+                .ToListAsync().ConfigureAwait(continueOnCapturedContext: false);
 
             return attendees.ToImmutableList();
         }
@@ -104,7 +104,7 @@ namespace KidsTown.Database
             Location location
         )
         {
-            var checkState = MappingService.GetCheckState(attendance);
+            var checkState = MappingService.GetCheckState(attendance: attendance);
 
             return new Attendee
             {

@@ -25,21 +25,21 @@ namespace KidsTown.IntegrationTests
         public static async Task CleanDatabase(IServiceProvider serviceProvider)
         {
             await using var db = serviceProvider!.GetRequiredService<KidsTownContext>();
-            await EstablishConnectionToDatabase(db).ConfigureAwait(false);
+            await EstablishConnectionToDatabase(db: db).ConfigureAwait(continueOnCapturedContext: false);
                 
-            var attendances = await db.Attendances.Where(a => 0 < a.CheckInsId && a.CheckInsId < 100).ToListAsync();
-            var people = await db.People.Where(p => attendances.Select(a => a.PersonId)
+            var attendances = await db.Attendances.Where(predicate: a => 0 < a.CheckInsId && a.CheckInsId < 100).ToListAsync();
+            var people = await db.People.Where(predicate: p => attendances.Select(a => a.PersonId)
                 .Contains(p.Id))
-                .Include(p => p.Kid)
-                .Include(p => p.Adult).ToListAsync();
+                .Include(navigationPropertyPath: p => p.Kid)
+                .Include(navigationPropertyPath: p => p.Adult).ToListAsync();
 
-            var kids = people.Where(p => p.Kid != null).Select(p => p.Kid);
-            var adults = people.Where(p => p.Adult != null).Select(p => p.Adult);
+            var kids = people.Where(predicate: p => p.Kid != null).Select(selector: p => p.Kid);
+            var adults = people.Where(predicate: p => p.Adult != null).Select(selector: p => p.Adult);
             
-            db.RemoveRange(kids);
-            db.RemoveRange(adults);
-            db.RemoveRange(attendances);
-            db.RemoveRange(people);
+            db.RemoveRange(entities: kids);
+            db.RemoveRange(entities: adults);
+            db.RemoveRange(entities: attendances);
+            db.RemoveRange(entities: people);
             await db.SaveChangesAsync();
         }
 
@@ -47,7 +47,7 @@ namespace KidsTown.IntegrationTests
         {
             while (!await db.Database.CanConnectAsync())
             {
-                await Task.Delay(100).ConfigureAwait(false);
+                await Task.Delay(millisecondsDelay: 100).ConfigureAwait(continueOnCapturedContext: false);
             }
         }
 
@@ -55,28 +55,28 @@ namespace KidsTown.IntegrationTests
         {
             var testData = TestDataFactory.GetTestData();
             await InsertTestData(serviceProvider: serviceProvider, testData: testData)
-                .ConfigureAwait(false);
+                .ConfigureAwait(continueOnCapturedContext: false);
         }
         
         public static async Task InsertTestData(ServiceProvider serviceProvider, IImmutableList<TestData.TestData> testData)
         {
             await using var db = serviceProvider!.GetRequiredService<KidsTownContext>();
-            await EstablishConnectionToDatabase(db).ConfigureAwait(false);
+            await EstablishConnectionToDatabase(db: db).ConfigureAwait(continueOnCapturedContext: false);
 
             var locations = await db.Locations.ToListAsync();
 
             var people = testData
-                .GroupBy(d => d.PeopleId)
-                .Select(d => MapPerson(grouping: d, locations: locations.ToImmutableList()))
+                .GroupBy(keySelector: d => d.PeopleId)
+                .Select(selector: d => MapPerson(grouping: d, locations: locations.ToImmutableList()))
                 .ToImmutableList();
 
-            await db.AddRangeAsync(people).ConfigureAwait(false);
-            await db.SaveChangesAsync().ConfigureAwait(false);
+            await db.AddRangeAsync(entities: people).ConfigureAwait(continueOnCapturedContext: false);
+            await db.SaveChangesAsync().ConfigureAwait(continueOnCapturedContext: false);
         }
 
         private static Attendance MapAttendance(TestData.TestData data, IImmutableList<Location> locations)
         {
-            var location = locations.Single(l => l.CheckInsLocationId == (long) data.TestLocation);
+            var location = locations.Single(predicate: l => l.CheckInsLocationId == (long) data.TestLocation);
 
             return new Attendance
             {
@@ -94,7 +94,7 @@ namespace KidsTown.IntegrationTests
         {
             var data = grouping.First();
 
-            var attendances = grouping.Select(g => MapAttendance(data: g, locations: locations));
+            var attendances = grouping.Select(selector: g => MapAttendance(data: g, locations: locations));
 
             var kid = new Kid
             {
@@ -143,12 +143,12 @@ namespace KidsTown.IntegrationTests
         )
         {
             IServiceCollection services = new ServiceCollection();
-            var configuration = SetupConfigurations(services);
+            var configuration = SetupConfigurations(services: services);
             SetupDatabaseConnection(services: services, configuration: configuration);
 
             if (setupKidsTownDi)
             {
-                SetupKidsTownDi(services);
+                SetupKidsTownDi(services: services);
             }
 
             if (setupBackgroundTasksDi)
@@ -164,7 +164,7 @@ namespace KidsTown.IntegrationTests
             services.AddDbContext<KidsTownContext>(
                 contextLifetime: ServiceLifetime.Transient,
                 optionsAction: o
-                    => o.UseSqlServer(configuration.GetConnectionString("Database")));
+                    => o.UseSqlServer(connectionString: configuration.GetConnectionString(name: "Database")));
         }
 
         private static void SetupKidsTownDi(IServiceCollection services)
@@ -186,7 +186,7 @@ namespace KidsTown.IntegrationTests
                 .AddJsonFile(path: "appsettings.DevelopementMachine.json", optional: true)
                 .Build();
 
-            services.AddSingleton<IConfiguration>(_ => configuration);
+            services.AddSingleton<IConfiguration>(implementationFactory: _ => configuration);
             return configuration;
         }
         

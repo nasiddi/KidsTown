@@ -17,7 +17,7 @@ namespace KidsTown.KidsTown
 
         public async Task<IImmutableList<Adult>> GetParents(IImmutableList<int> attendanceIds)
         {
-            return await _peopleRepository.GetParents(attendanceIds);
+            return await _peopleRepository.GetParents(attendanceIds: attendanceIds);
         }
         public async Task UpdateAdults(IImmutableList<Adult> adults, bool updatePhoneNumber)
         {
@@ -44,7 +44,7 @@ namespace KidsTown.KidsTown
                         phoneNumber: adult.PhoneNumber);
                 }
             }
-            await _peopleRepository.UpdateAdults(adults);
+            await _peopleRepository.UpdateAdults(adults: adults);
         }
     }
 }

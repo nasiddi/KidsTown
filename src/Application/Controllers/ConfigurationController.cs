@@ -11,7 +11,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace KidsTown.Application.Controllers
 {
     [ApiController]
-    [Route("[controller]")]
+    [Route(template: "[controller]")]
     public class ConfigurationController : ControllerBase
     {
         private readonly IConfigurationService _configurationService;
@@ -24,56 +24,56 @@ namespace KidsTown.Application.Controllers
         }
 
         [HttpGet]
-        [Route("location-groups")]
-        [Produces("application/json")]
+        [Route(template: "location-groups")]
+        [Produces(contentType: "application/json")]
         public async Task<IImmutableList<SelectOption>> GetLocationGroups()
         {
             _taskManagementService.ActivateBackgroundTasks();
-            var locations = await _configurationService.GetActiveLocationGroups().ConfigureAwait(false);
-            return locations.Select(MapOptions).ToImmutableList();
+            var locations = await _configurationService.GetActiveLocationGroups().ConfigureAwait(continueOnCapturedContext: false);
+            return locations.Select(selector: MapOptions).ToImmutableList();
         }
         
         [HttpPost]
-        [Route("events/{eventId:long}/location-groups/locations")]
-        [Produces("application/json")]
+        [Route(template: "events/{eventId:long}/location-groups/locations")]
+        [Produces(contentType: "application/json")]
         public async Task<IImmutableList<GroupedSelectOptions>> GetLocationsByLocationGroups(
             [FromRoute] long eventId,
             [FromBody] IImmutableList<int> selectedLocationGroups)
         {
             var locations = await _configurationService.GetLocations(eventId: eventId, selectedLocationGroups: selectedLocationGroups)
-                .ConfigureAwait(false);
+                .ConfigureAwait(continueOnCapturedContext: false);
 
-            return locations.GroupBy(l => l.LocationGroupId)
-                .Select(g => new GroupedSelectOptions
+            return locations.GroupBy(keySelector: l => l.LocationGroupId)
+                .Select(selector: g => new GroupedSelectOptions
                 {
                     GroupId = g.Key,
-                    Options = g.Select(MapOptions).ToImmutableList(),
+                    Options = g.Select(selector: MapOptions).ToImmutableList(),
                     OptionCount = g.Count()
                 }).ToImmutableList();
         }
         
         [HttpGet]
-        [Route("events/{eventId:long}/locations")]
-        [Produces("application/json")]
+        [Route(template: "events/{eventId:long}/locations")]
+        [Produces(contentType: "application/json")]
         public async Task<IImmutableList<SelectOption>> GetLocations([FromRoute] long eventId)
         {
             var locations = await _configurationService.GetLocations(eventId: eventId, selectedLocationGroups: null)
-                .ConfigureAwait(false);
+                .ConfigureAwait(continueOnCapturedContext: false);
 
-            return locations.Select(MapOptions).ToImmutableList();
+            return locations.Select(selector: MapOptions).ToImmutableList();
         }
 
         [HttpGet]
-        [Route("events")]
-        [Produces("application/json")]
+        [Route(template: "events")]
+        [Produces(contentType: "application/json")]
         public async Task<IImmutableList<CheckInsEvent>> GetAvailableEvents()
         {
-            return await _configurationService.GetAvailableEvents().ConfigureAwait(false);
+            return await _configurationService.GetAvailableEvents().ConfigureAwait(continueOnCapturedContext: false);
         }
 
         [HttpGet]
-        [Route("events/default")]
-        [Produces("application/json")]
+        [Route(template: "events/default")]
+        [Produces(contentType: "application/json")]
         public Dictionary<string, long> GetDefaultEvent()
         {
             return new()
@@ -101,8 +101,8 @@ namespace KidsTown.Application.Controllers
         }
         
         [HttpGet]
-        [Route("tasks")]
-        [Produces("application/json")]
+        [Route(template: "tasks")]
+        [Produces(contentType: "application/json")]
         public IImmutableList<TaskOverview> GetBackgroundTasks()
         {
             return _taskManagementService.GetTaskOverviews();

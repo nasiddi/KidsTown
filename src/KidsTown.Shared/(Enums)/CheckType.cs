@@ -4,7 +4,7 @@ using Newtonsoft.Json.Converters;
 
 namespace KidsTown.Shared
 {
-    [JsonConverter(typeof(StringEnumConverter))]
+    [JsonConverter(converterType: typeof(StringEnumConverter))]
     public enum CheckType
     {
         [EnumMember(Value = "CheckIn")]

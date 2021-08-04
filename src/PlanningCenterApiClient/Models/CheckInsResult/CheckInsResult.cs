@@ -8,13 +8,13 @@ namespace KidsTown.PlanningCenterApiClient.Models.CheckInsResult
 {
     public class CheckIns : IPlanningCenterResponse
     {
-         [JsonProperty("links")]
+         [JsonProperty(propertyName: "links")]
          public AttendeeLinks? Links { get; set; }
 
-         [JsonProperty("data")]
+         [JsonProperty(propertyName: "data")]
          public List<Attendee>? Attendees { get; set; }
 
-         [JsonProperty("included")]
+         [JsonProperty(propertyName: "included")]
          public List<Included>? Included { get; set; }
 
 //         [JsonProperty("meta")]
@@ -28,17 +28,17 @@ namespace KidsTown.PlanningCenterApiClient.Models.CheckInsResult
 //         [JsonProperty("type")]
 //         public string Type { get; set; }
 
-         [JsonProperty("id")]
-         [JsonConverter(typeof(ParseStringConverter))]
+         [JsonProperty(propertyName: "id")]
+         [JsonConverter(converterType: typeof(ParseStringConverter))]
          public long Id { get; set; }
 
-         [JsonProperty("attributes")]
+         [JsonProperty(propertyName: "attributes")]
          public AttendeeAttributes? Attributes { get; set; }
 
 //         [JsonProperty("links")]
 //         public AttendeeLinks Links { get; set; }
 
-         [JsonProperty("relationships")]
+         [JsonProperty(propertyName: "relationships")]
          public AttendeeRelationships? Relationships { get; set; }
      }
 
@@ -47,22 +47,22 @@ namespace KidsTown.PlanningCenterApiClient.Models.CheckInsResult
 //         [JsonProperty("checked_out_at")]
 //         public DateTimeOffset? CheckedOutAt { get; set; }
 
-         [JsonProperty("created_at")]
+         [JsonProperty(propertyName: "created_at")]
          public DateTime CreatedAt { get; set; }
 
-         [JsonProperty("emergency_contact_name")]
+         [JsonProperty(propertyName: "emergency_contact_name")]
          public string? EmergencyContactName { get; set; }
 
-         [JsonProperty("emergency_contact_phone_number")]
+         [JsonProperty(propertyName: "emergency_contact_phone_number")]
          public string? EmergencyContactPhoneNumber { get; set; }
 
-         [JsonProperty("first_name")]
+         [JsonProperty(propertyName: "first_name")]
          public string? FirstName { get; set; }
 
-         [JsonProperty("kind")]
+         [JsonProperty(propertyName: "kind")]
          public AttendeeType Kind { get; set; }
 
-         [JsonProperty("last_name")]
+         [JsonProperty(propertyName: "last_name")]
          public string? LastName { get; set; }
 
 //         [JsonProperty("medical_notes")]
@@ -71,7 +71,7 @@ namespace KidsTown.PlanningCenterApiClient.Models.CheckInsResult
 //         [JsonProperty("number")]
 //         public long Number { get; set; }
 
-         [JsonProperty("security_code")]
+         [JsonProperty(propertyName: "security_code")]
          public string? SecurityCode { get; set; }
 
 //         [JsonProperty("updated_at")]
@@ -83,7 +83,7 @@ namespace KidsTown.PlanningCenterApiClient.Models.CheckInsResult
          // [JsonProperty("self")]
          // public Uri? Self { get; set; }
          
-         [JsonProperty("next")]
+         [JsonProperty(propertyName: "next")]
          public Uri? Next { get; set; }
          
          // [JsonProperty("prev")]
@@ -92,13 +92,13 @@ namespace KidsTown.PlanningCenterApiClient.Models.CheckInsResult
 
      public class AttendeeRelationships
      {
-         [JsonProperty("locations")]
+         [JsonProperty(propertyName: "locations")]
          public CheckInsLocations? Locations { get; set; }
 
-         [JsonProperty("person")]
+         [JsonProperty(propertyName: "person")]
          public Relationship? Person { get; set; }
 
-         [JsonProperty("event")]
+         [JsonProperty(propertyName: "event")]
          public Relationship? Event { get; set; }
      }
 
@@ -107,7 +107,7 @@ namespace KidsTown.PlanningCenterApiClient.Models.CheckInsResult
 //         [JsonProperty("links", NullValueHandling = NullValueHandling.Ignore)]
 //         public EventLinks Links { get; set; }
 
-         [JsonProperty("data")]
+         [JsonProperty(propertyName: "data")]
          public ParentElement? Data { get; set; }
      }
 
@@ -116,8 +116,8 @@ namespace KidsTown.PlanningCenterApiClient.Models.CheckInsResult
 //         [JsonProperty("type")]
 //         public IncludeType Type { get; set; }
 
-         [JsonProperty("id")]
-         [JsonConverter(typeof(ParseStringConverter))]
+         [JsonProperty(propertyName: "id")]
+         [JsonConverter(converterType: typeof(ParseStringConverter))]
          public long Id { get; set; }
      }
 
@@ -132,20 +132,20 @@ namespace KidsTown.PlanningCenterApiClient.Models.CheckInsResult
 //         [JsonProperty("links")]
 //         public EventLinks Links { get; set; }
 
-         [JsonProperty("data")]
+         [JsonProperty(propertyName: "data")]
          public List<ParentElement>? Data { get; set; }
      }
 
      public class Included
      {
-         [JsonProperty("type")]
+         [JsonProperty(propertyName: "type")]
          public IncludeType Type { get; set; }
 
-         [JsonProperty("id")]
-         [JsonConverter(typeof(ParseStringConverter))]
+         [JsonProperty(propertyName: "id")]
+         [JsonConverter(converterType: typeof(ParseStringConverter))]
          public long Id { get; set; }
 
-         [JsonProperty("attributes")]
+         [JsonProperty(propertyName: "attributes")]
          public IncludedAttributes? Attributes { get; set; }
 
 //         [JsonProperty("relationships", NullValueHandling = NullValueHandling.Ignore)]
@@ -199,7 +199,7 @@ namespace KidsTown.PlanningCenterApiClient.Models.CheckInsResult
 //         [JsonProperty("min_volunteers")]
 //         public object MinVolunteers { get; set; }
 
-         [JsonProperty("name", NullValueHandling = NullValueHandling.Ignore)]
+         [JsonProperty(propertyName: "name", NullValueHandling = NullValueHandling.Ignore)]
          public string? Name { get; set; }
 
 //         [JsonProperty("opened", NullValueHandling = NullValueHandling.Ignore)]
@@ -412,13 +412,13 @@ namespace KidsTown.PlanningCenterApiClient.Models.CheckInsResult
          public override object? ReadJson(JsonReader reader, Type t, object? existingValue, JsonSerializer serializer)
          {
              if (reader.TokenType == JsonToken.Null) return null;
-             var value = serializer.Deserialize<string>(reader);
+             var value = serializer.Deserialize<string>(reader: reader);
              return value switch
              {
                  "Guest" => AttendeeType.Guest,
                  "Regular" => AttendeeType.Regular,
                  "Volunteer" => AttendeeType.Volunteer,
-                 _ => throw new Exception("Cannot unmarshal type Kind")
+                 _ => throw new Exception(message: "Cannot unmarshal type Kind")
              };
          }
 
@@ -442,7 +442,7 @@ namespace KidsTown.PlanningCenterApiClient.Models.CheckInsResult
                      serializer.Serialize(jsonWriter: writer, value: "Volunteer");
                      return;
                  default:
-                     throw new Exception("Cannot marshal type Kind");
+                     throw new Exception(message: "Cannot marshal type Kind");
              }
          }
 
@@ -456,12 +456,12 @@ namespace KidsTown.PlanningCenterApiClient.Models.CheckInsResult
          public override object? ReadJson(JsonReader reader, Type t, object? existingValue, JsonSerializer serializer)
          {
              if (reader.TokenType == JsonToken.Null) return null;
-             var value = serializer.Deserialize<string>(reader);
+             var value = serializer.Deserialize<string>(reader: reader);
              if (long.TryParse(s: value, result: out var l))
              {
                  return l;
              }
-             throw new Exception("Cannot unmarshal type long");
+             throw new Exception(message: "Cannot unmarshal type long");
          }
 
          public override void WriteJson(JsonWriter writer, object? untypedValue, JsonSerializer serializer)
@@ -486,7 +486,7 @@ namespace KidsTown.PlanningCenterApiClient.Models.CheckInsResult
          public override object? ReadJson(JsonReader reader, Type t, object? existingValue, JsonSerializer serializer)
          {
              if (reader.TokenType == JsonToken.Null) return null;
-             var value = serializer.Deserialize<string>(reader);
+             var value = serializer.Deserialize<string>(reader: reader);
              return value switch
              {
                  "Event" => IncludeType.Event,
@@ -494,7 +494,7 @@ namespace KidsTown.PlanningCenterApiClient.Models.CheckInsResult
                  "Organization" => IncludeType.Organization,
                  "Parent" => IncludeType.Parent,
                  "Person" => IncludeType.Person,
-                 _ => throw new Exception("Cannot unmarshal type KindEnum")
+                 _ => throw new Exception(message: "Cannot unmarshal type KindEnum")
              };
          }
 
@@ -524,7 +524,7 @@ namespace KidsTown.PlanningCenterApiClient.Models.CheckInsResult
                      serializer.Serialize(jsonWriter: writer, value: "Person");
                      return;
                  default:
-                     throw new Exception("Cannot marshal type KindEnum");
+                     throw new Exception(message: "Cannot marshal type KindEnum");
              }
          }
 
@@ -538,12 +538,12 @@ namespace KidsTown.PlanningCenterApiClient.Models.CheckInsResult
          public override object? ReadJson(JsonReader reader, Type t, object? existingValue, JsonSerializer serializer)
          {
              if (reader.TokenType == JsonToken.Null) return null;
-             var value = serializer.Deserialize<string>(reader);
+             var value = serializer.Deserialize<string>(reader: reader);
              if (value == "CheckIn")
              {
                  return PurpleType.CheckIn;
              }
-             throw new Exception("Cannot unmarshal type PurpleType");
+             throw new Exception(message: "Cannot unmarshal type PurpleType");
          }
 
          public override void WriteJson(JsonWriter writer, object? untypedValue, JsonSerializer serializer)
@@ -554,7 +554,7 @@ namespace KidsTown.PlanningCenterApiClient.Models.CheckInsResult
                  return;
              }
              var value = (PurpleType)untypedValue;
-             if (value != PurpleType.CheckIn) throw new Exception("Cannot marshal type PurpleType");
+             if (value != PurpleType.CheckIn) throw new Exception(message: "Cannot marshal type PurpleType");
              serializer.Serialize(jsonWriter: writer, value: "CheckIn");
          }
 
@@ -568,12 +568,12 @@ namespace KidsTown.PlanningCenterApiClient.Models.CheckInsResult
          public override object? ReadJson(JsonReader reader, Type t, object? existingValue, JsonSerializer serializer)
          {
              if (reader.TokenType == JsonToken.Null) return null;
-             var value = serializer.Deserialize<string>(reader);
+             var value = serializer.Deserialize<string>(reader: reader);
              if (value == "Home")
              {
                  return Location.Home;
              }
-             throw new Exception("Cannot unmarshal type Location");
+             throw new Exception(message: "Cannot unmarshal type Location");
          }
 
          public override void WriteJson(JsonWriter writer, object? untypedValue, JsonSerializer serializer)
@@ -584,7 +584,7 @@ namespace KidsTown.PlanningCenterApiClient.Models.CheckInsResult
                  return;
              }
              var value = (Location)untypedValue;
-             if (value != Location.Home) throw new Exception("Cannot marshal type Location");
+             if (value != Location.Home) throw new Exception(message: "Cannot marshal type Location");
              serializer.Serialize(jsonWriter: writer, value: "Home");
          }
 
@@ -598,12 +598,12 @@ namespace KidsTown.PlanningCenterApiClient.Models.CheckInsResult
          public override object? ReadJson(JsonReader reader, Type t, object? existingValue, JsonSerializer serializer)
          {
              if (reader.TokenType == JsonToken.Null) return null;
-             var value = serializer.Deserialize<string>(reader);
+             var value = serializer.Deserialize<string>(reader: reader);
              return value switch
              {
                  "F" => Gender.F,
                  "M" => Gender.M,
-                 _ => throw new Exception("Cannot unmarshal type Gender")
+                 _ => throw new Exception(message: "Cannot unmarshal type Gender")
              };
          }
 
@@ -624,7 +624,7 @@ namespace KidsTown.PlanningCenterApiClient.Models.CheckInsResult
                      serializer.Serialize(jsonWriter: writer, value: "M");
                      return;
                  default:
-                     throw new Exception("Cannot marshal type Gender");
+                     throw new Exception(message: "Cannot marshal type Gender");
              }
          }
 

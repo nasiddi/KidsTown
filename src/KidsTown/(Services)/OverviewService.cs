@@ -27,17 +27,17 @@ namespace KidsTown.KidsTown
                     selectedLocationGroups: selectedLocationGroups,
                     eventId: eventId,
                     date: date)
-                .ConfigureAwait(false);
+                .ConfigureAwait(continueOnCapturedContext: false);
 
-            var familyIds = attendees.Where(a => a.FamilyId.HasValue)
-                .Select(a => a.FamilyId!.Value).
+            var familyIds = attendees.Where(predicate: a => a.FamilyId.HasValue)
+                .Select(selector: a => a.FamilyId!.Value).
                 ToImmutableList();
             
-            var adults = await _peopleRepository.GetAdults(familyIds);
+            var adults = await _peopleRepository.GetAdults(familyIds: familyIds);
 
-            var attendeesWithAdultsInfo = attendees.Select(attendee =>
+            var attendeesWithAdultsInfo = attendees.Select(selector: attendee =>
             {
-                var adultInfos = adults.Where(a => a.FamilyId == attendee.FamilyId).ToImmutableList();
+                var adultInfos = adults.Where(predicate: a => a.FamilyId == attendee.FamilyId).ToImmutableList();
                 if (adultInfos.Count == 0)
                 {
                     return attendee;
@@ -62,8 +62,8 @@ namespace KidsTown.KidsTown
 
             });
             
-            return attendeesWithAdultsInfo.GroupBy(a => a.Location)
-                .Select(MapAttendeesByLocation)
+            return attendeesWithAdultsInfo.GroupBy(keySelector: a => a.Location)
+                .Select(selector: MapAttendeesByLocation)
                 .ToImmutableList();
         }
 
@@ -77,10 +77,10 @@ namespace KidsTown.KidsTown
                     eventId: eventId,
                     startDate: startDate,
                     endDate: DateTime.Today)
-                .ConfigureAwait(false);
+                .ConfigureAwait(continueOnCapturedContext: false);
             
-            return attendees.GroupBy(a => a.InsertDate.Date)
-                .Select(MapDailyStatistic)
+            return attendees.GroupBy(keySelector: a => a.InsertDate.Date)
+                .Select(selector: MapDailyStatistic)
                 .ToImmutableList();
         }
 
@@ -96,12 +96,12 @@ namespace KidsTown.KidsTown
                     eventId: eventId,
                     startDate: startDate,
                     endDate: endDate)
-                .ConfigureAwait(false);
+                .ConfigureAwait(continueOnCapturedContext: false);
             
-            return attendees.GroupBy(a => a.Location)
-                .Select(l => MapLiveStatistics(l.ToImmutableList()))
-                .OrderBy(c => c.LocationId)
-                .ThenBy(c => c.Location).ToImmutableList();
+            return attendees.GroupBy(keySelector: a => a.Location)
+                .Select(selector: l => MapLiveStatistics(attendees: l.ToImmutableList()))
+                .OrderBy(keySelector: c => c.LocationId)
+                .ThenBy(keySelector: c => c.Location).ToImmutableList();
         }
 
         private static LiveHeadCounts MapLiveStatistics(IImmutableList<Attendee> attendees)
@@ -112,8 +112,8 @@ namespace KidsTown.KidsTown
 
             return new LiveHeadCounts
             {
-                LocationId = attendees[0].LocationGroupId,
-                Location = attendees[0].Location,
+                LocationId = attendees[index: 0].LocationGroupId,
+                Location = attendees[index: 0].Location,
                 KidsCount = regularCounts.CheckedIn + guestCounts.CheckedIn,
                 VolunteersCount = volunteerCounts.CheckedIn
             };
@@ -121,8 +121,8 @@ namespace KidsTown.KidsTown
         
         private static AttendeesByLocation MapAttendeesByLocation(IGrouping<string, Attendee> attendees)
         {
-            var volunteers = attendees.Where(a => a.AttendanceTypeId == AttendanceTypeId.Volunteer).ToImmutableList();
-            var kids = attendees.Where(a => a.AttendanceTypeId != AttendanceTypeId.Volunteer).ToImmutableList();
+            var volunteers = attendees.Where(predicate: a => a.AttendanceTypeId == AttendanceTypeId.Volunteer).ToImmutableList();
+            var kids = attendees.Where(predicate: a => a.AttendanceTypeId != AttendanceTypeId.Volunteer).ToImmutableList();
 
             return new AttendeesByLocation
             {
@@ -142,7 +142,7 @@ namespace KidsTown.KidsTown
 
             return new HeadCounts
             {
-                Date = attendees.Key.AddHours(12),
+                Date = attendees.Key.AddHours(value: 12),
                 RegularCount = regularCounts.Attendance,
                 GuestCount = guestCounts.Attendance,
                 VolunteerCount = volunteerCounts.Attendance,
@@ -153,11 +153,11 @@ namespace KidsTown.KidsTown
 
         private static Counts GetCounts(IImmutableList<Attendee> attendees, AttendanceTypeId attendanceTypeId)
         {
-            var preCheckedIn = attendees.Where(a => a.AttendanceTypeId == attendanceTypeId).ToImmutableList();
-            var checkedIn = preCheckedIn.Where(a => a.CheckState > CheckState.PreCheckedIn ).ToImmutableList();
-            var checkedOut = checkedIn.Where(a => a.CheckState == CheckState.CheckedOut).ToImmutableList();
-            var autoCheckedOutCount = checkedOut.Count(a 
-                => a.CheckOutDate!.Value.TimeOfDay >= TimeSpan.FromDays(1).Subtract(TimeSpan.FromSeconds(1)));
+            var preCheckedIn = attendees.Where(predicate: a => a.AttendanceTypeId == attendanceTypeId).ToImmutableList();
+            var checkedIn = preCheckedIn.Where(predicate: a => a.CheckState > CheckState.PreCheckedIn ).ToImmutableList();
+            var checkedOut = checkedIn.Where(predicate: a => a.CheckState == CheckState.CheckedOut).ToImmutableList();
+            var autoCheckedOutCount = checkedOut.Count(predicate: a 
+                => a.CheckOutDate!.Value.TimeOfDay >= TimeSpan.FromDays(value: 1).Subtract(ts: TimeSpan.FromSeconds(value: 1)));
 
             return new Counts(
                 preCheckedIn: preCheckedIn.Count,

@@ -81,7 +81,7 @@ namespace KidsTown.IntegrationTests.Mocks
 
         public static IImmutableList<AttendanceData> GetAttendanceData()
         {
-            return TestDataFactory.GetTestData().Select(d =>
+            return TestDataFactory.GetTestData().Select(selector: d =>
                 new AttendanceData(
                     firstName: d.CheckInsFirstName,
                     lastName: d.CheckInsLastName,
@@ -97,16 +97,16 @@ namespace KidsTown.IntegrationTests.Mocks
         public static IImmutableList<KidsData> GetKidsData()
         {
             return TestDataFactory.GetTestData()
-                .Where(d => d.PeopleId.HasValue)
-                .GroupBy(d => d.PeopleId)
-                .Select(d =>
+                .Where(predicate: d => d.PeopleId.HasValue)
+                .GroupBy(keySelector: d => d.PeopleId)
+                .Select(selector: d =>
                     {
                         var kid = d.First();
                         return new KidsData(
                             firstName: kid.PeopleFirstName!,
                             lastName: kid.PeopleLastName!,
                             peopleId: kid.PeopleId!.Value,
-                            fieldDataIds: kid.FieldData.Select(f => f.FieldOptionId).ToImmutableList(),
+                            fieldDataIds: kid.FieldData.Select(selector: f => f.FieldOptionId).ToImmutableList(),
                             mayLeaveAlone: kid.ExpectedMayLeaveAlone,
                             hasPeopleWithoutPickupPermission: kid.ExpectedHasPeopleWithoutPickupPermission);
                     }
@@ -117,35 +117,35 @@ namespace KidsTown.IntegrationTests.Mocks
         {
             var data = GetAttendanceData();
             var result = ImmutableList.Create(
-                new CheckIns
+                item: new CheckIns
                 {
-                    Attendees = GetAttendees(data),
+                    Attendees = GetAttendees(data: data),
                     Included = GetCheckInsIncluded()
                 });
             
-            return Task.FromResult(result as IImmutableList<CheckIns>);
+            return Task.FromResult(result: result as IImmutableList<CheckIns>);
         }
 
         public Task<IImmutableList<People>> GetPeopleUpdates(IImmutableList<long> peopleIds)
         {
             var data = GetKidsData();
             var result = ImmutableList.Create(
-                new People
+                item: new People
                 {
-                    Data = MapPersonData(data),
+                    Data = MapPersonData(data: data),
                     Included = GetPeopleIncluded()
                 });
-            return Task.FromResult(result as IImmutableList<People>);
+            return Task.FromResult(result: result as IImmutableList<People>);
         }
 
         public Task<Household?> GetHousehold(long householdId)
         {
-            return Task.FromResult<Household?>(null)!;
+            return Task.FromResult<Household?>(result: null)!;
         }
 
         public Task<Event?> GetActiveEvents()
         {
-            return Task.FromResult(new Event
+            return Task.FromResult(result: new Event
             {
                 Data = GetEventData()
             })!;
@@ -176,7 +176,7 @@ namespace KidsTown.IntegrationTests.Mocks
 
         private static List<Datum> MapPersonData(IImmutableList<KidsData> data)
         {
-            return data.Select(d => new Datum
+            return data.Select(selector: d => new Datum
             {
                 Id = d.PeopleId,
                 Attributes = new DatumAttributes
@@ -188,7 +188,7 @@ namespace KidsTown.IntegrationTests.Mocks
                 {
                     FieldData = new DatumRelationship
                     {
-                        Data = GetFieldDataParents(d.FieldDataIds)
+                        Data = GetFieldDataParents(ids: d.FieldDataIds)
                     }
                 }
             }).ToList();
@@ -196,7 +196,7 @@ namespace KidsTown.IntegrationTests.Mocks
 
         private static List<Parent> GetFieldDataParents(IImmutableList<long> ids)
         {
-            return ids.Select(i => new Parent
+            return ids.Select(selector: i => new Parent
             {
                 Id = i
             }).ToList();
@@ -206,11 +206,11 @@ namespace KidsTown.IntegrationTests.Mocks
         {
             var testData = TestDataFactory.GetTestData();
            
-            var fieldData = testData.Where(d => d.PeopleId.HasValue)
-                .SelectMany(d => d.FieldData)
+            var fieldData = testData.Where(predicate: d => d.PeopleId.HasValue)
+                .SelectMany(selector: d => d.FieldData)
                 .ToImmutableList();
-            var fieldIncluded= fieldData.GroupBy(f => f.FieldOptionId)
-                .Select(f =>
+            var fieldIncluded= fieldData.GroupBy(keySelector: f => f.FieldOptionId)
+                .Select(selector: f =>
                     {
                         var field = f.Last();
                         return new PlanningCenterApiClient.Models.PeopleResult.Included
@@ -239,8 +239,8 @@ namespace KidsTown.IntegrationTests.Mocks
 
 
             var householdIncluded = testData
-                .Where(t => t.HouseholdId.HasValue)
-                .Select(t => new PlanningCenterApiClient.Models.PeopleResult.Included
+                .Where(predicate: t => t.HouseholdId.HasValue)
+                .Select(selector: t => new PlanningCenterApiClient.Models.PeopleResult.Included
                 {
                     PeopleIncludedType = PeopleIncludedType.Household,
                     Id = t.HouseholdId!.Value,
@@ -251,14 +251,14 @@ namespace KidsTown.IntegrationTests.Mocks
                     Relationships = null
                 });
 
-            return fieldIncluded.Union(householdIncluded).ToList();
+            return fieldIncluded.Union(second: householdIncluded).ToList();
         }
 
         private static List<Attendee> GetAttendees(IImmutableList<AttendanceData> data)
         {
             var createdAt = DateTime.UtcNow;
 
-            return data.Select(d => new Attendee
+            return data.Select(selector: d => new Attendee
             {
                 Id = d.CheckInsId,
                 Attributes = new AttendeeAttributes
@@ -271,8 +271,8 @@ namespace KidsTown.IntegrationTests.Mocks
                 },
                 Relationships = new AttendeeRelationships
                 {
-                    Locations = GetLocationParent(d.TestLocation),
-                    Person = d.PeopleId.HasValue ? GetPersonParent(d.PeopleId.Value) : null,
+                    Locations = GetLocationParent(testLocation: d.TestLocation),
+                    Person = d.PeopleId.HasValue ? GetPersonParent(id: d.PeopleId.Value) : null,
                     Event = GetTestEventParent()
                 }
             }).ToList();

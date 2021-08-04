@@ -24,22 +24,22 @@ namespace KidsTown.BackgroundTasks.Adult
         {
             var families = await _adultUpdateRepository.GetFamiliesToUpdate(daysLookBack: daysLookBack, take: batchSize);
             
-            var households = await GetHouseholds(families).ConfigureAwait(false);
+            var households = await GetHouseholds(families: families).ConfigureAwait(continueOnCapturedContext: false);
 
             var adultPeopleIds = households.SelectMany(
-                h => h.Members.Where(m => m.IsChild != null && !m.IsChild.Value)
-                    .Select(m => m.PeopleId)).ToImmutableList();
-            var parents = await _planningCenterClient.GetPeopleUpdates(adultPeopleIds);
+                selector: h => h.Members.Where(predicate: m => m.IsChild != null && !m.IsChild.Value)
+                    .Select(selector: m => m.PeopleId)).ToImmutableList();
+            var parents = await _planningCenterClient.GetPeopleUpdates(peopleIds: adultPeopleIds);
             var parentUpdates = MapParents(parents: parents, families: households.ToImmutableList());
 
-            var peopleToRemove = families.SelectMany(f => f.Members.Select(m => m.PeopleId))
-                .Except(households.SelectMany(h => h.Members.Select(m => m.PeopleId)))
+            var peopleToRemove = families.SelectMany(selector: f => f.Members.Select(selector: m => m.PeopleId))
+                .Except(second: households.SelectMany(selector: h => h.Members.Select(selector: m => m.PeopleId)))
                 .ToImmutableList();
 
-            var adultUpdateCount = await _adultUpdateRepository.UpdateAdults(parentUpdates);
-            var removeCount = await _adultUpdateRepository.RemovePeopleFromFamilies(peopleToRemove);
+            var adultUpdateCount = await _adultUpdateRepository.UpdateAdults(parentUpdates: parentUpdates);
+            var removeCount = await _adultUpdateRepository.RemovePeopleFromFamilies(peopleIds: peopleToRemove);
 
-            var updateDateCount = await _adultUpdateRepository.SetFamilyUpdateDate(families);
+            var updateDateCount = await _adultUpdateRepository.SetFamilyUpdateDate(families: families);
             
             return adultUpdateCount + removeCount + updateDateCount;
         }
@@ -50,14 +50,14 @@ namespace KidsTown.BackgroundTasks.Adult
 
             foreach (var family in families)
             {
-                var household = await _planningCenterClient.GetHousehold(family.HouseholdId)
-                    .ConfigureAwait(false);
+                var household = await _planningCenterClient.GetHousehold(householdId: family.HouseholdId)
+                    .ConfigureAwait(continueOnCapturedContext: false);
                 if (household == null)
                 {
                     continue;
                 }
 
-                households.Add(MapHousehold(household: household, family: family));
+                households.Add(item: MapHousehold(household: household, family: family));
             }
 
             return households;
@@ -66,7 +66,7 @@ namespace KidsTown.BackgroundTasks.Adult
         private static Family MapHousehold(Household household, Family family)
         {
             var members = household.Included?
-                              .Select(i => new Person(peopleId: i.Id, isChild: i.Attributes?.Child))
+                              .Select(selector: i => new Person(peopleId: i.Id, isChild: i.Attributes?.Child))
                               .ToImmutableList()
                          ?? ImmutableList<Person>.Empty;
             
@@ -79,15 +79,15 @@ namespace KidsTown.BackgroundTasks.Adult
             IImmutableList<Family> families
         )
         {
-            var phoneNumbers = parents.SelectMany(p => p.Included ?? new List<PlanningCenterApiClient.Models.PeopleResult.Included>())
-                .Where(i => i.PeopleIncludedType == PeopleIncludedType.PhoneNumber)
+            var phoneNumbers = parents.SelectMany(selector: p => p.Included ?? new List<PlanningCenterApiClient.Models.PeopleResult.Included>())
+                .Where(predicate: i => i.PeopleIncludedType == PeopleIncludedType.PhoneNumber)
                 .ToImmutableList();
 
-            var parentUpdates = parents.SelectMany(p => p.Data ?? new List<Datum>())
-                .Select(d => MapParent(adult: d, families: families, phoneNumbers: phoneNumbers))
+            var parentUpdates = parents.SelectMany(selector: p => p.Data ?? new List<Datum>())
+                .Select(selector: d => MapParent(adult: d, families: families, phoneNumbers: phoneNumbers))
                 .ToImmutableList();
 
-            return parentUpdates.Where(p => p != null).Select(p => p!).ToImmutableList();
+            return parentUpdates.Where(predicate: p => p != null).Select(selector: p => p!).ToImmutableList();
         }
         
         private static AdultUpdate? MapParent(
@@ -96,15 +96,15 @@ namespace KidsTown.BackgroundTasks.Adult
             IImmutableList<PlanningCenterApiClient.Models.PeopleResult.Included> phoneNumbers
         )
         {
-            var family = families.FirstOrDefault(f => f.Members.Select(m => m.PeopleId)
-                .Contains(adult.Id));
-            var phoneNumberIds = adult.Relationships?.PhoneNumbers?.Data?.Select(d => d.Id).ToImmutableList()
+            var family = families.FirstOrDefault(predicate: f => f.Members.Select(selector: m => m.PeopleId)
+                .Contains(value: adult.Id));
+            var phoneNumberIds = adult.Relationships?.PhoneNumbers?.Data?.Select(selector: d => d.Id).ToImmutableList()
                                  ?? ImmutableList<long>.Empty;
 
-            var personalNumbers = phoneNumbers.Where(p => phoneNumberIds.Contains(p.Id))
+            var personalNumbers = phoneNumbers.Where(predicate: p => phoneNumberIds.Contains(value: p.Id))
                 .ToImmutableList();
 
-            var number = SelectNumber(personalNumbers);
+            var number = SelectNumber(numbers: personalNumbers);
 
             if (family == null)
             {
@@ -131,8 +131,8 @@ namespace KidsTown.BackgroundTasks.Adult
                     var included = numbers.Single();
                     return included.Attributes?.Number != null ? new PhoneNumber(id: included.Id, number: included.Attributes.Number) : null;
                 case > 1:
-                    var mobileNumbers = numbers.Where(n => n.Attributes?.NumberType == "Mobile").ToImmutableList();
-                    var primaryContact = numbers.FirstOrDefault(n => n.Attributes?.Primary == true);
+                    var mobileNumbers = numbers.Where(predicate: n => n.Attributes?.NumberType == "Mobile").ToImmutableList();
+                    var primaryContact = numbers.FirstOrDefault(predicate: n => n.Attributes?.Primary == true);
                     var primaryNumber = primaryContact?.Attributes?.Number != null ? new PhoneNumber(id: primaryContact.Id, number: primaryContact.Attributes.Number) : null;
                     
                     if (numbers.Count <= mobileNumbers.Count)
@@ -140,7 +140,7 @@ namespace KidsTown.BackgroundTasks.Adult
                         return primaryNumber;
                     }
 
-                    var mobileNumber = SelectNumber(mobileNumbers);
+                    var mobileNumber = SelectNumber(numbers: mobileNumbers);
                     return mobileNumber ?? primaryNumber;
             }
         }

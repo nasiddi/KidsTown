@@ -7,29 +7,29 @@ namespace KidsTown.PlanningCenterApiClient.Models.PhoneNumberPatch
 {
     public class PhoneNumber
     {
-        [JsonProperty("data")]
+        [JsonProperty(propertyName: "data")]
         public Data? Data { get; set; }
     }
 
     public class Data
     {
-        [JsonProperty("type")]
+        [JsonProperty(propertyName: "type")]
         public string? Type { get; set; }
 
-        [JsonProperty("id")]
-        [JsonConverter(typeof(ParseStringConverter))]
+        [JsonProperty(propertyName: "id")]
+        [JsonConverter(converterType: typeof(ParseStringConverter))]
         public long? Id { get; set; }
 
-        [JsonProperty("attributes")]
+        [JsonProperty(propertyName: "attributes")]
         public Attributes? Attributes { get; set; }
     }
 
     public class Attributes
     {
-        [JsonProperty("number")]
+        [JsonProperty(propertyName: "number")]
         public string? Number { get; set; }
 
-        [JsonProperty("location")]
+        [JsonProperty(propertyName: "location")]
         public string Location = "Mobile";
     }
 
@@ -58,12 +58,12 @@ namespace KidsTown.PlanningCenterApiClient.Models.PhoneNumberPatch
         public override object? ReadJson(JsonReader reader, Type t, object? existingValue, JsonSerializer serializer)
         {
             if (reader.TokenType == JsonToken.Null) return null;
-            var value = serializer.Deserialize<string>(reader);
+            var value = serializer.Deserialize<string>(reader: reader);
             if (long.TryParse(s: value, result: out var l))
             {
                 return l;
             }
-            throw new Exception("Cannot unmarshal type long");
+            throw new Exception(message: "Cannot unmarshal type long");
         }
 
         public override void WriteJson(JsonWriter writer, object? untypedValue, JsonSerializer serializer)

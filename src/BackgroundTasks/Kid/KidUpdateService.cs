@@ -24,56 +24,56 @@ namespace KidsTown.BackgroundTasks.Kid
         public async Task<int> UpdateKids(int daysLookBack, int batchSize)
         {
             var kidsPeopleIds = await _kidUpdateRepository.GetKidsPeopleIdToUpdate(daysLookBack: daysLookBack, take: batchSize)
-                .ConfigureAwait(false);
+                .ConfigureAwait(continueOnCapturedContext: false);
             
             if (kidsPeopleIds.Count == 0)
             {
                 return 0;
             }
 
-            var kidsUpdate = await FetchKids(kidsPeopleIds).ConfigureAwait(false);
-            var families = await GetNewAnPersistedFamilies(kidsUpdate).ConfigureAwait(false);
+            var kidsUpdate = await FetchKids(kidsPeopleIds: kidsPeopleIds).ConfigureAwait(continueOnCapturedContext: false);
+            var families = await GetNewAnPersistedFamilies(kidsUpdate: kidsUpdate).ConfigureAwait(continueOnCapturedContext: false);
 
             return await _kidUpdateRepository.UpdateKids(kids: kidsUpdate, families: families)
-                .ConfigureAwait(false);
+                .ConfigureAwait(continueOnCapturedContext: false);
         }
 
         private async Task<ImmutableList<Family>> GetNewAnPersistedFamilies(IImmutableList<PeopleUpdate> kidsUpdate)
         {
-            var householdIds = kidsUpdate.Where(p => p.HouseholdId.HasValue)
-                .Select(p => p.HouseholdId!.Value).Distinct().ToImmutableList();
+            var householdIds = kidsUpdate.Where(predicate: p => p.HouseholdId.HasValue)
+                .Select(selector: p => p.HouseholdId!.Value).Distinct().ToImmutableList();
 
-            var existingFamilies = await _kidUpdateRepository.GetExistingFamilies(householdIds);
+            var existingFamilies = await _kidUpdateRepository.GetExistingFamilies(householdIds: householdIds);
             var newHouseholdIds = householdIds
-                .Where(h => existingFamilies.All(f => f.HouseholdId != h)).ToImmutableList();
+                .Where(predicate: h => existingFamilies.All(predicate: f => f.HouseholdId != h)).ToImmutableList();
             var newFamilies =
                 await _kidUpdateRepository.InsertFamilies(newHouseholdIds: newHouseholdIds, peoples: kidsUpdate);
 
-            var families = existingFamilies.Union(newFamilies).ToImmutableList();
+            var families = existingFamilies.Union(second: newFamilies).ToImmutableList();
             return families;
         }
 
         private async Task<IImmutableList<PeopleUpdate>> FetchKids(ImmutableList<long> kidsPeopleIds)
         {
             
-            var kids = await _planningCenterClient.GetPeopleUpdates(kidsPeopleIds)
-                .ConfigureAwait(false);
-            var kidsUpdate = MapKidsUpdates(kids);
+            var kids = await _planningCenterClient.GetPeopleUpdates(peopleIds: kidsPeopleIds)
+                .ConfigureAwait(continueOnCapturedContext: false);
+            var kidsUpdate = MapKidsUpdates(peopleUpdates: kids);
             return kidsUpdate;
         }
 
         private static IImmutableList<PeopleUpdate> MapKidsUpdates(IImmutableList<People> peopleUpdates)
         {
-            var fieldOptions = peopleUpdates.SelectMany(p => p.Included ?? new List<Included>())
-                .Where(i => i.PeopleIncludedType == PeopleIncludedType.FieldDatum)
+            var fieldOptions = peopleUpdates.SelectMany(selector: p => p.Included ?? new List<Included>())
+                .Where(predicate: i => i.PeopleIncludedType == PeopleIncludedType.FieldDatum)
                 .ToImmutableList();
 
-            var households = peopleUpdates.SelectMany(p => p.Included ?? new List<Included>())
-                .Where(i => i.PeopleIncludedType == PeopleIncludedType.Household)
+            var households = peopleUpdates.SelectMany(selector: p => p.Included ?? new List<Included>())
+                .Where(predicate: i => i.PeopleIncludedType == PeopleIncludedType.Household)
                 .ToImmutableList();
 
-            return peopleUpdates.SelectMany(p => p.Data ?? new List<Datum>())
-                .Select(d => MapPeopleUpdate(people: d, fieldOptions: fieldOptions, households: households))
+            return peopleUpdates.SelectMany(selector: p => p.Data ?? new List<Datum>())
+                .Select(selector: d => MapPeopleUpdate(people: d, fieldOptions: fieldOptions, households: households))
                 .ToImmutableList();
         }
 
@@ -86,7 +86,7 @@ namespace KidsTown.BackgroundTasks.Kid
             var personalFieldOptions = GetFieldOptions(people: people, fieldOptions: fieldOptions);
 
             var householdId = people.Relationships?.Households?.Data?.FirstOrDefault()?.Id;
-            var household = households.FirstOrDefault(h => h.Id == householdId);
+            var household = households.FirstOrDefault(predicate: h => h.Id == householdId);
 
             return new PeopleUpdate(
                 peopleId: people.Id,
@@ -106,10 +106,10 @@ namespace KidsTown.BackgroundTasks.Kid
 
         private static ImmutableList<Included> GetFieldOptions(Datum people, IImmutableList<Included> fieldOptions)
         {
-            var fieldDataIds = people.Relationships?.FieldData?.Data?.Select(d => d.Id).ToImmutableList() ??
+            var fieldDataIds = people.Relationships?.FieldData?.Data?.Select(selector: d => d.Id).ToImmutableList() ??
                                ImmutableList<long>.Empty;
             var personalFieldOptions =
-                fieldOptions.Where(o => fieldDataIds.Contains(o.Id)).ToImmutableList();
+                fieldOptions.Where(predicate: o => fieldDataIds.Contains(value: o.Id)).ToImmutableList();
             return personalFieldOptions;
         }
 
@@ -120,7 +120,7 @@ namespace KidsTown.BackgroundTasks.Kid
         )
         {
             var field = fieldOptions.SingleOrDefault(
-                o => o.Relationships?.FieldDefinition?.Data?.Id == (long?) fieldId);
+                predicate: o => o.Relationships?.FieldDefinition?.Data?.Id == (long?) fieldId);
             
             return field?.Attributes?.Value switch
             {

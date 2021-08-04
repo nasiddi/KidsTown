@@ -24,24 +24,24 @@ namespace KidsTown.Database
         }
         public async Task<IImmutableList<long>> GetPersistedCheckInsIds(IImmutableList<long> checkinsIds)
         {
-            await using var db = CommonRepository.GetDatabase(_serviceScopeFactory);
-            var existingCheckInsIds = await db.Attendances.Where(i => checkinsIds.Contains(i.CheckInsId))
-                .Select(i => i.CheckInsId)
-                .ToListAsync().ConfigureAwait(false);
+            await using var db = CommonRepository.GetDatabase(serviceScopeFactory: _serviceScopeFactory);
+            var existingCheckInsIds = await db.Attendances.Where(predicate: i => checkinsIds.Contains(i.CheckInsId))
+                .Select(selector: i => i.CheckInsId)
+                .ToListAsync().ConfigureAwait(continueOnCapturedContext: false);
 
             return existingCheckInsIds.ToImmutableList();
         }
         
         public async Task<int> InsertAttendances(IImmutableList<CheckInsUpdate> checkInsUpdates)
         {
-            await using var db = CommonRepository.GetDatabase(_serviceScopeFactory);
+            await using var db = CommonRepository.GetDatabase(serviceScopeFactory: _serviceScopeFactory);
             
-            var guests = checkInsUpdates.Where(c => c.PeopleId == null).ToImmutableList();
-            var guestInsertCount = await InsertGuests(guests: guests, db: db).ConfigureAwait(false);
+            var guests = checkInsUpdates.Where(predicate: c => c.PeopleId == null).ToImmutableList();
+            var guestInsertCount = await InsertGuests(guests: guests, db: db).ConfigureAwait(continueOnCapturedContext: false);
 
-            var regularPreCheckIns = checkInsUpdates.Except(guests).ToImmutableList();
+            var regularPreCheckIns = checkInsUpdates.Except(second: guests).ToImmutableList();
             var regularInsertCount = await InsertRegularsAndVolunteers(regularPreCheckIns: regularPreCheckIns, db: db)
-                .ConfigureAwait(false);
+                .ConfigureAwait(continueOnCapturedContext: false);
 
             return guestInsertCount + regularInsertCount;
         }
@@ -49,63 +49,63 @@ namespace KidsTown.Database
         
         public async Task<int> AutoCheckInVolunteers()
         {
-            await using var db = CommonRepository.GetDatabase(_serviceScopeFactory);
+            await using var db = CommonRepository.GetDatabase(serviceScopeFactory: _serviceScopeFactory);
 
             var volunteers = await db.Attendances
-                .Where(a =>
+                .Where(predicate: a =>
                     a.AttendanceTypeId == (int) AttendanceTypeId.Volunteer
                     && a.CheckInDate == null)
-                .ToListAsync().ConfigureAwait(false);
+                .ToListAsync().ConfigureAwait(continueOnCapturedContext: false);
 
-            volunteers.ForEach(v => v.CheckInDate = DateTime.UtcNow);
-            return await db.SaveChangesAsync().ConfigureAwait(false);
+            volunteers.ForEach(action: v => v.CheckInDate = DateTime.UtcNow);
+            return await db.SaveChangesAsync().ConfigureAwait(continueOnCapturedContext: false);
         }
         
         public async Task<IImmutableList<PersistedLocation>> GetPersistedLocations()
         {
-            await using var db = CommonRepository.GetDatabase(_serviceScopeFactory);
+            await using var db = CommonRepository.GetDatabase(serviceScopeFactory: _serviceScopeFactory);
 
-            var locations = await db.Locations.Where(l => l.CheckInsLocationId.HasValue)
-                .ToListAsync().ConfigureAwait(false);
-            return locations.Select(l
+            var locations = await db.Locations.Where(predicate: l => l.CheckInsLocationId.HasValue)
+                .ToListAsync().ConfigureAwait(continueOnCapturedContext: false);
+            return locations.Select(selector: l
                     => new PersistedLocation(locationId: l.Id, checkInsLocationId: l.CheckInsLocationId!.Value))
                 .ToImmutableList();
         }
 
         public async Task<int> UpdateLocations(IImmutableList<LocationUpdate> locationUpdates)
         {
-            await using var db = CommonRepository.GetDatabase(_serviceScopeFactory);
+            await using var db = CommonRepository.GetDatabase(serviceScopeFactory: _serviceScopeFactory);
 
-            var locations = locationUpdates.Select(MapLocation);
-            await db.AddRangeAsync(locations).ConfigureAwait(false);
-            return await db.SaveChangesAsync().ConfigureAwait(false);
+            var locations = locationUpdates.Select(selector: MapLocation);
+            await db.AddRangeAsync(entities: locations).ConfigureAwait(continueOnCapturedContext: false);
+            return await db.SaveChangesAsync().ConfigureAwait(continueOnCapturedContext: false);
         }
 
         public async Task EnableUnknownLocationGroup()
         {
-            await using var db = CommonRepository.GetDatabase(_serviceScopeFactory);
+            await using var db = CommonRepository.GetDatabase(serviceScopeFactory: _serviceScopeFactory);
 
-            var locationGroups = await db.LocationGroups.Where(l => l.Id == (int) Shared.LocationGroup.Unknown)
-                .ToListAsync().ConfigureAwait(false);
+            var locationGroups = await db.LocationGroups.Where(predicate: l => l.Id == (int) Shared.LocationGroup.Unknown)
+                .ToListAsync().ConfigureAwait(continueOnCapturedContext: false);
 
-            locationGroups.ForEach(l => l.IsEnabled = true);
-            await db.SaveChangesAsync().ConfigureAwait(false);
+            locationGroups.ForEach(action: l => l.IsEnabled = true);
+            await db.SaveChangesAsync().ConfigureAwait(continueOnCapturedContext: false);
         }
         
         public async Task<int> AutoCheckoutEveryoneByEndOfDay()
         {
-            await using var db = CommonRepository.GetDatabase(_serviceScopeFactory);
+            await using var db = CommonRepository.GetDatabase(serviceScopeFactory: _serviceScopeFactory);
 
             var attendances = await db.Attendances
-                .Where(a =>
+                .Where(predicate: a =>
                     a.CheckInDate != null
                     && a.CheckOutDate == null
                     && a.CheckInDate < DateTime.Today)
-                .ToListAsync().ConfigureAwait(false);
+                .ToListAsync().ConfigureAwait(continueOnCapturedContext: false);
 
-            attendances.ForEach(v
-                => v.CheckOutDate = v.CheckInDate!.Value.Date.AddDays(1).AddSeconds(-1));
-            return await db.SaveChangesAsync().ConfigureAwait(false);
+            attendances.ForEach(action: v
+                => v.CheckOutDate = v.CheckInDate!.Value.Date.AddDays(value: 1).AddSeconds(value: -1));
+            return await db.SaveChangesAsync().ConfigureAwait(continueOnCapturedContext: false);
         }
         
         private static Location MapLocation(LocationUpdate locationUpdate)
@@ -125,44 +125,44 @@ namespace KidsTown.Database
         )
         {
             var kids = regularPreCheckIns
-                .Select(c => c.Kid)
-                .GroupBy(p => p.PeopleId).Select(p => p.First())
+                .Select(selector: c => c.Kid)
+                .GroupBy(keySelector: p => p.PeopleId).Select(selector: p => p.First())
                 .ToImmutableList();
 
             var existingPeople = await CommonRepository.GetKidsByPeopleIds(
                     db: db,
-                    peopleIds: kids.Where(p => p.PeopleId.HasValue)
-                        .Select(p => p.PeopleId!.Value).ToImmutableList())
-                .ConfigureAwait(false);
+                    peopleIds: kids.Where(predicate: p => p.PeopleId.HasValue)
+                        .Select(selector: p => p.PeopleId!.Value).ToImmutableList())
+                .ConfigureAwait(continueOnCapturedContext: false);
 
             var peopleUpdates = kids.Where(
-                    p => existingPeople.Select(e => e.PeopleId).Contains(p.PeopleId))
+                    predicate: p => existingPeople.Select(selector: e => e.PeopleId).Contains(value: p.PeopleId))
                 .ToImmutableList();
 
-            var kidsInserts = kids.Except(peopleUpdates).ToImmutableList();
+            var kidsInserts = kids.Except(second: peopleUpdates).ToImmutableList();
             var insertedPeople = await InsertPeople(db: db, peopleToInsert: kidsInserts)
-                .ConfigureAwait(false);
+                .ConfigureAwait(continueOnCapturedContext: false);
 
             var checkIns = regularPreCheckIns
-                .Select(c => MapToAttendance(checkInsUpdate: c,
-                    people: existingPeople.Union(insertedPeople).ToImmutableList()))
+                .Select(selector: c => MapToAttendance(checkInsUpdate: c,
+                    people: existingPeople.Union(second: insertedPeople).ToImmutableList()))
                 .ToImmutableList();
-            await db.AddRangeAsync(checkIns).ConfigureAwait(false);
-            return await db.SaveChangesAsync().ConfigureAwait(false);
+            await db.AddRangeAsync(entities: checkIns).ConfigureAwait(continueOnCapturedContext: false);
+            return await db.SaveChangesAsync().ConfigureAwait(continueOnCapturedContext: false);
         }
         
         private async Task<int> InsertGuests(IImmutableList<CheckInsUpdate> guests, DbContext db)
         {
             var existingCheckInsIds =
-                await GetPersistedCheckInsIds(guests.Select(g => g.CheckInsId).ToImmutableList())
-                    .ConfigureAwait(false);
-            var newGuests = guests.Where(g => !existingCheckInsIds.Contains(g.CheckInsId))
+                await GetPersistedCheckInsIds(checkinsIds: guests.Select(selector: g => g.CheckInsId).ToImmutableList())
+                    .ConfigureAwait(continueOnCapturedContext: false);
+            var newGuests = guests.Where(predicate: g => !existingCheckInsIds.Contains(value: g.CheckInsId))
                 .ToImmutableList();
 
-            var guestAttendances = newGuests.Select(MapGuestAttendance).ToImmutableList();
+            var guestAttendances = newGuests.Select(selector: MapGuestAttendance).ToImmutableList();
 
-            await db.AddRangeAsync(guestAttendances).ConfigureAwait(false);
-            return await db.SaveChangesAsync().ConfigureAwait(false);
+            await db.AddRangeAsync(entities: guestAttendances).ConfigureAwait(continueOnCapturedContext: false);
+            return await db.SaveChangesAsync().ConfigureAwait(continueOnCapturedContext: false);
         }
         
         private static async Task<List<Person>> InsertPeople(
@@ -170,21 +170,21 @@ namespace KidsTown.Database
             IImmutableList<PeopleUpdate> peopleToInsert
         )
         {
-            var people = peopleToInsert.Select(MapPerson).ToImmutableList();
-            await db.AddRangeAsync(people).ConfigureAwait(false);
-            await db.SaveChangesAsync().ConfigureAwait(false);
+            var people = peopleToInsert.Select(selector: MapPerson).ToImmutableList();
+            await db.AddRangeAsync(entities: people).ConfigureAwait(continueOnCapturedContext: false);
+            await db.SaveChangesAsync().ConfigureAwait(continueOnCapturedContext: false);
 
             var insertedPeople = await db.People
-                .Where(p => peopleToInsert.Select(i => i.PeopleId).Contains(p.PeopleId))
-                .ToListAsync().ConfigureAwait(false);
+                .Where(predicate: p => peopleToInsert.Select(i => i.PeopleId).Contains(p.PeopleId))
+                .ToListAsync().ConfigureAwait(continueOnCapturedContext: false);
 
             return insertedPeople;
         }
         
         private static Attendance MapGuestAttendance(CheckInsUpdate guest)
         {
-            var person = MapPerson(guest.Kid);
-            var parent = MapParent(guest);
+            var person = MapPerson(peopleUpdate: guest.Kid);
+            var parent = MapParent(guest: guest);
 
             var family = new Family
             {
@@ -198,11 +198,11 @@ namespace KidsTown.Database
 
             person.Family = family;
             
-            return MapToAttendance(checkInsUpdate: guest, people: ImmutableList.Create(person));
+            return MapToAttendance(checkInsUpdate: guest, people: ImmutableList.Create(item: person));
         }
         private static Person MapParent(CheckInsUpdate guest)
         {
-            var names = guest.EmergencyContactName?.Split(" ");
+            var names = guest.EmergencyContactName?.Split(separator: " ");
 
             var firstName = string.Empty;
             var lastName = string.Empty;
@@ -244,7 +244,7 @@ namespace KidsTown.Database
         
         private static Attendance MapToAttendance(CheckInsUpdate checkInsUpdate, IImmutableList<Person> people)
         {
-            var person = people.Single(p => p.PeopleId == checkInsUpdate.PeopleId);
+            var person = people.Single(predicate: p => p.PeopleId == checkInsUpdate.PeopleId);
 
             return new Attendance
             {
@@ -253,7 +253,7 @@ namespace KidsTown.Database
                 SecurityCode = checkInsUpdate.SecurityCode,
                 InsertDate = checkInsUpdate.CreationDate,
                 Person = person,
-                AttendanceTypeId = MapAttendeeType(checkInsUpdate.AttendeeType)
+                AttendanceTypeId = MapAttendeeType(attendeeType: checkInsUpdate.AttendeeType)
             };
         }
         

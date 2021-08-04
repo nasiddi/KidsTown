@@ -32,14 +32,14 @@ namespace KidsTown.Application
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddControllersWithViews().
-                AddJsonOptions(opts =>
+                AddJsonOptions(configure: opts =>
                 {
-                    opts.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+                    opts.JsonSerializerOptions.Converters.Add(item: new JsonStringEnumConverter());
                 });
             // In production, the React files will be served from this directory
-            services.AddSpaStaticFiles(configuration => { configuration.RootPath = "ClientApp/build"; });
+            services.AddSpaStaticFiles(configuration: configuration => { configuration.RootPath = "ClientApp/build"; });
 
-            services.AddSingleton<Func<BackgroundTaskType, IBackgroundTask>>(serviceProvider => key =>
+            services.AddSingleton<Func<BackgroundTaskType, IBackgroundTask>>(implementationFactory: serviceProvider => key =>
             {
                 return key switch
                 {
@@ -64,8 +64,8 @@ namespace KidsTown.Application
             services.AddSingleton<IAdultUpdateRepository, AdultUpdateRepository>();
             services.AddSingleton<IBackgroundTaskRepository, BackgroundTaskRepository>();
 
-            services.AddDbContext<KidsTownContext>(o 
-                => o.UseSqlServer(Configuration.GetConnectionString("Database")));
+            services.AddDbContext<KidsTownContext>(optionsAction: o 
+                => o.UseSqlServer(connectionString: Configuration.GetConnectionString(name: "Database")));
 
             services.AddScoped<ICheckInOutService, CheckInOutService>();
             services.AddScoped<IConfigurationService, ConfigurationService>();
@@ -87,7 +87,7 @@ namespace KidsTown.Application
             }
             else
             {
-                app.UseExceptionHandler("/Error");
+                app.UseExceptionHandler(errorHandlingPath: "/Error");
                 // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
                 app.UseHsts();
             }
@@ -97,20 +97,20 @@ namespace KidsTown.Application
 
             app.UseRouting();
 
-            app.UseEndpoints(endpoints =>
+            app.UseEndpoints(configure: endpoints =>
             {
                 endpoints.MapControllerRoute(
                     name: "default",
                     pattern: "{controller}/{action=Index}/{id?}");
             });
 
-            app.UseSpa(spa =>
+            app.UseSpa(configuration: spa =>
             {
                 spa.Options.SourcePath = "ClientApp";
 
                 if (env.IsDevelopment())
                 {
-                    spa.UseReactDevelopmentServer("start");
+                    spa.UseReactDevelopmentServer(npmScript: "start");
                 }
             });
         }

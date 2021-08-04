@@ -23,41 +23,41 @@ namespace KidsTown.Database
         
         public async Task<IImmutableList<BackgroundTasks.Adult.Family>> GetFamiliesToUpdate(int daysLookBack, int take)
         {
-            await using var db = CommonRepository.GetDatabase(_serviceScopeFactory);
+            await using var db = CommonRepository.GetDatabase(serviceScopeFactory: _serviceScopeFactory);
             
-            var personIds = await db.Attendances.Where(a
+            var personIds = await db.Attendances.Where(predicate: a
                     => a.InsertDate >= DateTime.Today.AddDays(-daysLookBack) 
                        && a.AttendanceTypeId == (int) AttendanceTypeId.Regular)
-                .Select(a => a.PersonId)
+                .Select(selector: a => a.PersonId)
                 .Distinct()
-                .ToListAsync().ConfigureAwait(false);
+                .ToListAsync().ConfigureAwait(continueOnCapturedContext: false);
             
             var familyIds = await db.People
-                .Where(p => p.FamilyId.HasValue && personIds.Contains(p.Id))
-                .Select(p => p.FamilyId)
+                .Where(predicate: p => p.FamilyId.HasValue && personIds.Contains(p.Id))
+                .Select(selector: p => p.FamilyId)
                 .Distinct()
-                .ToListAsync().ConfigureAwait(false);
+                .ToListAsync().ConfigureAwait(continueOnCapturedContext: false);
                 
             var families = await db.Families
-                .Include(f => f.People)
-                .Where(f => familyIds.Contains(f.Id)
-                    && f.HouseholdId.HasValue)
-                .OrderBy(f => f.UpdateDate)
-                .Take(take)
+                .Include(navigationPropertyPath: f => f.People)
+                .Where(predicate: f => familyIds.Contains(f.Id)
+                                       && f.HouseholdId.HasValue)
+                .OrderBy(keySelector: f => f.UpdateDate)
+                .Take(count: take)
                 .ToListAsync();
 
-            return families.Select(MapFamily).ToImmutableList();
+            return families.Select(selector: MapFamily).ToImmutableList();
         }
         
         public async Task<int> UpdateAdults(IImmutableList<AdultUpdate> parentUpdates)
         {
-            await using var db = CommonRepository.GetDatabase(_serviceScopeFactory);
+            await using var db = CommonRepository.GetDatabase(serviceScopeFactory: _serviceScopeFactory);
 
-            var peopleIds = parentUpdates.Select(p => p.PeopleId).ToImmutableList();
-            var existingParents = await GetExistingParents(peopleIds: peopleIds, db: db).ConfigureAwait(false);
+            var peopleIds = parentUpdates.Select(selector: p => p.PeopleId).ToImmutableList();
+            var existingParents = await GetExistingParents(peopleIds: peopleIds, db: db).ConfigureAwait(continueOnCapturedContext: false);
 
             var updates = parentUpdates.Where(
-                    p => existingParents.Select(e => e.PeopleId).Contains(p.PeopleId))
+                    predicate: p => existingParents.Select(selector: e => e.PeopleId).Contains(value: p.PeopleId))
                 .ToImmutableList();
                 
             foreach (var existingParent in existingParents)
@@ -65,35 +65,35 @@ namespace KidsTown.Database
                 UpdateParent(person: existingParent, updates: updates);
             }
                 
-            var newEntries = parentUpdates.Except(updates).ToImmutableList();
-            var newParents = newEntries.Select(MapParent);
+            var newEntries = parentUpdates.Except(second: updates).ToImmutableList();
+            var newParents = newEntries.Select(selector: MapParent);
             
-            await db.AddRangeAsync(newParents);
+            await db.AddRangeAsync(entities: newParents);
             return await db.SaveChangesAsync();
         }
 
         public async Task<int> RemovePeopleFromFamilies(ImmutableList<long> peopleIds)
         {
-            await using var db = CommonRepository.GetDatabase(_serviceScopeFactory);
+            await using var db = CommonRepository.GetDatabase(serviceScopeFactory: _serviceScopeFactory);
 
-            var people = await db.People.Where(p => p.PeopleId.HasValue && peopleIds.Contains(p.PeopleId.Value))
-                .ToListAsync().ConfigureAwait(false);
+            var people = await db.People.Where(predicate: p => p.PeopleId.HasValue && peopleIds.Contains(p.PeopleId.Value))
+                .ToListAsync().ConfigureAwait(continueOnCapturedContext: false);
             
-            people.ForEach(p => p.FamilyId = null);
+            people.ForEach(action: p => p.FamilyId = null);
             return await db.SaveChangesAsync();
         }
         
         public async Task<int> SetFamilyUpdateDate(IImmutableList<BackgroundTasks.Adult.Family> families)
         {
-            await using var db = CommonRepository.GetDatabase(_serviceScopeFactory);
+            await using var db = CommonRepository.GetDatabase(serviceScopeFactory: _serviceScopeFactory);
             
             var persistedFamilies = await db.Families
-                .Where(f => families.Select(e => e.FamilyId).Contains(f.Id))
+                .Where(predicate: f => families.Select(e => e.FamilyId).Contains(f.Id))
                 .ToListAsync()
-                .ConfigureAwait(false);
+                .ConfigureAwait(continueOnCapturedContext: false);
             
             var updateDate = DateTime.UtcNow;
-            persistedFamilies.ForEach(f => f.UpdateDate = updateDate);
+            persistedFamilies.ForEach(action: f => f.UpdateDate = updateDate);
             
             return await db.SaveChangesAsync();
         }
@@ -104,17 +104,17 @@ namespace KidsTown.Database
         )
         {
             var parents = await db.People
-                .Where(p => p.PeopleId != null && peopleIds.Contains(p.PeopleId.Value))
-                .Include(p => p.Adult)
-                .Include(p => p.Family)
+                .Where(predicate: p => p.PeopleId != null && peopleIds.Contains(p.PeopleId.Value))
+                .Include(navigationPropertyPath: p => p.Adult)
+                .Include(navigationPropertyPath: p => p.Family)
                 .ToListAsync()
-                .ConfigureAwait(false);
+                .ConfigureAwait(continueOnCapturedContext: false);
             return parents.ToImmutableList();
         }
         
         private static void UpdateParent(Person person, IImmutableList<AdultUpdate> updates)
         {
-            var update = updates.Single(u => u.PeopleId == person.PeopleId);
+            var update = updates.Single(predicate: u => u.PeopleId == person.PeopleId);
 
             person.FamilyId = update.FamilyId;
 
@@ -163,8 +163,8 @@ namespace KidsTown.Database
 
         private static BackgroundTasks.Adult.Family MapFamily(Family family)
         {
-            var members = family.People.Where(p => p.PeopleId != null)
-                .Select(p => new BackgroundTasks.Adult.Person(p.PeopleId!.Value)).ToImmutableList();
+            var members = family.People.Where(predicate: p => p.PeopleId != null)
+                .Select(selector: p => new BackgroundTasks.Adult.Person(peopleId: p.PeopleId!.Value)).ToImmutableList();
             
             return new BackgroundTasks.Adult.Family(
                 familyId: family.Id,
