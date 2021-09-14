@@ -88,8 +88,8 @@ namespace KidsTown.Application.Controllers
             {
                 return Ok(value: new CheckInOutResult
                 {
-                    Text = $"Für {request.CheckType.ToString()} wurde niemand mit SecurityCode {request.SecurityCode} gefunden. Locations und CheckIn/CheckOut Einstellungen überprüfen.",
-                    AlertLevel = AlertLevel.Danger
+                    Text = $"{request.CheckType.ToString()} für alle Personen mit {request.SecurityCode} ist bereits erfolgt.",
+                    AlertLevel = AlertLevel.Warning
                 });
             }
             
