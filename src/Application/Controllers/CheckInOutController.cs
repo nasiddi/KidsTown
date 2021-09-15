@@ -38,7 +38,7 @@ namespace KidsTown.Application.Controllers
             {
                 return Ok(value: new CheckInOutResult
                 {
-                    Text = $"{request.CheckType.ToString()} für {string.Join(separator: ", ", values: names)} war erfolgreich.",
+                    Text = $"{request.CheckType.ToString()} für {request.SecurityCode}, {string.Join(separator: ", ", values: names)} war erfolgreich.",
                     AlertLevel = AlertLevel.Success,
                     AttendanceIds = attendanceIds
                 });
@@ -46,7 +46,7 @@ namespace KidsTown.Application.Controllers
 
             return Ok(value: new CheckInOutResult
             {
-                Text = $"{request.CheckType.ToString()} für {string.Join(separator: ", ", values: names)} ist fehlgeschlagen",
+                Text = $"{request.CheckType.ToString()} für {request.SecurityCode}, {string.Join(separator: ", ", values: names)} ist fehlgeschlagen",
                 AlertLevel = AlertLevel.Danger
             });
         }
@@ -102,7 +102,7 @@ namespace KidsTown.Application.Controllers
                 {
                     return Ok(value: new CheckInOutResult
                     {
-                        Text = $"{request.CheckType.ToString()} für {kid.FirstName} {kid.LastName} war erfolgreich.",
+                        Text = $"{request.CheckType.ToString()} für {request.SecurityCode}, {kid.FirstName} {kid.LastName} war erfolgreich.",
                         AlertLevel = AlertLevel.Success,
                         SuccessfulFastCheckout = true,
                         AttendanceIds = ImmutableList.Create(item: kid.AttendanceId)
