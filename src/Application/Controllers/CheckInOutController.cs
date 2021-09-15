@@ -59,7 +59,7 @@ namespace KidsTown.Application.Controllers
         {
             _taskManagementService.ActivateBackgroundTasks();
             
-            if (request.SecurityCode.StartsWith(value: '*') && request.CheckType == CheckType.CheckIn)
+            if (request.SecurityCode.StartsWith(value: '1') && request.CheckType == CheckType.CheckIn)
             {
                 await _checkInOutService.CreateUnregisteredGuest(
                     requestSecurityCode: request.SecurityCode,
