@@ -176,6 +176,8 @@ namespace KidsTown.IntegrationTests
             services.AddScoped<ICheckInOutRepository, CheckInOutRepository>();
             services.AddScoped<IConfigurationRepository, ConfigurationRepository>();
             services.AddScoped<IOverviewRepository, OverviewRepository>();
+            
+            services.AddScoped<IPeopleRepository, PeopleRepository>();
         }
         
         private static IConfigurationRoot SetupConfigurations(IServiceCollection services)
