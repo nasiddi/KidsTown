@@ -192,7 +192,7 @@ namespace KidsTown.BackgroundTasks.Common
                     From = new MailAddress(address: "kidstown@gvc.ch", displayName: "KidsTown")
                 };
 
-                message.To.Add(item: new MailAddress(address: "nsiddiqui@gvc.ch", displayName: "Nadina Siddiqui"));
+                message.To.Add(item: new MailAddress(address: "nadinasiddiqui@gvc.ch", displayName: "Nadina Siddiqui"));
                 var username = _configuration.GetValue<string>(key: "MailAccount:Username");
                 var password = _configuration.GetValue<string>(key: "MailAccount:Password");
 
