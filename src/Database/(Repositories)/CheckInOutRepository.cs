@@ -33,7 +33,7 @@ namespace KidsTown.Database
                 .Include(navigationPropertyPath: a => a.Location)
                 .Where(predicate: a => a.SecurityCode == peopleSearchParameters.SecurityCode
                                        && peopleSearchParameters.LocationGroups.Contains(a.Location.LocationGroupId)
-                                       && a.InsertDate >= DateTime.Today
+                                       && a.InsertDate >= new DateTime(2022, 2, 20)
                                        && a.Location.EventId == peopleSearchParameters.EventId)
                 .ToListAsync();
 

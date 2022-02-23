@@ -2,7 +2,7 @@ import React, { Component } from 'react'
 import { Grid } from '@material-ui/core'
 import classnames from 'classnames'
 import $ from 'jquery'
-import { FullText, SplitText, TextImageSplit, Title } from './DocElements'
+import { FullText, TextImageSplit, Title } from './DocElements'
 import {
 	Dropdown,
 	DropdownItem,
@@ -481,11 +481,6 @@ export class Documentation extends Component {
 								text: 'Wenn man die Haushaltsübersicht geöffnet hat, kann man oben beim Haushalt auf den Stift tippen um ihn zu editieren',
 							},
 						]}
-					/>
-
-					<SplitText
-						title="Fehlende Abschnitte"
-						paragraphs={[{ text: 'Manned Station, Settings' }]}
 					/>
 				</Grid>
 				<Grid

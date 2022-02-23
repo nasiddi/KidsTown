@@ -139,10 +139,6 @@ SplitImage.propTypes = {
 	fileName: PropTypes.string.isRequired,
 }
 
-export function SplitText(props) {
-	return stylizedText(props, 6)
-}
-
 export function FullText(props) {
 	return stylizedText(props, 12)
 }
@@ -185,16 +181,6 @@ export function TextImageSplit(props) {
 TextImageSplit.propTypes = {
 	title: PropTypes.string,
 	fileName: PropTypes.string.isRequired,
-	paragraphs: PropTypes.arrayOf(
-		PropTypes.shape({
-			icon: PropTypes.oneOf(['Info', 'Action', 'Warning']),
-			text: PropTypes.string.isRequired,
-		})
-	).isRequired,
-}
-
-SplitText.propTypes = {
-	title: PropTypes.string,
 	paragraphs: PropTypes.arrayOf(
 		PropTypes.shape({
 			icon: PropTypes.oneOf(['Info', 'Action', 'Warning']),

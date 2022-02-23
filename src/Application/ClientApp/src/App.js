@@ -18,12 +18,16 @@ import { OverviewHeadCount } from './components/OverViewHeadCounts'
 import { OverviewFilter } from './components/OverviewFilter'
 import { OverviewDetail } from './components/OverviewDetail'
 import { Documentation } from './components/Documentation'
+import { NewDocumentation } from './components/NewDocumentation'
+import { EditDocumentation } from './components/EditDocumentation'
 
 export const App = () => {
 	return (
 		<div>
 			<CheckInLayout>
-				<Route exact path="/" component={Documentation} />
+				<Route exact path="/old" component={Documentation} />
+				<Route exact path="/edit" component={EditDocumentation} />
+				<Route exact path="/" component={NewDocumentation} />
 				<Route path="/statistic" component={Statistics} />
 				<Route path="/settings" component={Settings} />
 				<Route path="/overview" component={OverviewOptions} />
