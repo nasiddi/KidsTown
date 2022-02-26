@@ -5,6 +5,7 @@ namespace KidsTown.BackgroundTasks.Common
         AdultUpdateTask,
         AttendanceUpdateTask,
         AutoCheckOutTask,
-        KidUpdateTask
+        KidUpdateTask,
+        OldLogCleanupTask
     }
 }

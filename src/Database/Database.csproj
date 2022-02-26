@@ -20,4 +20,12 @@
       <ProjectReference Include="..\KidsTown.Shared\KidsTown.Shared.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+      <Compile Remove="EfCore\DocumentationTitle.cs" />
+      <Compile Remove="EfCore\DocumentationTab.cs" />
+      <Compile Remove="EfCore\DocumentationEntry.cs" />
+      <Compile Remove="EfCore\DocumentationElement.cs" />
+      <Compile Remove="EfCore\DocumentEntryParagraph.cs" />
+    </ItemGroup>
+
 </Project>

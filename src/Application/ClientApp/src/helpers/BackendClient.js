@@ -1,4 +1,4 @@
-import { getSelectedEventFromStorage } from '../components/Common'
+import { getGuid, getSelectedEventFromStorage } from '../components/Common'
 const _ = require('lodash')
 
 const postJson = {
@@ -38,6 +38,7 @@ export async function postSecurityCode(
 		isFastCheckInOut: isFastCheckout ?? false,
 		checkType: checkType,
 		attendanceIds: [],
+		guid: getGuid(),
 	})
 
 	return await fetch('checkinout/people', request).then((r) => r.json())

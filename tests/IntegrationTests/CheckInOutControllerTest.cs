@@ -88,7 +88,11 @@ namespace KidsTown.IntegrationTests
             await TestHelper.InsertTestData(serviceProvider: _serviceProvider, testData: filteredTestData);
             var checkInOutService = _serviceProvider.GetService<ICheckInOutService>();
             var taskManagementServiceMock = new Mock<ITaskManagementService>();
-            var controller = new CheckInOutController(checkInOutService: checkInOutService!, taskManagementService: taskManagementServiceMock.Object);
+            var searchLoggingServiceMock = new Mock<ISearchLoggingService>();
+            var controller = new CheckInOutController(
+                checkInOutService: checkInOutService!,
+                taskManagementService: taskManagementServiceMock.Object,
+                searchLoggingServiceMock.Object);
             
             // Act
             filteredTestData.ForEach(action: async t =>
@@ -143,7 +147,12 @@ namespace KidsTown.IntegrationTests
 
             var checkInOutService = _serviceProvider.GetService<ICheckInOutService>();
             var taskManagementServiceMock = new Mock<ITaskManagementService>();
-            var controller = new CheckInOutController(checkInOutService: checkInOutService!, taskManagementService: taskManagementServiceMock.Object);
+            var searchLoggingServiceMock = new Mock<ISearchLoggingService>();
+            var controller = new CheckInOutController(
+                checkInOutService: checkInOutService!, 
+                taskManagementService: taskManagementServiceMock.Object,
+                searchLoggingServiceMock.Object);
+            
             return controller;
         }
 

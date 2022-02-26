@@ -1,6 +1,7 @@
 using KidsTown.BackgroundTasks.Adult;
 using KidsTown.BackgroundTasks.Attendance;
 using KidsTown.BackgroundTasks.CheckOut;
+using KidsTown.BackgroundTasks.Cleanup;
 using KidsTown.BackgroundTasks.Kid;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
@@ -48,6 +49,8 @@ namespace KidsTown.Application
                     services.AddHostedService(implementationFactory: p => p.GetRequiredService<AutoCheckOutTask>());
                     services.AddSingleton<AdultUpdateTask>();
                     services.AddHostedService(implementationFactory: p => p.GetRequiredService<AdultUpdateTask>());
+                    services.AddSingleton<OldLogCleanupTask>();
+                    services.AddHostedService(implementationFactory: p => p.GetRequiredService<OldLogCleanupTask>());
                 });
         }
             

@@ -3,6 +3,7 @@ using System.Text.Json.Serialization;
 using KidsTown.BackgroundTasks.Adult;
 using KidsTown.BackgroundTasks.Attendance;
 using KidsTown.BackgroundTasks.CheckOut;
+using KidsTown.BackgroundTasks.Cleanup;
 using KidsTown.BackgroundTasks.Common;
 using KidsTown.BackgroundTasks.Kid;
 using KidsTown.Database;
@@ -47,6 +48,7 @@ namespace KidsTown.Application
                     BackgroundTaskType.AttendanceUpdateTask => serviceProvider.GetService<AttendanceUpdateTask>()!,
                     BackgroundTaskType.AutoCheckOutTask => serviceProvider.GetService<AutoCheckOutTask>()!,
                     BackgroundTaskType.KidUpdateTask => serviceProvider.GetService<KidUpdateTask>()!,
+                    BackgroundTaskType.OldLogCleanupTask => serviceProvider.GetService<OldLogCleanupTask>()!,
                     _ => null!
                 };
             });
@@ -63,6 +65,7 @@ namespace KidsTown.Application
             services.AddSingleton<IKidUpdateRepository, KidUpdateRepository>();
             services.AddSingleton<IAdultUpdateRepository, AdultUpdateRepository>();
             services.AddSingleton<IBackgroundTaskRepository, BackgroundTaskRepository>();
+            services.AddSingleton<ISearchLogCleanupRepository, SearchLoggingRepository>();
 
             services.AddDbContext<KidsTownContext>(optionsAction: o 
                 => o.UseSqlServer(connectionString: Configuration.GetConnectionString(name: "Database")));
@@ -71,11 +74,13 @@ namespace KidsTown.Application
             services.AddScoped<IConfigurationService, ConfigurationService>();
             services.AddScoped<IOverviewService, OverviewService>();
             services.AddScoped<IPeopleService, PeopleService>();
+            services.AddScoped<ISearchLoggingService, SearchLoggingService>();
             
             services.AddScoped<ICheckInOutRepository, CheckInOutRepository>();
             services.AddScoped<IConfigurationRepository, ConfigurationRepository>();
             services.AddScoped<IOverviewRepository, OverviewRepository>();
             services.AddScoped<IPeopleRepository, PeopleRepository>();
+            services.AddScoped<ISearchLoggingRepository, SearchLoggingRepository>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

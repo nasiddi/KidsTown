@@ -178,6 +178,16 @@ export function ToggleButtons(props) {
 	)
 }
 
+export function getGuid() {
+	let deviceGuid = localStorage.getItem('deviceGuid')
+	if (deviceGuid === null) {
+		deviceGuid = createGuid()
+		localStorage.setItem('deviceGuid', deviceGuid)
+	}
+
+	return deviceGuid
+}
+
 export function getEventId(event) {
 	let id = parseInt(event.currentTarget.id, 10)
 	if (isNaN(id)) {
@@ -220,3 +230,15 @@ export const HtmlTooltip = withStyles(() => ({
 		fontsize: '30px',
 	},
 }))(Tooltip)
+
+function createGuid() {
+	return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(
+		/[xy]/g,
+		function (c) {
+			const r = (Math.random() * 16) | 0,
+				v = c === 'x' ? r : (r & 0x3) | 0x8
+
+			return v.toString(16)
+		}
+	)
+}

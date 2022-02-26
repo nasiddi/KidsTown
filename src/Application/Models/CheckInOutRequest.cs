@@ -14,5 +14,6 @@ namespace KidsTown.Application.Models
         public bool IsFastCheckInOut { get; init; } = true;
         public CheckType CheckType { get; init; }
         public IImmutableList<CheckInOutCandidate> CheckInOutCandidates { get; init; } = ImmutableList<CheckInOutCandidate>.Empty;
+        public string Guid { get; set; } = string.Empty;
     }
 }

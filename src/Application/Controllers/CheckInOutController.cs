@@ -17,11 +17,13 @@ namespace KidsTown.Application.Controllers
     {
         private readonly ICheckInOutService _checkInOutService;
         private readonly ITaskManagementService _taskManagementService;
+        private readonly ISearchLoggingService _searchLoggingService;
 
-        public CheckInOutController(ICheckInOutService checkInOutService, ITaskManagementService taskManagementService)
+        public CheckInOutController(ICheckInOutService checkInOutService, ITaskManagementService taskManagementService, ISearchLoggingService searchLoggingService)
         {
             _checkInOutService = checkInOutService;
             _taskManagementService = taskManagementService;
+            _searchLoggingService = searchLoggingService;
         }
 
         [HttpPost]
@@ -66,13 +68,16 @@ namespace KidsTown.Application.Controllers
                     requestEventId: request.EventId,
                     requestSelectedLocationIds: request.SelectedLocationIds);
             }
-            
-            var people = await _checkInOutService.SearchForPeople(
-                searchParameters: new PeopleSearchParameters(
-                    securityCode: request.SecurityCode, 
-                    eventId: request.EventId,
-                    locationGroups: request.SelectedLocationIds)).ConfigureAwait(continueOnCapturedContext: false);
 
+            var peopleSearchParameters = new PeopleSearchParameters(
+                securityCode: request.SecurityCode, 
+                eventId: request.EventId,
+                locationGroups: request.SelectedLocationIds);
+            var people = await _checkInOutService.SearchForPeople(
+                searchParameters: peopleSearchParameters).ConfigureAwait(continueOnCapturedContext: false);
+
+            await _searchLoggingService.LogSearch(peopleSearchParameters, people, request.Guid, request.CheckType);
+            
             if (people.Count == 0)
             {
                 return Ok(value: new CheckInOutResult

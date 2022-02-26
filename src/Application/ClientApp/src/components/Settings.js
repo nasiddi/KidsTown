@@ -2,7 +2,7 @@ import React, { Component } from 'react'
 import { Grid } from '@material-ui/core'
 import Checkbox from '@material-ui/core/Checkbox'
 import FormControlLabel from '@material-ui/core/FormControlLabel'
-import { getSelectedEventFromStorage } from './Common'
+import { getGuid, getSelectedEventFromStorage } from './Common'
 import { withAuth } from '../auth/MsalAuthProvider'
 import { Badge, Button, Card, CardBody, CardTitle } from 'reactstrap'
 
@@ -229,6 +229,10 @@ class Setting extends Component {
 				>
 					<Grid item xs={12}>
 						<h1>Settings</h1>
+					</Grid>
+					<Grid item xs={12}>
+						<h3>Device</h3>
+						<p>{getGuid()}</p>
 					</Grid>
 					<Grid item xs={4}>
 						{this.renderEvents()}
