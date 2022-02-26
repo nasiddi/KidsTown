@@ -21,7 +21,7 @@ namespace KidsTown.BackgroundTasks.Cleanup
         }
 
         protected override BackgroundTaskType BackgroundTaskType => BackgroundTaskType.OldLogCleanupTask;
-        protected override int Interval => 1000;
+        protected override int Interval => 2700000;
         protected override int LogFrequency => 1;
         protected override async Task<int> ExecuteRun()
         {
