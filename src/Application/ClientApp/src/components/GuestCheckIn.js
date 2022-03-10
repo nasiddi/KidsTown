@@ -4,7 +4,7 @@ import 'bootstrap/dist/css/bootstrap.css'
 import { Grid, MuiThemeProvider } from '@material-ui/core'
 import {
 	getSelectedEventFromStorage,
-	LocationSelect,
+	MultiSelect,
 	FAIcon,
 	primaryTheme,
 	ToggleButtons,
@@ -51,8 +51,8 @@ class CheckInGuest extends Component {
 		this.selectCreateOption = this.selectCreateOption.bind(this)
 
 		this.state = {
-			locations: [],
-			guestCheckInLocation: null,
+			locationGroups: [],
+			guestCheckInLocationGroup: null,
 			securityCode: '',
 			firstName: '',
 			lastName: '',
@@ -68,8 +68,8 @@ class CheckInGuest extends Component {
 	}
 
 	async componentDidMount() {
-		const locations = await this.fetchLocations()
-		this.setState({ locations: locations, loading: false })
+		const locationGroups = await this.fetchLocationGroups()
+		this.setState({ locationGroups: locationGroups, loading: false })
 	}
 
 	renderForm() {
@@ -98,12 +98,12 @@ class CheckInGuest extends Component {
 						<ToggleButtons buttons={toggleButtons} />
 					</Grid>
 					<Grid item md={6} xs={12}>
-						<LocationSelect
-							name={'guestCheckInLocation'}
+						<MultiSelect
+							name={'guestCheckInLocationGroup'}
 							isMulti={false}
 							onChange={this.updateOptions}
-							options={this.state.locations}
-							value={this.state.guestCheckInLocation}
+							options={this.state.locationGroups}
+							value={this.state.guestCheckInLocationGroup}
 							minHeight={56}
 							borderColor={
 								this.state.locationIsValid
@@ -257,7 +257,7 @@ class CheckInGuest extends Component {
 		await fetch('checkinout/guest/checkin', {
 			body: JSON.stringify({
 				securityCode: this.state.securityCode,
-				locationId: this.state.guestCheckInLocation.value,
+				locationId: this.state.guestCheckInLocationGroup.value,
 				firstName: this.state.firstName,
 				lastName: this.state.lastName,
 			}),
@@ -286,7 +286,7 @@ class CheckInGuest extends Component {
 		await fetch('checkinout/guest/create', {
 			body: JSON.stringify({
 				securityCode: this.state.securityCode,
-				locationId: this.state.guestCheckInLocation.value,
+				locationId: this.state.guestCheckInLocationGroup.value,
 				firstName: this.state.firstName,
 				lastName: this.state.lastName,
 			}),
@@ -308,7 +308,7 @@ class CheckInGuest extends Component {
 	async validateForm() {
 		let isValid = true
 
-		if (this.state.guestCheckInLocation.value === 0) {
+		if (this.state.guestCheckInLocationGroup.value === 0) {
 			isValid = false
 			this.setState({ locationIsValid: false })
 		} else {
@@ -359,7 +359,7 @@ class CheckInGuest extends Component {
 	resetView(resetAlert = true) {
 		this.setState({
 			securityCode: '',
-			guestCheckInLocation: null,
+			guestCheckInLocationGroup: null,
 			firstName: '',
 			lastName: '',
 			locationIsValid: true,
@@ -373,9 +373,9 @@ class CheckInGuest extends Component {
 		}
 	}
 
-	async fetchLocations() {
+	async fetchLocationGroups() {
 		return await fetch(
-			`configuration/events/${await getSelectedEventFromStorage()}/locations`,
+			`configuration/events/${await getSelectedEventFromStorage()}/locationGroups`,
 			{
 				method: 'GET',
 				headers: {

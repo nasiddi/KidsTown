@@ -1,6 +1,6 @@
 import React from 'react'
 import { Grid } from '@material-ui/core'
-import { LocationSelect, PrimaryCheckBox, ToggleButtons } from '../Common'
+import { MultiSelect, PrimaryCheckBox, ToggleButtons } from '../Common'
 
 export function CheckInOptions(props) {
 	const toggleButtons = [
@@ -53,12 +53,12 @@ export function CheckInOptions(props) {
 					/>
 				</Grid>
 				<Grid item md={'auto'} xs={12} style={{ minWidth: '190px' }}>
-					<LocationSelect
-						name={'checkInOutLocations'}
-						onChange={props.onLocationChange}
+					<MultiSelect
+						name={'checkInOutLocationGroups'}
+						onChange={props.onLocationGroupChange}
 						isMulti={true}
-						options={props.locations}
-						defaultOptions={props.checkInOutLocations}
+						options={props.locationGroups}
+						defaultOptions={props.checkInOutLocationGroups}
 						minHeight={44}
 					/>
 				</Grid>

@@ -211,9 +211,10 @@ class Detail extends Component {
 			)}`,
 			{
 				body: JSON.stringify(
-					getSelectedOptionsFromStorage('overviewLocations', []).map(
-						(l) => l.value
-					)
+					getSelectedOptionsFromStorage(
+						'overviewLocationGroups',
+						[]
+					).map((l) => l.value)
 				),
 				method: 'POST',
 				headers: {

@@ -32,9 +32,9 @@ namespace KidsTown.Database
                 .ThenInclude(navigationPropertyPath: p => p.Kid)
                 .Include(navigationPropertyPath: a => a.Location)
                 .Where(predicate: a => a.SecurityCode == peopleSearchParameters.SecurityCode
-                                       && peopleSearchParameters.LocationGroups.Contains(a.Location.LocationGroupId)
-                                       && a.InsertDate >= DateTime.Today
-                                       && a.Location.EventId == peopleSearchParameters.EventId)
+                   && (peopleSearchParameters.LocationGroups.Contains(a.Location.LocationGroupId) || !peopleSearchParameters.UseFilterLocationGroups)
+                   && a.InsertDate >= DateTime.Today
+                   && a.Location.EventId == peopleSearchParameters.EventId)
                 .ToListAsync();
 
             return attendances.Select(selector: MapKid).ToImmutableList();
@@ -134,6 +134,21 @@ namespace KidsTown.Database
             return attendanceCount > 0;
         }
 
+        public async Task<bool> UpdateLocationAndCheckIn(int attendanceId, int locationId)
+        {
+            await using var db = CommonRepository.GetDatabase(serviceScopeFactory: _serviceScopeFactory);
+            
+            var attendance = (await GetAttendances(attendanceIds: ImmutableList.Create(attendanceId), db: db)
+                .ConfigureAwait(continueOnCapturedContext: false))
+                .Single();
+
+            attendance.LocationId = locationId;
+            attendance.CheckInDate = DateTime.UtcNow;
+
+            var result = await db.SaveChangesAsync();
+            return result > 0;
+        }
+
         private static async Task<List<Attendance>> GetAttendances(
             IImmutableList<int> attendanceIds,
             KidsTownContext db)
@@ -152,12 +167,9 @@ namespace KidsTown.Database
             return new KidsTown.Models.Kid
             {
                 AttendanceId = attendance.Id,
-                SecurityCode = attendance.SecurityCode,
-                Location = attendance.Location.Name,
+                LocationGroupId = attendance.Location.LocationGroupId,
                 FirstName = attendance.Person.FirstName,
                 LastName = attendance.Person.LastName,
-                CheckInTime = attendance.CheckInDate,
-                CheckOutTime = attendance.CheckOutDate,
                 MayLeaveAlone = attendance.Person.Kid?.MayLeaveAlone ?? true,
                 HasPeopleWithoutPickupPermission = attendance.Person.Kid?.HasPeopleWithoutPickupPermission ?? false,
                 CheckState = checkState

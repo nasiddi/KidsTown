@@ -22,7 +22,13 @@ namespace KidsTown.Database
             _serviceScopeFactory = serviceScopeFactory;
         }
         
-        public async Task LogSearch(PeopleSearchParameters request, IImmutableList<Kid> people, string deviceGuid, CheckType checkType)
+        public async Task LogSearch(
+            PeopleSearchParameters request,
+            IImmutableList<Kid> people,
+            string deviceGuid,
+            CheckType checkType,
+            bool filterLocations
+        )
         {
             await using var db = CommonRepository.GetDatabase(serviceScopeFactory: _serviceScopeFactory);
 
@@ -34,6 +40,7 @@ namespace KidsTown.Database
                 DeviceGuid = deviceGuid,
                 IsCheckIn = checkType == CheckType.CheckIn,
                 EventId = request.EventId,
+                IsSearchAllLocations = !filterLocations
             };
 
             var searchLog2LocationGroups = request.LocationGroups.Select(l => new SearchLog2LocationGroup

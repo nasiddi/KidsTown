@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 
-#nullable disable
-
 namespace KidsTown.Database.EfCore
 {
     public partial class Kid
@@ -12,6 +10,6 @@ namespace KidsTown.Database.EfCore
         public bool HasPeopleWithoutPickupPermission { get; set; }
         public DateTime UpdateDate { get; set; }
 
-        public virtual Person Person { get; set; }
+        public virtual Person Person { get; set; } = null!;
     }
 }

@@ -127,7 +127,7 @@ namespace KidsTown.IntegrationTests
             {
                 SecurityCode = securityCode,
                 EventId = 389697,
-                SelectedLocationIds = selectedLocationIds,
+                SelectedLocationGroupIds = selectedLocationIds,
                 IsFastCheckInOut = isFastCheckInOut,
                 CheckType = CheckType.CheckIn,
                 CheckInOutCandidates = ImmutableList<CheckInOutCandidate>.Empty

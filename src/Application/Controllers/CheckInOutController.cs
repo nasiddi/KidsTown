@@ -27,6 +27,32 @@ namespace KidsTown.Application.Controllers
         }
 
         [HttpPost]
+        [Route(template: "manual-with-location-update")]
+        [Produces(contentType: "application/json")]
+        public async Task<IActionResult> ManualLocationUpdateAndCheckIn([FromBody] CheckInOutCandidate candidate)
+        {
+            var success = await _checkInOutService.UpdateLocationAndCheckIn(
+                candidate.AttendanceId,
+                candidate.LocationId);
+            
+            if (success)
+            {
+                return Ok(value: new CheckInOutResult
+                {
+                    Text = $"{CheckType.CheckIn.ToString()} für {candidate.Name} war erfolgreich.",
+                    AlertLevel = AlertLevel.Success,
+                    AttendanceIds = ImmutableList.Create(candidate.AttendanceId)
+                });
+            }
+
+            return Ok(value: new CheckInOutResult
+            {
+                Text = $"{CheckType.CheckIn.ToString()} für {candidate.Name} ist fehlgeschlagen",
+                AlertLevel = AlertLevel.Danger
+            });
+        }
+
+        [HttpPost]
         [Route(template: "manual")]
         [Produces(contentType: "application/json")]
         public async Task<IActionResult> ManualCheckIn([FromBody] CheckInOutRequest request)
@@ -40,7 +66,7 @@ namespace KidsTown.Application.Controllers
             {
                 return Ok(value: new CheckInOutResult
                 {
-                    Text = $"{request.CheckType.ToString()} für {request.SecurityCode}, {string.Join(separator: ", ", values: names)} war erfolgreich.",
+                    Text = $"{request.CheckType.ToString()} für ({request.SecurityCode}) {string.Join(separator: ", ", values: names)} war erfolgreich.",
                     AlertLevel = AlertLevel.Success,
                     AttendanceIds = attendanceIds
                 });
@@ -48,11 +74,10 @@ namespace KidsTown.Application.Controllers
 
             return Ok(value: new CheckInOutResult
             {
-                Text = $"{request.CheckType.ToString()} für {request.SecurityCode}, {string.Join(separator: ", ", values: names)} ist fehlgeschlagen",
+                Text = $"{request.CheckType.ToString()} für ({request.SecurityCode}) {string.Join(separator: ", ", values: names)} ist fehlgeschlagen",
                 AlertLevel = AlertLevel.Danger
             });
         }
-        
 
         [HttpPost]
         [Route(template: "people")]
@@ -60,30 +85,55 @@ namespace KidsTown.Application.Controllers
         public async Task<IActionResult> GetPeople([FromBody] CheckInOutRequest request)
         {
             _taskManagementService.ActivateBackgroundTasks();
+
+            if (!request.FilterLocations && request.CheckType != CheckType.CheckIn)
+            {
+                return Ok(value: new CheckInOutResult
+                {
+                    Text = "Suche ohne Location Filter ist nur bei CheckIn erlaubt.",
+                    AlertLevel = AlertLevel.Danger
+                });
+            }
+
+            if (request.FilterLocations && request.SelectedLocationGroupIds.Count == 0)
+            {
+                return Ok(value: new CheckInOutResult
+                {
+                    Text = "Bitte Locations auswählen.",
+                    AlertLevel = AlertLevel.Danger
+                });
+            }
             
             if (request.SecurityCode.StartsWith(value: '1') && request.CheckType == CheckType.CheckIn)
             {
                 await _checkInOutService.CreateUnregisteredGuest(
                     requestSecurityCode: request.SecurityCode,
                     requestEventId: request.EventId,
-                    requestSelectedLocationIds: request.SelectedLocationIds);
+                    requestSelectedLocationIds: request.SelectedLocationGroupIds);
             }
 
             var peopleSearchParameters = new PeopleSearchParameters(
                 securityCode: request.SecurityCode, 
                 eventId: request.EventId,
-                locationGroups: request.SelectedLocationIds);
+                locationGroups: request.SelectedLocationGroupIds,
+                useFilterLocationGroups: request.FilterLocations);
+            
             var people = await _checkInOutService.SearchForPeople(
                 searchParameters: peopleSearchParameters).ConfigureAwait(continueOnCapturedContext: false);
 
-            await _searchLoggingService.LogSearch(peopleSearchParameters, people, request.Guid, request.CheckType);
+            await _searchLoggingService.LogSearch(peopleSearchParameters: peopleSearchParameters,
+                people: people,
+                deviceGuid: request.Guid,
+                checkType: request.CheckType,
+                filterLocations: request.FilterLocations);
             
             if (people.Count == 0)
             {
                 return Ok(value: new CheckInOutResult
                 {
-                    Text = $"Es wurde niemand mit SecurityCode {request.SecurityCode} gefunden. Locations und CheckIn/CheckOut Einstellungen überprüfen.",
-                    AlertLevel = AlertLevel.Danger
+                    Text = $"Es wurde niemand mit SecurityCode {request.SecurityCode} gefunden. Locations Filter überprüfen.",
+                    AlertLevel = AlertLevel.Danger,
+                    FilteredSearchUnsuccessful = true
                 });
             }
             
@@ -93,12 +143,14 @@ namespace KidsTown.Application.Controllers
             {
                 return Ok(value: new CheckInOutResult
                 {
-                    Text = $"{request.CheckType.ToString()} für alle Personen mit {request.SecurityCode} ist bereits erfolgt.",
-                    AlertLevel = AlertLevel.Warning
+                    Text = $"Niemand mit {request.SecurityCode} ist bereit für {request.CheckType.ToString()}. CheckIn/Out Einstellungen überprüfen.",
+                    AlertLevel = AlertLevel.Warning,
+                    FilteredSearchUnsuccessful = true
                 });
             }
             
             if (request.IsFastCheckInOut 
+                && request.FilterLocations
                 && (!peopleReadyForProcessing.Any(predicate: p => !p.MayLeaveAlone || p.HasPeopleWithoutPickupPermission) 
                     || request.CheckType == CheckType.CheckIn))
             {
@@ -107,7 +159,7 @@ namespace KidsTown.Application.Controllers
                 {
                     return Ok(value: new CheckInOutResult
                     {
-                        Text = $"{request.CheckType.ToString()} für {request.SecurityCode}, {kid.FirstName} {kid.LastName} war erfolgreich.",
+                        Text = $"{request.CheckType.ToString()} für ({request.SecurityCode}) {kid.FirstName} {kid.LastName} war erfolgreich.",
                         AlertLevel = AlertLevel.Success,
                         SuccessfulFastCheckout = true,
                         AttendanceIds = ImmutableList.Create(item: kid.AttendanceId)
@@ -119,6 +171,7 @@ namespace KidsTown.Application.Controllers
             {
                 AttendanceId = p.AttendanceId,
                 Name = $"{p.FirstName} {p.LastName}",
+                LocationId = p.LocationGroupId,
                 MayLeaveAlone = p.MayLeaveAlone,
                 HasPeopleWithoutPickupPermission = p.HasPeopleWithoutPickupPermission
             }).ToImmutableList();
@@ -132,7 +185,7 @@ namespace KidsTown.Application.Controllers
                 CheckInOutCandidates = checkInOutCandidates
             });
         }
-        
+
         [HttpPost]
         [Route(template: "undo/{checkType}")]
         [Produces(contentType: "application/json")]
@@ -171,7 +224,7 @@ namespace KidsTown.Application.Controllers
         public async Task<IActionResult> CheckInGuest([FromBody] GuestCheckInRequest request)
         {
             var attendanceId = await _checkInOutService.CreateGuest(
-                locationId: request.LocationId,
+                locationId: request.LocationGroupId,
                 securityCode: request.SecurityCode,
                 firstName: request.FirstName,
                 lastName: request.LastName);
@@ -203,7 +256,7 @@ namespace KidsTown.Application.Controllers
         public async Task<IActionResult> CreateGuest([FromBody] GuestCheckInRequest request)
         {
             var attendanceId = await _checkInOutService.CreateGuest(
-                locationId: request.LocationId,
+                locationId: request.LocationGroupId,
                 securityCode: request.SecurityCode,
                 firstName: request.FirstName,
                 lastName: request.LastName);

@@ -11,7 +11,8 @@ namespace KidsTown.KidsTown
             PeopleSearchParameters peopleSearchParameters,
             IImmutableList<Kid> people,
             string deviceGuid,
-            CheckType checkType
+            CheckType checkType,
+            bool filterLocations
         );
     }
 }

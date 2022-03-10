@@ -7,11 +7,18 @@ namespace KidsTown.KidsTown.Models
         public readonly string SecurityCode;
         public readonly long EventId;
         public readonly IImmutableList<int> LocationGroups;
+        public readonly bool UseFilterLocationGroups;
 
-        public PeopleSearchParameters(string securityCode,  long eventId, IImmutableList<int> locationGroups)
+        public PeopleSearchParameters(
+            string securityCode,
+            long eventId,
+            IImmutableList<int> locationGroups,
+            bool useFilterLocationGroups
+        )
         {
             SecurityCode = securityCode;
             LocationGroups = locationGroups;
+            UseFilterLocationGroups = useFilterLocationGroups;
             EventId = eventId;
         }
     }

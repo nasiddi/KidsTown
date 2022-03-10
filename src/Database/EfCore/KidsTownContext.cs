@@ -1,7 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
 
-#nullable disable
-
 namespace KidsTown.Database.EfCore
 {
     public partial class KidsTownContext : DbContext
@@ -15,18 +13,18 @@ namespace KidsTown.Database.EfCore
         {
         }
 
-        public virtual DbSet<Adult> Adults { get; set; }
-        public virtual DbSet<Attendance> Attendances { get; set; }
-        public virtual DbSet<AttendanceType> AttendanceTypes { get; set; }
-        public virtual DbSet<Family> Families { get; set; }
-        public virtual DbSet<Kid> Kids { get; set; }
-        public virtual DbSet<Location> Locations { get; set; }
-        public virtual DbSet<LocationGroup> LocationGroups { get; set; }
-        public virtual DbSet<Person> People { get; set; }
-        public virtual DbSet<SearchLog> SearchLogs { get; set; }
-        public virtual DbSet<SearchLog2Attendance> SearchLog2Attendances { get; set; }
-        public virtual DbSet<SearchLog2LocationGroup> SearchLog2LocationGroups { get; set; }
-        public virtual DbSet<TaskExecution> TaskExecutions { get; set; }
+        public virtual DbSet<Adult> Adults { get; set; } = null!;
+        public virtual DbSet<Attendance> Attendances { get; set; } = null!;
+        public virtual DbSet<AttendanceType> AttendanceTypes { get; set; } = null!;
+        public virtual DbSet<Family> Families { get; set; } = null!;
+        public virtual DbSet<Kid> Kids { get; set; } = null!;
+        public virtual DbSet<Location> Locations { get; set; } = null!;
+        public virtual DbSet<LocationGroup> LocationGroups { get; set; } = null!;
+        public virtual DbSet<Person> People { get; set; } = null!;
+        public virtual DbSet<SearchLog> SearchLogs { get; set; } = null!;
+        public virtual DbSet<SearchLog2Attendance> SearchLog2Attendances { get; set; } = null!;
+        public virtual DbSet<SearchLog2LocationGroup> SearchLog2LocationGroups { get; set; } = null!;
+        public virtual DbSet<TaskExecution> TaskExecutions { get; set; } = null!;
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
@@ -38,8 +36,6 @@ namespace KidsTown.Database.EfCore
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            modelBuilder.HasAnnotation("Relational:Collation", "SQL_Latin1_General_CP1_CI_AS");
-
             modelBuilder.Entity<Adult>(entity =>
             {
                 entity.HasKey(e => e.PersonId);
@@ -69,7 +65,6 @@ namespace KidsTown.Database.EfCore
                 entity.ToTable("Attendance", "kt");
 
                 entity.Property(e => e.SecurityCode)
-                    .IsRequired()
                     .HasMaxLength(10)
                     .IsUnicode(false);
 
@@ -97,17 +92,15 @@ namespace KidsTown.Database.EfCore
                 entity.ToTable("AttendanceType", "kt");
 
                 entity.Property(e => e.Name)
-                    .IsRequired()
                     .HasMaxLength(50)
                     .IsUnicode(false);
             });
-            
+
             modelBuilder.Entity<Family>(entity =>
             {
                 entity.ToTable("Family", "kt");
 
                 entity.Property(e => e.Name)
-                    .IsRequired()
                     .HasMaxLength(70)
                     .IsUnicode(false);
 
@@ -141,7 +134,6 @@ namespace KidsTown.Database.EfCore
                 entity.Property(e => e.LocationGroupId).HasDefaultValueSql("((5))");
 
                 entity.Property(e => e.Name)
-                    .IsRequired()
                     .HasMaxLength(50)
                     .IsUnicode(false);
 
@@ -157,7 +149,6 @@ namespace KidsTown.Database.EfCore
                 entity.ToTable("LocationGroup", "kt");
 
                 entity.Property(e => e.Name)
-                    .IsRequired()
                     .HasMaxLength(50)
                     .IsUnicode(false);
             });
@@ -167,12 +158,10 @@ namespace KidsTown.Database.EfCore
                 entity.ToTable("Person", "kt");
 
                 entity.Property(e => e.FirstName)
-                    .IsRequired()
                     .HasMaxLength(50)
                     .IsUnicode(false);
 
                 entity.Property(e => e.LastName)
-                    .IsRequired()
                     .HasMaxLength(50)
                     .IsUnicode(false);
 
@@ -187,12 +176,10 @@ namespace KidsTown.Database.EfCore
                 entity.ToTable("SearchLog", "kt");
 
                 entity.Property(e => e.DeviceGuid)
-                    .IsRequired()
                     .HasMaxLength(40)
                     .IsUnicode(false);
 
                 entity.Property(e => e.SecurityCode)
-                    .IsRequired()
                     .HasMaxLength(10)
                     .IsUnicode(false);
             });
@@ -236,12 +223,10 @@ namespace KidsTown.Database.EfCore
                 entity.ToTable("TaskExecution", "kt");
 
                 entity.Property(e => e.Environment)
-                    .IsRequired()
                     .HasMaxLength(20)
                     .IsUnicode(false);
 
                 entity.Property(e => e.TaskName)
-                    .IsRequired()
                     .HasMaxLength(50)
                     .IsUnicode(false)
                     .HasDefaultValueSql("('UpdateTask')");

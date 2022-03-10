@@ -28,30 +28,59 @@ export async function postSecurityCode(
 	securityCode,
 	locationIds,
 	isFastCheckout,
-	checkType
+	checkType,
+	filterLocations
 ) {
 	const request = getPostRequest()
 	request.body = JSON.stringify({
 		securityCode: securityCode,
 		eventId: await getSelectedEventFromStorage(),
-		selectedLocationIds: locationIds,
+		selectedLocationGroupIds: locationIds,
 		isFastCheckInOut: isFastCheckout ?? false,
 		checkType: checkType,
 		attendanceIds: [],
+		filterLocations: filterLocations,
 		guid: getGuid(),
 	})
 
 	return await fetch('checkinout/people', request).then((r) => r.json())
 }
 
-export async function postCheckInOut(candidates, checkType) {
+export async function fetchLocations(locationsGroups) {
+	return await fetch(
+		`configuration/events/${await getSelectedEventFromStorage()}/location-groups/locations`,
+		{
+			body: JSON.stringify(locationsGroups.map((l) => l.value)),
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json',
+			},
+		}
+	)
+		.then((r) => r.json())
+		.then((j) => {
+			return j
+		})
+}
+
+export async function postCheckInOut(candidates, checkType, securityCode) {
 	const request = getPostRequest()
 	request.body = JSON.stringify({
 		checkType: checkType,
 		checkInOutCandidates: candidates,
+		securityCode: securityCode,
 	})
 
 	return await fetch('checkinout/manual', request).then((r) => r.json())
+}
+
+export async function postChangeLocationAndCheckIn(candidate) {
+	const request = getPostRequest()
+	request.body = JSON.stringify(candidate)
+
+	return await fetch('checkinout/manual-with-location-update', request).then(
+		(r) => r.json()
+	)
 }
 
 export async function postUndo(lastActionAttendanceIds, checkType) {

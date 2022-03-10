@@ -84,6 +84,12 @@ namespace KidsTown.KidsTown
             await _peopleRepository.InsertUnregisteredGuest(securityCode: securityCode, locationId: location.Id);
         }
 
+        public async Task<bool> UpdateLocationAndCheckIn(int attendanceId, int locationId)
+        {
+            return await _checkInOutRepository.UpdateLocationAndCheckIn(attendanceId: attendanceId, locationId: locationId)
+                .ConfigureAwait(continueOnCapturedContext: false);
+        }
+
         private async Task<bool> CheckInPeople(IImmutableList<int> attendanceIds)
         {
             return await _checkInOutRepository.CheckInPeople(attendanceIds: attendanceIds).ConfigureAwait(continueOnCapturedContext: false);

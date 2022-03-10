@@ -4,7 +4,7 @@ import {
 	getStringFromSession,
 	getSelectedOptionsFromStorage,
 	getLastSunday,
-	LocationSelect,
+	MultiSelect,
 	DatePick,
 } from './Common'
 import { withAuth } from '../auth/MsalAuthProvider'
@@ -22,9 +22,9 @@ class Options extends Component {
 		this.resetDate = this.resetDate.bind(this)
 
 		this.state = {
-			locations: [],
-			overviewLocations: getSelectedOptionsFromStorage(
-				'overviewLocations',
+			locationGroups: [],
+			overviewLocationGroups: getSelectedOptionsFromStorage(
+				'overviewLocationGroups',
 				[]
 			),
 			loading: true,
@@ -33,14 +33,14 @@ class Options extends Component {
 	}
 
 	async componentDidMount() {
-		const locations = await fetchLocationGroups()
+		const locationGroups = await fetchLocationGroups()
 		this.setState({
 			date: getStringFromSession(
 				'overviewDate',
 				getLastSunday().toISOString()
 			),
 		})
-		this.setState({ locations: locations })
+		this.setState({ locationGroups: locationGroups })
 		this.setState({ loading: false })
 	}
 
@@ -54,12 +54,12 @@ class Options extends Component {
 					alignItems="center"
 				>
 					<Grid item xs={9}>
-						<LocationSelect
-							name={'overviewLocations'}
+						<MultiSelect
+							name={'overviewLocationGroups'}
 							isMulti={true}
 							onChange={this.updateOptions}
-							options={this.state.locations}
-							defaultOptions={this.state.overviewLocations}
+							options={this.state.locationGroups}
+							defaultOptions={this.state.overviewLocationGroups}
 							minHeight={0}
 						/>
 					</Grid>

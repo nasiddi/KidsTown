@@ -105,7 +105,7 @@ export function getLastSunday() {
 	return t
 }
 
-export function LocationSelect(props) {
+export function MultiSelect(props) {
 	return (
 		<Select
 			styles={selectStyles(props['minHeight'], props['borderColor'])}

@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 
-#nullable disable
-
 namespace KidsTown.Database.EfCore
 {
     public partial class AttendanceType
@@ -13,7 +11,7 @@ namespace KidsTown.Database.EfCore
         }
 
         public int Id { get; set; }
-        public string Name { get; set; }
+        public string Name { get; set; } = null!;
 
         public virtual ICollection<Attendance> Attendances { get; set; }
     }

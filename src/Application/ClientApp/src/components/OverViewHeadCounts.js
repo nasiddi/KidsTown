@@ -24,8 +24,8 @@ class OverViewHeadCounts extends Component {
 	}
 
 	async componentDidMount() {
-		const locations = await fetchLocationGroups()
-		this.setState({ locations: locations })
+		const locationGroups = await fetchLocationGroups()
+		this.setState({ locationGroups: locationGroups })
 		await this.fetchData()
 		this.setState({ loading: false })
 	}
@@ -132,9 +132,10 @@ class OverViewHeadCounts extends Component {
 			)}`,
 			{
 				body: JSON.stringify(
-					getSelectedOptionsFromStorage('overviewLocations', []).map(
-						(l) => l.value
-					)
+					getSelectedOptionsFromStorage(
+						'overviewLocationGroups',
+						[]
+					).map((l) => l.value)
 				),
 				method: 'POST',
 				headers: {

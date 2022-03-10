@@ -75,3 +75,9 @@ IF OBJECT_ID('[kt].[FK_SearchLog2Attendance_AttendanceId]', 'F') IS NULL
             FOREIGN KEY ([AttendanceId])
                 REFERENCES [kt].[Attendance] ([Id])
     END;
+
+
+IF COL_LENGTH('kt.SearchLog','IsSearchAllLocations') IS NULL
+    BEGIN
+        ALTER TABLE kt.SearchLog ADD IsSearchAllLocations bit NOT NULL DEFAULT 0
+    END

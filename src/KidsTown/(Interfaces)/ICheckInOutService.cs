@@ -12,5 +12,6 @@ namespace KidsTown.KidsTown
         Task<bool> UndoAction(CheckState revertedCheckState, IImmutableList<int> attendanceIds);
         Task<int?> CreateGuest(int locationId, string securityCode, string firstName, string lastName);
         Task CreateUnregisteredGuest(string requestSecurityCode, long requestEventId, IImmutableList<int> requestSelectedLocationIds);
+        Task<bool> UpdateLocationAndCheckIn(int attendanceId, int locationId);
     }
 }

@@ -4,7 +4,7 @@ import Checkbox from '@material-ui/core/Checkbox'
 import FormControlLabel from '@material-ui/core/FormControlLabel'
 import { getGuid, getSelectedEventFromStorage } from './Common'
 import { withAuth } from '../auth/MsalAuthProvider'
-import { Badge, Button, Card, CardBody, CardTitle } from 'reactstrap'
+import { Badge, Card, CardBody, CardTitle } from 'reactstrap'
 
 function BoolBadge(props) {
 	return <Badge color={props['color']}>{props['label']}</Badge>

@@ -14,12 +14,15 @@ import { CheckInPhoneNumbers } from './CheckIn/CheckInPhoneNumbers'
 import { CheckInCandidates } from './CheckIn/CheckInCandidates'
 import {
 	fetchLocationGroups,
+	fetchLocations,
 	fetchParentPhoneNumbers,
+	postChangeLocationAndCheckIn,
 	postCheckInOut,
 	postPhoneNumbers,
 	postSecurityCode,
 	postUndo,
 } from '../helpers/BackendClient'
+import { CheckInWithLocationChange } from './CheckIn/CheckInWithLocationChange'
 
 const _ = require('lodash')
 
@@ -32,7 +35,13 @@ class CheckIn extends Component {
 
 		this.resetView = this.resetView.bind(this)
 		this.selectCheckType = this.selectCheckType.bind(this)
-		this.submitSecurityCode = this.submitSecurityCode.bind(this)
+		this.submitSecurityCodeWithLocationFilter =
+			this.submitSecurityCodeWithLocationFilter.bind(this)
+		this.submitSecurityCodeWithoutLocationFilter =
+			this.submitSecurityCodeWithoutLocationFilter.bind(this)
+		this.onChangeLocationGroupChange =
+			this.onChangeLocationGroupChange.bind(this)
+		this.onChangeLocationChange = this.onChangeLocationChange.bind(this)
 		this.updateOptions = this.updateOptions.bind(this)
 		this.checkInOutSingle = this.checkInOutSingle.bind(this)
 		this.checkInOutMultiple = this.checkInOutMultiple.bind(this)
@@ -43,12 +52,13 @@ class CheckIn extends Component {
 		this.setPhoneNumberIsEdit = this.setPhoneNumberIsEdit.bind(this)
 		this.updatePhoneNumber = this.updatePhoneNumber.bind(this)
 		this.savePhoneNumber = this.savePhoneNumber.bind(this)
+		this.changeLocationAndCheckIn = this.changeLocationAndCheckIn.bind(this)
 
 		this.state = {
-			locations: [],
+			locationGroups: [],
 			checkInOutCandidates: [],
-			checkInOutLocations: getSelectedOptionsFromStorage(
-				'checkInOutLocations',
+			checkInOutLocationGroups: getSelectedOptionsFromStorage(
+				'checkInOutLocationGroups',
 				[]
 			),
 			securityCode: '',
@@ -68,12 +78,15 @@ class CheckIn extends Component {
 			adults: [],
 			phoneNumberEditFlags: {},
 			lastCodeSubmission: new Date(),
+			showUnfilteredSearch: false,
+			locations: [],
+			selectedChangeLocation: {},
 		}
 	}
 
 	async componentDidMount() {
-		const locations = await fetchLocationGroups()
-		this.setState({ locations: locations, loading: false })
+		const locationGroups = await fetchLocationGroups()
+		this.setState({ locationGroups: locationGroups, loading: false })
 	}
 
 	// eslint-disable-next-line no-unused-vars
@@ -85,7 +98,7 @@ class CheckIn extends Component {
 			const currentDate = new Date()
 			if (currentDate - this.state.lastCodeSubmission > 2000) {
 				this.setState({ lastCodeSubmission: new Date() })
-				this.submitSecurityCode().then()
+				this.submitSecurityCodeWithLocationFilter().then()
 			} else {
 				this.resetView(false, false)
 			}
@@ -109,9 +122,9 @@ class CheckIn extends Component {
 				singleCheckInOut={this.state.singleCheckInOut}
 				showPhoneNumbers={this.state.showPhoneNumbers}
 				onCheckBoxChange={this.handleChange}
-				onLocationChange={this.updateOptions}
-				locations={this.state.locations}
-				checkInOutLocations={this.state.checkInOutLocations}
+				onLocationGroupChange={this.updateOptions}
+				locationGroups={this.state.locationGroups}
+				checkInOutLocationGroups={this.state.checkInOutLocationGroups}
 			/>
 		)
 	}
@@ -124,7 +137,7 @@ class CheckIn extends Component {
 				inputRef={this.securityCodeInput}
 				securityCode={this.state.securityCode}
 				onChange={this.updateSecurityCode}
-				onSubmit={this.submitSecurityCode}
+				onSubmit={this.submitSecurityCodeWithLocationFilter}
 				onClear={this.resetView}
 			/>
 		)
@@ -174,12 +187,31 @@ class CheckIn extends Component {
 		)
 	}
 
+	renderUnfilteredSearch() {
+		if (this.state.checkType !== 'CheckIn') {
+			return <div />
+		}
+
+		return (
+			<CheckInWithLocationChange
+				candidates={this.state.checkInOutCandidates}
+				fadeIn={this.state.showUnfilteredSearch}
+				onSearch={this.submitSecurityCodeWithoutLocationFilter}
+				onLocationGroupChange={this.onChangeLocationGroupChange}
+				onLocationChange={this.onChangeLocationChange}
+				onSelectCandidate={this.selectCandidateForLocationChange}
+				locationGroups={this.state.checkInOutLocationGroups}
+				locations={this.state.locations['options'] ?? []}
+				selectedLocation={this.state.selectedChangeLocation}
+				onCheckIn={this.changeLocationAndCheckIn}
+			/>
+		)
+	}
+
 	render() {
 		const options = this.renderOptions()
 		const input = this.renderInput()
 		const alert = this.renderAlert()
-		const candidates = this.renderCandidates()
-		const adults = this.renderAdults()
 
 		return (
 			<Grid
@@ -194,10 +226,45 @@ class CheckIn extends Component {
 				{options}
 				{input}
 				{alert}
-				{candidates}
-				{adults}
+				{this.state.showUnfilteredSearch ? (
+					<div />
+				) : (
+					this.renderCandidates()
+				)}
+				{this.state.showUnfilteredSearch ? (
+					<div />
+				) : (
+					this.renderAdults()
+				)}
+				{this.state.showUnfilteredSearch ? (
+					this.renderUnfilteredSearch()
+				) : (
+					<div />
+				)}
 			</Grid>
 		)
+	}
+
+	async onChangeLocationChange(event) {
+		this.setState({ selectedChangeLocation: event })
+	}
+
+	async onChangeLocationGroupChange(event) {
+		const locations = await fetchLocations([event])
+		this.setState({
+			locations: locations[0],
+			selectedChangeLocation:
+				locations[0]['optionCount'] === 1
+					? locations[0]['options'][0]
+					: {},
+		})
+	}
+
+	selectCandidateForLocationChange = (event) => {
+		const candidate = this.state.checkInOutCandidates.find(
+			(c) => c['attendanceId'] === parseInt(event.target.id, 10)
+		)
+		this.setState({ checkInOutCandidates: [candidate] })
 	}
 
 	handleChange = (event) => {
@@ -225,26 +292,47 @@ class CheckIn extends Component {
 		this.setState({ adults: adults })
 	}
 
-	async submitSecurityCode() {
-		this.setState({ adults: [] })
-
-		const selectedLocationIds = this.state.checkInOutLocations.map(
-			(l) => l.value
-		)
+	async submitSecurityCodeWithoutLocationFilter() {
 		const json = await postSecurityCode(
 			this.state.securityCode,
-			selectedLocationIds,
+			[],
 			this.state.fastCheckInOut,
-			this.state.checkType
+			this.state.checkType,
+			false
+		)
+
+		this.setState({
+			alert: { level: json['alertLevel'], text: json['text'] },
+			lastActionAttendanceIds: [],
+			checkInOutCandidates: json['checkInOutCandidates'],
+		})
+	}
+
+	async submitSecurityCodeWithLocationFilter() {
+		const selectedLocationGroupIds =
+			this.state.checkInOutLocationGroups.map((l) => l.value)
+		const json = await postSecurityCode(
+			this.state.securityCode,
+			selectedLocationGroupIds,
+			this.state.fastCheckInOut,
+			this.state.checkType,
+			true
 		)
 
 		const attendanceIds = json['attendanceIds'] ?? []
+
+		const state = {
+			adults: [],
+			alert: {
+				level: json['alertLevel'],
+				text: json['text'],
+			},
+			lastActionAttendanceIds: attendanceIds,
+		}
+
 		if (json['successfulFastCheckout'] === true) {
 			this.resetView(false, false)
-			this.setState({
-				alert: { level: json['alertLevel'], text: json['text'] },
-				lastActionAttendanceIds: attendanceIds,
-			})
+			this.setState({ ...state })
 			await this.loadPhoneNumbers(attendanceIds)
 		} else {
 			const candidates = json['checkInOutCandidates'].map(function (el) {
@@ -255,26 +343,41 @@ class CheckIn extends Component {
 			})
 
 			this.setState({
-				alert: { level: json['alertLevel'], text: json['text'] },
-				lastActionAttendanceIds: attendanceIds,
+				...state,
 				checkInOutCandidates: candidates,
+				showUnfilteredSearch: json['filteredSearchUnsuccessful'],
 			})
 		}
-	}
-
-	async checkInOutSingle(event) {
-		const candidate = this.state.checkInOutCandidates.find(
-			(c) => c['attendanceId'] === parseInt(event.target.id, 10)
-		)
-		const json = await postCheckInOut([candidate], this.state.checkType)
-		await this.processCheckInOutResult(json)
 	}
 
 	async checkInOutMultiple() {
 		const candidates = this.state.checkInOutCandidates.filter(
 			(c) => c.isSelected
 		)
-		const json = await postCheckInOut(candidates, this.state.checkType)
+		const json = await postCheckInOut(
+			candidates,
+			this.state.checkType,
+			this.state.securityCode
+		)
+		await this.processCheckInOutResult(json)
+	}
+
+	async checkInOutSingle(event) {
+		const candidate = this.state.checkInOutCandidates.find(
+			(c) => c['attendanceId'] === parseInt(event.target.id, 10)
+		)
+		const json = await postCheckInOut(
+			[candidate],
+			this.state.checkType,
+			this.state.securityCode
+		)
+		await this.processCheckInOutResult(json)
+	}
+
+	async changeLocationAndCheckIn() {
+		const candidate = this.state.checkInOutCandidates[0]
+		candidate.locationId = this.state.selectedChangeLocation.value
+		const json = await postChangeLocationAndCheckIn(candidate)
 		await this.processCheckInOutResult(json)
 	}
 
@@ -321,18 +424,23 @@ class CheckIn extends Component {
 
 	resetView(resetAlert = true, resetAdults = true) {
 		this.focus()
-		this.setState({
+		let newState = {
 			checkInOutCandidates: [],
 			securityCode: '',
-		})
+			showUnfilteredSearch: false,
+			locations: [],
+			selectedChangeLocation: {},
+		}
 
 		if (resetAlert) {
-			this.setState({ alert: { text: '', level: 1 } })
+			newState = { ...newState, alert: { text: '', level: 1 } }
 		}
 
 		if (resetAdults) {
-			this.setState({ adults: [] })
+			newState = { ...newState, adults: [] }
 		}
+
+		this.setState({ ...newState })
 	}
 
 	invertSelectCandidate(event) {

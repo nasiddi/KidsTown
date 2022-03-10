@@ -99,9 +99,10 @@ namespace KidsTown.KidsTown
                 .ConfigureAwait(continueOnCapturedContext: false);
             
             return attendees.GroupBy(keySelector: a => a.Location)
+                .OrderBy(keySelector: g => g.First().LocationGroupId)
+                .ThenBy(keySelector: g => g.First().Location)
                 .Select(selector: l => MapLiveStatistics(attendees: l.ToImmutableList()))
-                .OrderBy(keySelector: c => c.LocationId)
-                .ThenBy(keySelector: c => c.Location).ToImmutableList();
+                .ToImmutableList();
         }
 
         private static LiveHeadCounts MapLiveStatistics(IImmutableList<Attendee> attendees)
@@ -112,7 +113,6 @@ namespace KidsTown.KidsTown
 
             return new LiveHeadCounts
             {
-                LocationId = attendees[index: 0].LocationGroupId,
                 Location = attendees[index: 0].Location,
                 KidsCount = regularCounts.CheckedIn + guestCounts.CheckedIn,
                 VolunteersCount = volunteerCounts.CheckedIn

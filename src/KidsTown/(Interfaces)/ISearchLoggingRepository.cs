@@ -7,6 +7,12 @@ namespace KidsTown.KidsTown
 {
     public interface ISearchLoggingRepository
     {
-        Task LogSearch(PeopleSearchParameters peopleSearchParameters, IImmutableList<Kid> people, string deviceGuid, CheckType checkType);
+        Task LogSearch(
+            PeopleSearchParameters peopleSearchParameters,
+            IImmutableList<Kid> people,
+            string deviceGuid,
+            CheckType checkType,
+            bool filterLocations
+        );
     }
 }

@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 
-#nullable disable
-
 namespace KidsTown.Database.EfCore
 {
     public partial class TaskExecution
@@ -11,7 +9,7 @@ namespace KidsTown.Database.EfCore
         public DateTime InsertDate { get; set; }
         public bool IsSuccess { get; set; }
         public int UpdateCount { get; set; }
-        public string Environment { get; set; }
-        public string TaskName { get; set; }
+        public string Environment { get; set; } = null!;
+        public string TaskName { get; set; } = null!;
     }
 }

@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 
-#nullable disable
-
 namespace KidsTown.Database.EfCore
 {
     public partial class SearchLog
@@ -15,10 +13,11 @@ namespace KidsTown.Database.EfCore
 
         public int Id { get; set; }
         public DateTime SearchDate { get; set; }
-        public string SecurityCode { get; set; }
-        public string DeviceGuid { get; set; }
+        public string SecurityCode { get; set; } = null!;
+        public string DeviceGuid { get; set; } = null!;
         public bool IsCheckIn { get; set; }
         public long EventId { get; set; }
+        public bool IsSearchAllLocations { get; set; }
 
         public virtual ICollection<SearchLog2Attendance> SearchLog2Attendances { get; set; }
         public virtual ICollection<SearchLog2LocationGroup> SearchLog2LocationGroups { get; set; }

@@ -13,5 +13,6 @@ namespace KidsTown.KidsTown
         Task<bool> SetCheckState(CheckState revertedCheckState, IImmutableList<int> attendanceIds);
         Task<int> CreateGuest(int locationId, string securityCode, string firstName, string lastName);
         Task<bool> SecurityCodeExists(string securityCode);
+        Task<bool> UpdateLocationAndCheckIn(int attendanceId, int locationId);
     }
 }

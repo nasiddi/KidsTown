@@ -12,5 +12,6 @@ namespace KidsTown.Application.Models
         public bool SuccessfulFastCheckout { get; init; }
         public IImmutableList<CheckInOutCandidate> CheckInOutCandidates { get; init; } = ImmutableList<CheckInOutCandidate>.Empty;
         public IImmutableList<int> AttendanceIds { get; init; } = ImmutableList<int>.Empty;
+        public bool FilteredSearchUnsuccessful { get; set; }
     }
 }

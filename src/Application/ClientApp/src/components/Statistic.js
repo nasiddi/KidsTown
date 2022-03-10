@@ -4,11 +4,11 @@ import {
 	getFormattedDate,
 	getSelectedEventFromStorage,
 	getSelectedOptionsFromStorage,
-	LocationSelect,
+	MultiSelect,
 } from './Common'
 import { Table } from 'reactstrap'
 import { withAuth } from '../auth/MsalAuthProvider'
-import { fetchLocationGroups } from '../helpers/BackendClient'
+import { fetchLocationGroups, fetchLocations } from '../helpers/BackendClient'
 
 const _ = require('lodash')
 
@@ -61,7 +61,7 @@ class Statistic extends Component {
 					alignItems="center"
 				>
 					<Grid item xs={12}>
-						<LocationSelect
+						<MultiSelect
 							name={'statisticLocationGroups'}
 							isMulti={true}
 							onChange={this.updateSelectedLocationGroups}
@@ -85,7 +85,7 @@ class Statistic extends Component {
 					alignItems="center"
 				>
 					<Grid item xs={12}>
-						<LocationSelect
+						<MultiSelect
 							name={'statisticLocations'}
 							isMulti={true}
 							onChange={this.updateSelectedLocations}
@@ -187,23 +187,6 @@ class Statistic extends Component {
 			})
 	}
 
-	async fetchLocations(locationsGroups) {
-		return await fetch(
-			`configuration/events/${await getSelectedEventFromStorage()}/location-groups/locations`,
-			{
-				body: JSON.stringify(locationsGroups.map((l) => l.value)),
-				method: 'POST',
-				headers: {
-					'Content-Type': 'application/json',
-				},
-			}
-		)
-			.then((r) => r.json())
-			.then((j) => {
-				return j
-			})
-	}
-
 	updateSelectedLocationGroups = async (options, key) => {
 		localStorage.setItem(key.name, JSON.stringify(options))
 		await this.setLocations(options)
@@ -222,7 +205,7 @@ class Statistic extends Component {
 	}
 
 	setLocations = async (locationGroups) => {
-		const locations = await this.fetchLocations(locationGroups)
+		const locations = await fetchLocations(locationGroups)
 
 		const singleLocations = _.filter(locations, function (l) {
 			return l['optionCount'] === 1

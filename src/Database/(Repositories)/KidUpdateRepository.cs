@@ -36,7 +36,7 @@ namespace KidsTown.Database
                 .Include(navigationPropertyPath: p => p.Kid)
                 .Where(predicate: p => p.PeopleId.HasValue
                                        && personIds.Contains(p.Id))
-                .OrderBy(keySelector: p => p.Kid.UpdateDate)
+                .OrderBy(keySelector: p => p.Kid!.UpdateDate)
                 .Take(count: take)
                 .Select(selector: p => p.PeopleId!.Value)
                 .ToListAsync().ConfigureAwait(continueOnCapturedContext: false);
@@ -93,7 +93,7 @@ namespace KidsTown.Database
             return new Family
             {
                 HouseholdId = householdId,
-                Name = name,
+                Name = name!,
                 UpdateDate = DateTime.UnixEpoch
             };
         }

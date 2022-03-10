@@ -18,12 +18,13 @@ namespace KidsTown.KidsTown
             PeopleSearchParameters peopleSearchParameters,
             IImmutableList<Kid> people,
             string deviceGuid,
-            CheckType checkType
+            CheckType checkType,
+            bool filterLocations
         )
         {
             try
             {
-                await _searchLoggingRepository.LogSearch(peopleSearchParameters, people, deviceGuid, checkType);
+                await _searchLoggingRepository.LogSearch(peopleSearchParameters, people, deviceGuid, checkType, filterLocations);
             }
             catch (Exception e)
             {

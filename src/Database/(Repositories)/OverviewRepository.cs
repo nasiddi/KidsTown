@@ -75,8 +75,8 @@ namespace KidsTown.Database
             long eventId,
             DateTime startDate,
             DateTime endDate,
-            IImmutableList<int> selectedLocations = null!,
-            IImmutableList<int> selectedLocationGroups = null!)
+            IImmutableList<int>? selectedLocations = null,
+            IImmutableList<int>? selectedLocationGroups = null)
         {
             await using var db = _serviceScopeFactory.CreateScope().ServiceProvider.GetRequiredService<KidsTownContext>();
             var attendees = await (from a in db.Attendances
