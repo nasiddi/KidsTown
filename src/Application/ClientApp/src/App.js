@@ -1,5 +1,5 @@
 import React from 'react'
-import { Route } from 'react-router'
+import { Route, Routes } from 'react-router'
 import { CheckInLayout, OverviewLayout } from './components/Layout'
 
 import { library } from '@fortawesome/fontawesome-svg-core'
@@ -7,6 +7,7 @@ import { faMobileAlt, faStar } from '@fortawesome/free-solid-svg-icons'
 
 library.add(faMobileAlt)
 library.add(faStar)
+import './custom-theme.scss'
 
 import './custom.css'
 import { CheckInOut } from './components/CheckIn'
@@ -23,17 +24,28 @@ export const App = () => {
 	return (
 		<div>
 			<CheckInLayout>
-				<Route exact path="/" component={Documentation} />
-				<Route path="/statistic" component={Statistics} />
-				<Route path="/settings" component={Settings} />
-				<Route path="/overview" component={OverviewOptions} />
-				<Route path="/overview" component={OverviewHeadCount} />
-				<Route path="/overview" component={OverviewFilter} />
-				<Route path="/checkin" component={CheckInOut} />
-				<Route path="/guest" component={GuestCheckIn} />
+				<Routes>
+					<Route exact path="/" element={<Documentation />} />
+					<Route path="/statistic" element={<Statistics />} />
+					<Route path="/settings" element={<Settings />} />
+					<Route
+						path="/overview"
+						element={
+							<>
+								<OverviewOptions />
+								<OverviewHeadCount />
+								<OverviewFilter />
+							</>
+						}
+					/>
+					<Route path="/checkin" element={<CheckInOut />} />
+					<Route path="/guest" element={<GuestCheckIn />} />
+				</Routes>
 			</CheckInLayout>
 			<OverviewLayout>
-				<Route path="/overview" component={OverviewDetail} />
+				<Routes>
+					<Route path="/overview" element={<OverviewDetail />} />
+				</Routes>
 			</OverviewLayout>
 		</div>
 	)

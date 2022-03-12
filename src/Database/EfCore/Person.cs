@@ -18,7 +18,7 @@ namespace KidsTown.Database.EfCore
         public DateTime UpdateDate { get; set; }
 
         public virtual Family? Family { get; set; }
-        public virtual Adult Adult { get; set; } = null!;
+        public virtual Adult? Adult { get; set; } = null!;
         public virtual Kid? Kid { get; set; }
         public virtual ICollection<Attendance> Attendances { get; set; }
     }

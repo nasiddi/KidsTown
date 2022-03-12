@@ -1,5 +1,5 @@
 module.exports = {
-	parser: 'babel-eslint',
+	parser: '@babel/eslint-parser',
 	extends: [
 		'plugin:flowtype/recommended',
 		'plugin:react/recommended',
@@ -15,6 +15,7 @@ module.exports = {
 	parserOptions: {
 		ecmaVersion: 2017,
 		sourceType: 'module',
+		requireConfigFile: false,
 		jsx: true,
 		ecmaFeatures: {
 			experimentalObjectRestSpread: true,

@@ -9,7 +9,7 @@ export function CheckInInput(props) {
 			<Grid
 				container
 				spacing={1}
-				justify="space-between"
+				justifyContent="space-between"
 				alignItems="center"
 			>
 				<Grid item md={8} xs={12}>
@@ -22,6 +22,9 @@ export function CheckInInput(props) {
 							value={props.securityCode}
 							onChange={props.onChange}
 							fullWidth={true}
+							InputLabelProps={{
+								shrink: true,
+							}}
 							autoFocus
 						/>
 					</MuiThemeProvider>

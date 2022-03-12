@@ -35,7 +35,7 @@ export class CheckInCandidates extends Component {
 				<Grid
 					container
 					spacing={3}
-					justify="space-between"
+					justifyContent="space-between"
 					alignItems="center"
 				>
 					{candidates}
@@ -75,7 +75,7 @@ export class CheckInCandidates extends Component {
 				<Grid
 					container
 					spacing={3}
-					justify="space-between"
+					justifyContent="space-between"
 					alignItems="center"
 				>
 					{candidates}

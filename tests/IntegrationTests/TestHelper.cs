@@ -36,8 +36,8 @@ namespace KidsTown.IntegrationTests
             var kids = people.Where(predicate: p => p.Kid != null).Select(selector: p => p.Kid);
             var adults = people.Where(predicate: p => p.Adult != null).Select(selector: p => p.Adult);
             
-            db.RemoveRange(entities: kids);
-            db.RemoveRange(entities: adults);
+            db.RemoveRange(entities: kids!);
+            db.RemoveRange(entities: adults!);
             db.RemoveRange(entities: attendances);
             db.RemoveRange(entities: people);
             await db.SaveChangesAsync();

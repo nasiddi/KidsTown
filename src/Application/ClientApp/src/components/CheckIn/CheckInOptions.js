@@ -21,7 +21,7 @@ export function CheckInOptions(props) {
 			<Grid
 				container
 				spacing={1}
-				justify="space-between"
+				justifyContent="space-between"
 				alignItems="center"
 			>
 				<Grid item md={'auto'} xs={12}>

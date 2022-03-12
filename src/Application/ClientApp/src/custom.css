@@ -32,3 +32,15 @@ a.anchor {
   top: -170px;
   visibility: hidden;
 }
+
+button[class^="btn btn-outline"]  {
+  color: black;
+}
+
+.btn {
+  color: white;
+}
+
+legend {
+  float: unset;
+}

@@ -40,7 +40,7 @@ export class Documentation extends Component {
 			currentHash: '',
 		}
 
-		if (props.location.hash.length > 1) {
+		if (props.location?.hash.length > 1) {
 			window.location.href = props.location.hash
 		}
 
@@ -232,7 +232,7 @@ export class Documentation extends Component {
 				<Grid
 					container
 					spacing={3}
-					justify="space-between"
+					justifyContent="space-between"
 					alignItems="flex-start"
 					id={'checkinsAppTabName'}
 				>
@@ -491,7 +491,7 @@ export class Documentation extends Component {
 				<Grid
 					container
 					spacing={3}
-					justify="space-between"
+					justifyContent="space-between"
 					alignItems="flex-start"
 					id={'kidsTownAppTabName'}
 				>

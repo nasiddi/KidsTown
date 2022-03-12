@@ -91,7 +91,7 @@ class CheckInGuest extends Component {
 				<Grid
 					container
 					spacing={3}
-					justify="space-between"
+					justifyContent="space-between"
 					alignItems="center"
 				>
 					<Grid item xs={12}>
@@ -187,7 +187,7 @@ class CheckInGuest extends Component {
 					<Grid
 						container
 						direction="row"
-						justify="space-between"
+						justifyContent="space-between"
 						alignItems="center"
 						spacing={1}
 					>
@@ -219,7 +219,7 @@ class CheckInGuest extends Component {
 			<Grid
 				container
 				spacing={3}
-				justify="space-between"
+				justifyContent="space-between"
 				alignItems="center"
 			>
 				<Grid item xs={12}>

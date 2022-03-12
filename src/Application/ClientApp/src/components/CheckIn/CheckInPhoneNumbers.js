@@ -16,7 +16,7 @@ export class CheckInPhoneNumbers extends Component {
 				<Grid
 					container
 					spacing={3}
-					justify="space-between"
+					justifyContent="space-between"
 					alignItems="center"
 				>
 					<Grid item md={1} xs={3}>
@@ -63,7 +63,7 @@ export class CheckInPhoneNumbers extends Component {
 			<Grid
 				container
 				spacing={3}
-				justify="space-between"
+				justifyContent="space-between"
 				alignItems="center"
 			>
 				{adults}

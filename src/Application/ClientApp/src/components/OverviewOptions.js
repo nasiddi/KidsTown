@@ -5,10 +5,10 @@ import {
 	getSelectedOptionsFromStorage,
 	getLastSunday,
 	MultiSelect,
-	DatePick,
 } from './Common'
 import { withAuth } from '../auth/MsalAuthProvider'
 import { fetchLocationGroups } from '../helpers/BackendClient'
+import { Input } from 'reactstrap'
 
 class Options extends Component {
 	static displayName = Options.name
@@ -37,7 +37,7 @@ class Options extends Component {
 		this.setState({
 			date: getStringFromSession(
 				'overviewDate',
-				getLastSunday().toISOString()
+				getLastSunday().toISOString().substr(0, 10)
 			),
 		})
 		this.setState({ locationGroups: locationGroups })
@@ -50,7 +50,7 @@ class Options extends Component {
 				<Grid
 					container
 					spacing={3}
-					justify="space-between"
+					justifyContent="space-between"
 					alignItems="center"
 				>
 					<Grid item xs={9}>
@@ -64,10 +64,11 @@ class Options extends Component {
 						/>
 					</Grid>
 					<Grid item xs={3}>
-						<DatePick
-							defaultValue={getLastSunday().toISOString()}
+						<Input
+							id="datepicker"
+							bsSize="md"
+							type="date"
 							value={this.state.date}
-							onClear={this.resetDate}
 							onChange={this.updateDate}
 						/>
 					</Grid>
@@ -85,7 +86,7 @@ class Options extends Component {
 				<Grid
 					container
 					spacing={3}
-					justify="space-between"
+					justifyContent="space-between"
 					alignItems="flex-start"
 				>
 					<Grid item xs={12}>
@@ -106,7 +107,8 @@ class Options extends Component {
 		this.updateDate(sunday)
 	}
 
-	updateDate(value) {
+	updateDate(event) {
+		const value = event.target.value
 		console.log(value)
 		if (value === null) {
 			return

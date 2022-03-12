@@ -217,7 +217,7 @@ class CheckIn extends Component {
 			<Grid
 				container
 				spacing={3}
-				justify="space-between"
+				justifyContent="space-between"
 				alignItems="center"
 			>
 				<Grid item xs={12}>

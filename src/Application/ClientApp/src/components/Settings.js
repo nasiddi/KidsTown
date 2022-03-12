@@ -47,7 +47,7 @@ function Task(props) {
 				<Grid
 					container
 					spacing={1}
-					justify="space-between"
+					justifyContent="space-between"
 					alignItems="center"
 				>
 					<Grid md={6} xs={12}>
@@ -179,7 +179,7 @@ class Setting extends Component {
 				<Grid
 					container
 					spacing={0}
-					justify="space-between"
+					justifyContent="space-between"
 					alignItems="center"
 				>
 					{events}
@@ -205,7 +205,7 @@ class Setting extends Component {
 				<Grid
 					container
 					spacing={1}
-					justify="space-between"
+					justifyContent="space-between"
 					alignItems="center"
 				>
 					{tasks}
@@ -224,7 +224,7 @@ class Setting extends Component {
 				<Grid
 					container
 					spacing={3}
-					justify="space-between"
+					justifyContent="space-between"
 					alignItems="flex-start"
 				>
 					<Grid item xs={12}>

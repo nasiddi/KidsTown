@@ -1,7 +1,6 @@
-import { createMuiTheme, Grid, MuiThemeProvider } from '@material-ui/core'
+import { createTheme, Grid, MuiThemeProvider } from '@material-ui/core'
 import Select from 'react-select'
 import React from 'react'
-import DatePicker from 'reactstrap-date-picker'
 import { loadCSS } from 'fg-loadcss'
 import Icon from '@material-ui/core/Icon'
 import FormControlLabel from '@material-ui/core/FormControlLabel'
@@ -76,7 +75,7 @@ export function getFormattedDate(dateString) {
 	)}-${`0${date.getUTCDate()}`.slice(-2)}`
 }
 
-export const primaryTheme = createMuiTheme({
+export const primaryTheme = createTheme({
 	palette: {
 		primary: { main: '#047bff' },
 	},
@@ -119,19 +118,6 @@ export function MultiSelect(props) {
 			onChange={props['onChange']}
 			defaultValue={props['defaultOptions']}
 			minWidth="100px"
-		/>
-	)
-}
-
-export function DatePick(props) {
-	return (
-		<DatePicker
-			id="datepicker"
-			value={props['value']}
-			dateFormat="DD.MM.YYYY"
-			onClear={props['onClear']}
-			showClearButton
-			onChange={props['onChange']}
 		/>
 	)
 }

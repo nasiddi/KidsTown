@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useCallback } from 'react'
 import { loadCSS } from 'fg-loadcss'
 import Icon from '@material-ui/core/Icon'
 import { Grid } from '@material-ui/core'
@@ -92,13 +92,13 @@ export function SplitImage(props) {
 		console.log(e.toString())
 	}
 
-	function handleOpen() {
+	const handleOpen = useCallback(() => {
 		if (open === 6) {
 			setOpen(12)
 		} else {
 			setOpen(6)
 		}
-	}
+	}, [setOpen])
 
 	const mediaCard = (
 		<Image src={image} alt={props['fileName']} onClick={handleOpen} fluid />
@@ -120,12 +120,7 @@ function splitImageInner(props, func, open) {
 	}
 
 	const mediaCard = (
-		<Image
-			src={image['default']}
-			alt={props['fileName']}
-			onClick={func}
-			fluid
-		/>
+		<Image src={image} alt={props['fileName']} onClick={func} fluid />
 	)
 
 	return (
@@ -172,7 +167,7 @@ export function TextImageSplit(props) {
 			<Grid
 				container
 				spacing={3}
-				justify="space-between"
+				justifyContent="space-between"
 				alignItems="flex-start"
 			>
 				{stylizedText(props, open)}

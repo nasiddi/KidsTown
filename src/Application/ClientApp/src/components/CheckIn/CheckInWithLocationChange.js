@@ -39,7 +39,7 @@ export function CheckInWithLocationChange(props) {
 				<Grid
 					container
 					spacing={1}
-					justify="space-between"
+					justifyContent="space-between"
 					alignItems="center"
 				>
 					{candidateButtons}
@@ -87,7 +87,7 @@ export function CheckInWithLocationChange(props) {
 			<Grid
 				container
 				spacing={3}
-				justify="space-between"
+				justifyContent="space-between"
 				alignItems="center"
 			>
 				{candidateButtons}
