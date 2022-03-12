@@ -612,6 +612,36 @@ export class Documentation extends Component {
 							},
 						]}
 					/>
+					<TextImageSplit
+						fileName={'checkin_locationchange.png'}
+						title={'Jemand in eine andere Location einchecken'}
+						paragraphs={[
+							{
+								icon: 'Info',
+								text: 'Theo ist eigentlich in der KidsChurch, wird aber heute seine kleine Schwester zu den Füchsli begleiten. Nach abscannen des Barcodes erscheint die Meldung dass niemand gefunden wurde, sowie einen gelben Knopf "Suche ohne Location Filter".',
+							},
+							{
+								icon: 'Action',
+								text: 'Beim drücken auf diesen Knopf, werden alle Locations durchsucht. Es werden alle Kinder mit dem Securitycode angezeigt, die noch nicht eingecheckt sind.',
+							},
+							{
+								icon: 'Action',
+								text: 'In diesem Fall wollen wir Theo einchecken, also wählen wir Theo aus. Somit verschwinden alle weiteren Kinder von der Anzeige.',
+							},
+							{
+								icon: 'Info',
+								text: "Unter Theo's Knopf ist jetzt eine Auswahlliste mit Locations erschienen. Es werden nur Locations angezeigt, die auch im Filter für die Suche ausgewählt sind.",
+							},
+							{
+								icon: 'Action',
+								text: 'Nach auswählen der richtigen Location erscheint der grüne CheckIn Knopf. Nochmals überprüfen, ob die Einstellung stimmt und einchecken',
+							},
+							{
+								icon: 'Warning',
+								text: 'Theo ist an diesem Tag in der Overview und in der Statistik bei den Füchsli gelistet. Es ist nur möglich, jemanden in eine andere Location einzuchecken, wenn die Person noch nicht eingecheckt ist.',
+							},
+						]}
+					/>
 				</Grid>
 			</div>
 		)
