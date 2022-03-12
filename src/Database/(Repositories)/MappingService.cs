@@ -1,25 +1,24 @@
 using KidsTown.Database.EfCore;
 using KidsTown.Shared;
 
-namespace KidsTown.Database
+namespace KidsTown.Database;
+
+public static class MappingService
 {
-    public static class MappingService
+    public static CheckState GetCheckState(Attendance attendance)
     {
-        public static CheckState GetCheckState(Attendance attendance)
+        var checkState = CheckState.PreCheckedIn;
+
+        if (attendance.CheckInDate.HasValue)
         {
-            var checkState = CheckState.PreCheckedIn;
-
-            if (attendance.CheckInDate.HasValue)
-            {
-                checkState = CheckState.CheckedIn;
-            }
-
-            if (attendance.CheckOutDate.HasValue)
-            {
-                checkState = CheckState.CheckedOut;
-            }
-
-            return checkState;
+            checkState = CheckState.CheckedIn;
         }
+
+        if (attendance.CheckOutDate.HasValue)
+        {
+            checkState = CheckState.CheckedOut;
+        }
+
+        return checkState;
     }
 }

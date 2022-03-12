@@ -1,16 +1,15 @@
-namespace KidsTown.BackgroundTasks.Attendance
-{
-    public class LocationUpdate
-    {
-        public readonly long CheckInsLocationId;
-        public readonly string Name;
-        public readonly long EventId;
+namespace KidsTown.BackgroundTasks.Attendance;
 
-        public LocationUpdate(long checkInsLocationId, string name, long eventId)
-        {
-            CheckInsLocationId = checkInsLocationId;
-            Name = name;
-            EventId = eventId;
-        }
+public class LocationUpdate
+{
+    public readonly long CheckInsLocationId;
+    public readonly string Name;
+    public readonly long EventId;
+
+    public LocationUpdate(long checkInsLocationId, string name, long eventId)
+    {
+        CheckInsLocationId = checkInsLocationId;
+        Name = name;
+        EventId = eventId;
     }
 }

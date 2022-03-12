@@ -3,16 +3,15 @@ using System.Threading.Tasks;
 using KidsTown.KidsTown.Models;
 using KidsTown.Shared;
 
-namespace KidsTown.KidsTown
+namespace KidsTown.KidsTown;
+
+public interface ISearchLoggingService
 {
-    public interface ISearchLoggingService
-    {
-        Task LogSearch(
-            PeopleSearchParameters peopleSearchParameters,
-            IImmutableList<Kid> people,
-            string deviceGuid,
-            CheckType checkType,
-            bool filterLocations
-        );
-    }
+    Task LogSearch(
+        PeopleSearchParameters peopleSearchParameters,
+        IImmutableList<Kid> people,
+        string deviceGuid,
+        CheckType checkType,
+        bool filterLocations
+    );
 }

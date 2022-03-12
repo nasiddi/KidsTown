@@ -2,13 +2,12 @@ using System.Collections.Immutable;
 using System.Threading.Tasks;
 using KidsTown.KidsTown.Models;
 
-namespace KidsTown.KidsTown
+namespace KidsTown.KidsTown;
+
+public interface IPeopleRepository
 {
-    public interface IPeopleRepository
-    {
-        Task<IImmutableList<Adult>> GetParents(IImmutableList<int> attendanceIds);
-        Task<IImmutableList<Adult>> GetAdults(IImmutableList<int> familyIds);
-        Task UpdateAdults(IImmutableList<Adult> adults);
-        Task InsertUnregisteredGuest(string securityCode, int locationId);
-    }
+    Task<IImmutableList<Adult>> GetParents(IImmutableList<int> attendanceIds);
+    Task<IImmutableList<Adult>> GetAdults(IImmutableList<int> familyIds);
+    Task UpdateAdults(IImmutableList<Adult> adults);
+    Task InsertUnregisteredGuest(string securityCode, int locationId);
 }

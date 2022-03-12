@@ -1,9 +1,8 @@
 using System.Threading.Tasks;
 
-namespace KidsTown.BackgroundTasks.Cleanup
+namespace KidsTown.BackgroundTasks.Cleanup;
+
+public interface ISearchLogCleanupRepository
 {
-    public interface ISearchLogCleanupRepository
-    {
-        Task<int> ClearOldLogs();
-    }
+    Task<int> ClearOldLogs();
 }

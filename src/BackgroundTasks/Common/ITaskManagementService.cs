@@ -1,10 +1,9 @@
 using System.Collections.Immutable;
 
-namespace KidsTown.BackgroundTasks.Common
+namespace KidsTown.BackgroundTasks.Common;
+
+public interface ITaskManagementService
 {
-    public interface ITaskManagementService
-    {
-        void ActivateBackgroundTasks();
-        IImmutableList<TaskOverview> GetTaskOverviews();
-    }
+    void ActivateBackgroundTasks();
+    IImmutableList<TaskOverview> GetTaskOverviews();
 }

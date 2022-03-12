@@ -1,10 +1,9 @@
-namespace KidsTown.Shared
+namespace KidsTown.Shared;
+
+public enum AlertLevel
 {
-    public enum AlertLevel
-    {
-        Danger,
-        Warning,
-        Info,
-        Success
-    }
+    Danger,
+    Warning,
+    Info,
+    Success
 }

@@ -1,11 +1,10 @@
-namespace KidsTown.BackgroundTasks.Common
+namespace KidsTown.BackgroundTasks.Common;
+
+public enum BackgroundTaskType
 {
-    public enum BackgroundTaskType
-    {
-        AdultUpdateTask,
-        AttendanceUpdateTask,
-        AutoCheckOutTask,
-        KidUpdateTask,
-        OldLogCleanupTask
-    }
+    AdultUpdateTask,
+    AttendanceUpdateTask,
+    AutoCheckOutTask,
+    KidUpdateTask,
+    OldLogCleanupTask
 }

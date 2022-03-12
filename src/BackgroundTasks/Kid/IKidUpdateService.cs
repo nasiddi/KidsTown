@@ -1,9 +1,8 @@
 using System.Threading.Tasks;
 
-namespace KidsTown.BackgroundTasks.Kid
+namespace KidsTown.BackgroundTasks.Kid;
+
+public interface IKidUpdateService
 {
-    public interface IKidUpdateService
-    {
-        public Task<int> UpdateKids(int daysLookBack, int batchSize);
-    }
+    public Task<int> UpdateKids(int daysLookBack, int batchSize);
 }

@@ -1,9 +1,8 @@
-namespace KidsTown.Shared
+namespace KidsTown.Shared;
+
+public enum AttendanceTypeId
 {
-    public enum AttendanceTypeId
-    {
-        Regular = 1,
-        Guest = 2,
-        Volunteer = 3
-    }
+    Regular = 1,
+    Guest = 2,
+    Volunteer = 3
 }

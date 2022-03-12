@@ -1,8 +1,7 @@
-namespace KidsTown.Shared
+namespace KidsTown.Shared;
+
+public enum PeopleFieldId
 {
-    public enum PeopleFieldId
-    {
-        NeedsToBePickedUp = 438360,
-        Kab = 441655
-    }
+    NeedsToBePickedUp = 438360,
+    Kab = 441655
 }

@@ -1,14 +1,13 @@
-namespace KidsTown.BackgroundTasks.Attendance
-{
-    public class PersistedLocation
-    {
-        public readonly int LocationId;
-        public readonly long CheckInsLocationId;
+namespace KidsTown.BackgroundTasks.Attendance;
 
-        public PersistedLocation(int locationId, long checkInsLocationId)
-        {
-            LocationId = locationId;
-            CheckInsLocationId = checkInsLocationId;
-        }
+public class PersistedLocation
+{
+    public readonly int LocationId;
+    public readonly long CheckInsLocationId;
+
+    public PersistedLocation(int locationId, long checkInsLocationId)
+    {
+        LocationId = locationId;
+        CheckInsLocationId = checkInsLocationId;
     }
 }

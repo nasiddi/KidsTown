@@ -1,11 +1,8 @@
 using System;
 
-namespace KidsTown.PlanningCenterApiClient.Models
+namespace KidsTown.PlanningCenterApiClient.Models;
+
+public interface IPlanningCenterResponse
 {
-    public interface IPlanningCenterResponse
-    {
-        public Uri? NextLink { get; }
-    }
-    
-    
+    public Uri? NextLink { get; }
 }

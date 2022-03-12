@@ -2,11 +2,10 @@ using System.Collections.Immutable;
 using System.Threading.Tasks;
 using KidsTown.KidsTown.Models;
 
-namespace KidsTown.KidsTown
+namespace KidsTown.KidsTown;
+
+public interface IConfigurationRepository
 {
-    public interface IConfigurationRepository
-    {
-        Task<IImmutableList<LocationGroup>> GetActiveLocationGroups();
-        Task<IImmutableList<Location>> GetLocations(long eventId, IImmutableList<int>? selectedLocationGroups);
-    }
+    Task<IImmutableList<LocationGroup>> GetActiveLocationGroups();
+    Task<IImmutableList<Location>> GetLocations(long eventId, IImmutableList<int>? selectedLocationGroups);
 }

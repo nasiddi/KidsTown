@@ -1,10 +1,9 @@
-namespace KidsTown.Shared
+namespace KidsTown.Shared;
+
+public enum CheckState
 {
-    public enum CheckState
-    {
-        None,
-        PreCheckedIn,
-        CheckedIn,
-        CheckedOut
-    }
+    None,
+    PreCheckedIn,
+    CheckedIn,
+    CheckedOut
 }

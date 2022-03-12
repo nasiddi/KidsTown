@@ -1,9 +1,8 @@
 using System.Threading.Tasks;
 
-namespace KidsTown.BackgroundTasks.Attendance
+namespace KidsTown.BackgroundTasks.Attendance;
+
+public interface IAttendanceUpdateService
 {
-    public interface IAttendanceUpdateService
-    {
-        public Task<int> UpdateAttendance(int daysLookBack);
-    }
+    public Task<int> UpdateAttendance(int daysLookBack);
 }
