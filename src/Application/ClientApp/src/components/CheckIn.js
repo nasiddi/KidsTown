@@ -236,11 +236,11 @@ class CheckIn extends Component {
 				) : (
 					this.renderAdults()
 				)}
-				{this.state.showUnfilteredSearch ? (
-					this.renderUnfilteredSearch()
-				) : (
-					<div />
-				)}
+				{/*{this.state.showUnfilteredSearch ? (*/}
+				{/*	this.renderUnfilteredSearch()*/}
+				{/*) : (*/}
+				{/*	<div />*/}
+				{/*)}*/}
 			</Grid>
 		)
 	}
