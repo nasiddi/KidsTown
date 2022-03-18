@@ -130,7 +130,8 @@ public class CheckInOutControllerTest
             SelectedLocationGroupIds = selectedLocationIds,
             IsFastCheckInOut = isFastCheckInOut,
             CheckType = CheckType.CheckIn,
-            CheckInOutCandidates = ImmutableList<CheckInOutCandidate>.Empty
+            CheckInOutCandidates = ImmutableList<CheckInOutCandidate>.Empty,
+            FilterLocations = true
         };
 
         var actionResult = await controller.GetPeople(request: request);
