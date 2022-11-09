@@ -1,4 +1,4 @@
-import React, { Component } from 'react'
+import React, { useState, useEffect } from 'react'
 import {
 	Accordion,
 	AccordionDetails,
@@ -19,32 +19,30 @@ import { Badge, Table } from 'reactstrap'
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore'
 import { withAuth } from '../auth/MsalAuthProvider'
 
-class Detail extends Component {
-	static displayName = Detail.name
-	repeat
+function Detail() {
+	let repeat = undefined
 
-	constructor(props) {
-		super(props)
+	const [state, setState] = useState({
+		attendees: [],
+		loading: true,
+	})
 
-		this.state = {
-			attendees: [],
-			loading: true,
+	useEffect(() => {
+		async function load() {
+			await fetchData()
 		}
-	}
 
-	async componentDidMount() {
-		await this.fetchData()
-		this.setState({ loading: false })
-	}
+		load().then()
 
-	componentWillUnmount() {
-		clearTimeout(this.repeat)
-	}
+		return () => {
+			clearTimeout(repeat)
+		}
+	}, [])
 
-	renderDetails() {
+	function renderDetails() {
 		return (
 			<Grid container spacing={3}>
-				{this.state.attendees.map((attendees) => (
+				{state.attendees.map((attendees) => (
 					<Grid item xs={12} key={attendees['location']}>
 						<Accordion
 							className="overview-accordion"
@@ -60,12 +58,10 @@ class Detail extends Component {
 							<AccordionDetails>
 								<Grid container spacing={1}>
 									<Grid item xs={12} md={8}>
-										{this.renderKidsTable(
-											attendees['kids']
-										)}
+										{renderKidsTable(attendees['kids'])}
 									</Grid>
 									<Grid item xs={12} md={4}>
-										{this.renderVolunteerTable(
+										{renderVolunteerTable(
 											attendees['volunteers']
 										)}
 									</Grid>
@@ -78,7 +74,7 @@ class Detail extends Component {
 		)
 	}
 
-	renderKidsTable(kids) {
+	function renderKidsTable(kids) {
 		const selectedState = getSelectedFromSession('selectedOverviewStates', [
 			'PreCheckedIn',
 			'CheckedIn',
@@ -115,13 +111,13 @@ class Detail extends Component {
 								<td>{row['lastName']}</td>
 								<td>
 									<div
-										id={this.getToolTipTarget(row)}
+										id={getToolTipTarget(row)}
 										style={{ textAlign: 'center' }}
 									>
-										{this.getTooltip(row)}
+										{getTooltip(row)}
 									</div>
 								</td>
-								<td>{this.getStateBadge(row['checkState'])}</td>
+								<td>{getStateBadge(row['checkState'])}</td>
 								<td>{row['securityCode']}</td>
 							</tr>
 						))}
@@ -131,7 +127,7 @@ class Detail extends Component {
 		)
 	}
 
-	getTooltip(row) {
+	function getTooltip(row) {
 		if (row['adults'].length === 0) {
 			return <div />
 		}
@@ -141,9 +137,7 @@ class Detail extends Component {
 				arrow
 				enterTouchDelay={0}
 				leaveTouchDelay={10000}
-				title={
-					<React.Fragment>{this.getAdultInfos(row)}</React.Fragment>
-				}
+				title={<React.Fragment>{getAdultInfos(row)}</React.Fragment>}
 			>
 				<span>
 					<FontAwesomeIcon icon={['fas', 'mobile-alt']} />
@@ -152,13 +146,13 @@ class Detail extends Component {
 		)
 	}
 
-	getToolTipTarget(row) {
+	function getToolTipTarget(row) {
 		return `${row['firstName'].replace(/\s+/g, '')}${row[
 			'lastName'
 		].replace(/\s+/g, '')}${row['attendanceId']}`
 	}
 
-	renderVolunteerTable(volunteers) {
+	function renderVolunteerTable(volunteers) {
 		return (
 			<div>
 				<h4>Betreuer</h4>
@@ -182,28 +176,7 @@ class Detail extends Component {
 		)
 	}
 
-	render() {
-		if (this.state.loading) {
-			return <div />
-		}
-
-		return (
-			<div>
-				<Grid
-					container
-					spacing={3}
-					justifyContent="space-between"
-					alignItems="flex-start"
-				>
-					<Grid item xs={12}>
-						{this.renderDetails()}
-					</Grid>
-				</Grid>
-			</div>
-		)
-	}
-
-	async fetchData() {
+	async function fetchData() {
 		await fetch(
 			`overview/event/${await getSelectedEventFromStorage()}/attendees?date=${getStringFromSession(
 				'overviewDate',
@@ -224,13 +197,13 @@ class Detail extends Component {
 		)
 			.then((r) => r.json())
 			.then((j) => {
-				this.setState({ attendees: j })
+				setState({ ...state, attendees: j, loading: false })
 			})
 
-		this.repeat = setTimeout(this.fetchData.bind(this), 500)
+		repeat = setTimeout(fetchData.bind(this), 500)
 	}
 
-	getStateBadge(state) {
+	function getStateBadge(state) {
 		let color = ''
 
 		if (state === 'PreCheckedIn') {
@@ -248,7 +221,7 @@ class Detail extends Component {
 		return <Badge color={color}>{state}</Badge>
 	}
 
-	getAdultInfos(row) {
+	function getAdultInfos(row) {
 		return (
 			<div>
 				{row['adults'].map((a) => {
@@ -271,6 +244,25 @@ class Detail extends Component {
 			</div>
 		)
 	}
+
+	if (state.loading) {
+		return <div />
+	}
+
+	return (
+		<div>
+			<Grid
+				container
+				spacing={3}
+				justifyContent="space-between"
+				alignItems="flex-start"
+			>
+				<Grid item xs={12}>
+					{renderDetails()}
+				</Grid>
+			</Grid>
+		</div>
+	)
 }
 
 export const OverviewDetail = withAuth(Detail)

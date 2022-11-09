@@ -7,8 +7,8 @@ import {
 	MultiSelect,
 } from './Common'
 import { Table } from 'reactstrap'
-import { withAuth } from '../auth/MsalAuthProvider'
 import { fetchLocationGroups, fetchLocations } from '../helpers/BackendClient'
+import { withAuth } from '../auth/MsalAuthProvider'
 
 const _ = require('lodash')
 

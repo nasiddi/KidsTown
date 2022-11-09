@@ -1,4 +1,5 @@
-import React, { Component } from 'react'
+/* eslint-disable react/jsx-no-bind */
+import React, { useState, useEffect } from 'react'
 import { Grid } from '@material-ui/core'
 import {
 	getStringFromSession,
@@ -10,41 +11,51 @@ import { withAuth } from '../auth/MsalAuthProvider'
 import { fetchLocationGroups } from '../helpers/BackendClient'
 import { Input } from 'reactstrap'
 
-class Options extends Component {
-	static displayName = Options.name
-	repeat
+function Options() {
+	const [state, setState] = useState({
+		locationGroups: [],
+		overviewLocationGroups: getSelectedOptionsFromStorage(
+			'overviewLocationGroups',
+			[]
+		),
+		loading: true,
+		date: '',
+	})
 
-	constructor(props) {
-		super(props)
-
-		this.updateOptions = this.updateOptions.bind(this)
-		this.updateDate = this.updateDate.bind(this)
-		this.resetDate = this.resetDate.bind(this)
-
-		this.state = {
-			locationGroups: [],
-			overviewLocationGroups: getSelectedOptionsFromStorage(
-				'overviewLocationGroups',
-				[]
-			),
-			loading: true,
-			date: '',
+	useEffect(() => {
+		async function load() {
+			const locationGroups = await fetchLocationGroups()
+			setState({
+				...state,
+				date: getStringFromSession(
+					'overviewDate',
+					getLastSunday().toISOString().substring(0, 10)
+				),
+				locationGroups: locationGroups,
+				loading: false,
+			})
 		}
+
+		load().then()
+	}, [])
+
+	const updateOptions = (options, key) => {
+		localStorage.setItem(key.name, JSON.stringify(options))
+		setState({ ...state, [key.name]: options })
 	}
 
-	async componentDidMount() {
-		const locationGroups = await fetchLocationGroups()
-		this.setState({
-			date: getStringFromSession(
-				'overviewDate',
-				getLastSunday().toISOString().substr(0, 10)
-			),
-		})
-		this.setState({ locationGroups: locationGroups })
-		this.setState({ loading: false })
+	function updateDate(event) {
+		const value = event.target.value
+		console.log(value)
+		if (value === null) {
+			return
+		}
+
+		sessionStorage.setItem('overviewDate', value)
+		setState({ ...state, date: value })
 	}
 
-	renderOptions() {
+	function renderOptions() {
 		return (
 			<div>
 				<Grid
@@ -57,9 +68,9 @@ class Options extends Component {
 						<MultiSelect
 							name={'overviewLocationGroups'}
 							isMulti={true}
-							onChange={this.updateOptions}
-							options={this.state.locationGroups}
-							defaultOptions={this.state.overviewLocationGroups}
+							onChange={updateOptions}
+							options={state.locationGroups}
+							defaultOptions={state.overviewLocationGroups}
 							minHeight={0}
 						/>
 					</Grid>
@@ -68,54 +79,32 @@ class Options extends Component {
 							id="datepicker"
 							bsSize="md"
 							type="date"
-							value={this.state.date}
-							onChange={this.updateDate}
+							value={state.date}
+							onChange={updateDate}
 						/>
 					</Grid>
 				</Grid>
 			</div>
 		)
 	}
-	render() {
-		if (this.state.loading) {
-			return <div />
-		}
 
-		return (
-			<div>
-				<Grid
-					container
-					spacing={3}
-					justifyContent="space-between"
-					alignItems="flex-start"
-				>
-					<Grid item xs={12}>
-						{this.renderOptions()}
-					</Grid>
+	if (state.loading) {
+		return <div />
+	}
+
+	return (
+		<div>
+			<Grid
+				container
+				spacing={3}
+				justifyContent="space-between"
+				alignItems="flex-start"
+			>
+				<Grid item xs={12}>
+					{renderOptions()}
 				</Grid>
-			</div>
-		)
-	}
-
-	updateOptions = (options, key) => {
-		localStorage.setItem(key.name, JSON.stringify(options))
-		this.setState({ [key.name]: options })
-	}
-
-	resetDate() {
-		const sunday = getLastSunday().toISOString()
-		this.updateDate(sunday)
-	}
-
-	updateDate(event) {
-		const value = event.target.value
-		console.log(value)
-		if (value === null) {
-			return
-		}
-
-		sessionStorage.setItem('overviewDate', value)
-		this.setState({ date: value })
-	}
+			</Grid>
+		</div>
+	)
 }
 export const OverviewOptions = withAuth(Options)

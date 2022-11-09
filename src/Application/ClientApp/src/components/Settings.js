@@ -1,4 +1,5 @@
-import React, { Component } from 'react'
+/* eslint-disable react/jsx-no-bind */
+import React, { useEffect, useState } from 'react'
 import { Grid } from '@material-ui/core'
 import Checkbox from '@material-ui/core/Checkbox'
 import FormControlLabel from '@material-ui/core/FormControlLabel'
@@ -25,7 +26,7 @@ function Task(props) {
 
 	if (!task['taskRunsSuccessfully']) {
 		failedCount.push(
-			<Grid xs={12}>
+			<Grid item xs={12}>
 				<hr />
 			</Grid>
 		)
@@ -50,12 +51,12 @@ function Task(props) {
 					justifyContent="space-between"
 					alignItems="center"
 				>
-					<Grid md={6} xs={12}>
+					<Grid item md={6} xs={12}>
 						<CardTitle tag="h5">
 							{task['backgroundTaskType']}
 						</CardTitle>
 					</Grid>
-					<Grid md={6} xs={12}>
+					<Grid item md={6} xs={12}>
 						<CardTitle tag="h5">
 							{GetBadge(
 								task['isActive'],
@@ -73,7 +74,7 @@ function Task(props) {
 							)}
 						</CardTitle>
 					</Grid>
-					<Grid xs={12}>
+					<Grid item xs={12}>
 						<hr />
 					</Grid>
 					<Grid item md={6} xs={12}>
@@ -84,7 +85,7 @@ function Task(props) {
 							'de-Ch'
 						)}
 					</Grid>
-					<Grid xs={12}>
+					<Grid item xs={12}>
 						<hr />
 					</Grid>
 					<Grid item md={6} xs={12}>
@@ -94,7 +95,7 @@ function Task(props) {
 						{task['successCount']}
 					</Grid>
 					{failedCount}
-					<Grid xs={12}>
+					<Grid item xs={12}>
 						<hr />
 					</Grid>
 					<Grid item md={6} xs={12}>
@@ -103,7 +104,7 @@ function Task(props) {
 					<Grid item md={6} xs={12}>
 						{task['interval']} milliseconds
 					</Grid>
-					<Grid xs={12}>
+					<Grid item xs={12}>
 						<hr />
 					</Grid>
 					<Grid item md={6} xs={12}>
@@ -118,34 +119,52 @@ function Task(props) {
 	)
 }
 
-class Setting extends Component {
-	static displayName = Setting.name
+function Setting() {
+	const [state, setState] = useState({
+		events: [],
+		tasks: [],
+		selectedEvent: 0,
+		loading: true,
+	})
 
-	repeat
+	useEffect(() => {
+		async function load() {
+			setState({
+				...state,
+				selectedEvent: await getSelectedEventFromStorage(),
+				events: await fetchAvailableEvents(),
+				tasks: await fetchTasks(),
+				loading: false,
+			})
+		}
 
-	constructor(props) {
-		super(props)
+		load().then()
+	}, [])
 
-		this.state = {
-			events: [],
-			tasks: [],
-			selectedEvent: 0,
-			loading: true,
+	async function fetchAvailableEvents() {
+		const response = await fetch('configuration/events')
+
+		return await response.json()
+	}
+
+	async function fetchTasks() {
+		const response = await fetch('configuration/tasks')
+
+		return await response.json()
+	}
+
+	const handleChange = (event) => {
+		if (event.target.checked) {
+			const selected = state.events.find(
+				(e) => e['name'] === event.target.name
+			)
+			localStorage.setItem('selectedEvent', selected['eventId'])
+			setState({ ...state, selectedEvent: selected['eventId'] })
 		}
 	}
 
-	async componentDidMount() {
-		await this.fetchAvailableEvents()
-		await this.fetchTasks()
-		this.setState({ loading: false })
-	}
-
-	componentWillUnmount() {
-		clearTimeout(this.repeat)
-	}
-
-	renderEvents() {
-		const events = this.state.events.map((e) => (
+	function renderEvents() {
+		const events = state.events.map((e) => (
 			<Grid item xs={12} key={e['eventId']}>
 				<div className="event">
 					<FormControlLabel
@@ -153,10 +172,8 @@ class Setting extends Component {
 							<Checkbox
 								name={e['name']}
 								color="primary"
-								onChange={this.handleChange}
-								checked={
-									this.state.selectedEvent === e['eventId']
-								}
+								onChange={handleChange}
+								checked={state.selectedEvent === e['eventId']}
 							/>
 						}
 						label={''}
@@ -188,12 +205,12 @@ class Setting extends Component {
 		)
 	}
 
-	renderTasks() {
-		if (this.state.loading) {
+	function renderTasks() {
+		if (state.loading) {
 			return <div />
 		}
 
-		const tasks = this.state.tasks.map((t) => (
+		const tasks = state.tasks.map((t) => (
 			<Grid item xs={12} key={t['backgroundTaskType']}>
 				<Task task={t} />
 			</Grid>
@@ -214,59 +231,34 @@ class Setting extends Component {
 		)
 	}
 
-	render() {
-		if (this.state.loading) {
-			return <div />
-		}
+	if (state.loading) {
+		return <div />
+	}
 
-		return (
-			<div>
-				<Grid
-					container
-					spacing={3}
-					justifyContent="space-between"
-					alignItems="flex-start"
-				>
-					<Grid item xs={12}>
-						<h1>Settings</h1>
-					</Grid>
-					<Grid item xs={12}>
-						<h3>Device</h3>
-						<p>{getGuid()}</p>
-					</Grid>
-					<Grid item xs={4}>
-						{this.renderEvents()}
-					</Grid>
-					<Grid item xs={8}>
-						{this.renderTasks()}
-					</Grid>
+	return (
+		<div>
+			<Grid
+				container
+				spacing={3}
+				justifyContent="space-between"
+				alignItems="flex-start"
+			>
+				<Grid item xs={12}>
+					<h1>Settings</h1>
 				</Grid>
-			</div>
-		)
-	}
-
-	async fetchAvailableEvents() {
-		const response = await fetch('configuration/events')
-		const events = await response.json()
-		const selected = await getSelectedEventFromStorage()
-		this.setState({ events: events, selectedEvent: selected })
-	}
-
-	async fetchTasks() {
-		const response = await fetch('configuration/tasks')
-		const tasks = await response.json()
-		this.setState({ tasks: tasks })
-	}
-
-	handleChange = (event) => {
-		if (event.target.checked) {
-			const selected = this.state.events.find(
-				(e) => e['name'] === event.target.name
-			)
-			localStorage.setItem('selectedEvent', selected['eventId'])
-			this.setState({ selectedEvent: selected['eventId'] })
-		}
-	}
+				<Grid item xs={12}>
+					<h3>Device</h3>
+					<p>{getGuid()}</p>
+				</Grid>
+				<Grid item xs={4}>
+					{renderEvents()}
+				</Grid>
+				<Grid item xs={8}>
+					{renderTasks()}
+				</Grid>
+			</Grid>
+		</div>
+	)
 }
 
 export const Settings = withAuth(Setting)

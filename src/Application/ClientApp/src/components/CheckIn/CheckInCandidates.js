@@ -1,30 +1,16 @@
-import React, { Component } from 'react'
+import React from 'react'
 import { Grid } from '@material-ui/core'
 import { LargeButton } from '../Common'
 
-export class CheckInCandidates extends Component {
-	static displayName = CheckInCandidates.name
-
-	constructor(props) {
-		super(props)
-	}
-
-	render() {
-		if (this.props.isSingleCheckInOut) {
-			return this.renderSingleCheckout()
-		}
-
-		return this.renderMultiCheckout()
-	}
-
-	renderMultiCheckout() {
-		const candidates = this.props.candidates.map((c) => (
+export function CheckInCandidates(props) {
+	function renderMultiCheckout() {
+		const candidates = props.candidates.map((c) => (
 			<Grid item xs={12} key={c['attendanceId']}>
 				<LargeButton
 					id={c['attendanceId']}
 					name={c['name']}
-					color={this.getNameButtonColor(c)}
-					onClick={this.props.invertSelectCandidate}
+					color={getNameButtonColor(c)}
+					onClick={props.invertSelectCandidate}
 					isOutline={!c.isSelected}
 				/>
 			</Grid>
@@ -42,15 +28,15 @@ export class CheckInCandidates extends Component {
 					<Grid item xs={12}>
 						<LargeButton
 							id={'submit'}
-							name={this.props.checkType}
+							name={props.checkType}
 							color={
-								this.areNoCandidatesSelected()
+								areNoCandidatesSelected()
 									? 'secondary'
 									: 'success'
 							}
-							onClick={this.props.onCheckInOutMultiple}
+							onClick={props.onCheckInOutMultiple}
 							isOutline={false}
-							disabled={this.areNoCandidatesSelected()}
+							disabled={areNoCandidatesSelected()}
 						/>
 					</Grid>
 				</Grid>
@@ -58,14 +44,14 @@ export class CheckInCandidates extends Component {
 		)
 	}
 
-	renderSingleCheckout() {
-		const candidates = this.props.candidates.map((c) => (
+	function renderSingleCheckout() {
+		const candidates = props.candidates.map((c) => (
 			<Grid item xs={12} key={c['attendanceId']}>
 				<LargeButton
 					id={c['attendanceId']}
 					name={c['name']}
-					color={this.getNameButtonColor(c)}
-					onClick={this.props.onCheckInOutSingle}
+					color={getNameButtonColor(c)}
+					onClick={props.onCheckInOutSingle}
 				/>
 			</Grid>
 		))
@@ -84,8 +70,8 @@ export class CheckInCandidates extends Component {
 		)
 	}
 
-	getNameButtonColor(candidate) {
-		if (this.props.checkType === 'CheckIn') {
+	function getNameButtonColor(candidate) {
+		if (props.checkType === 'CheckIn') {
 			return 'primary'
 		}
 
@@ -100,7 +86,13 @@ export class CheckInCandidates extends Component {
 		return 'primary'
 	}
 
-	areNoCandidatesSelected() {
-		return this.props.candidates.filter((c) => c.isSelected).length <= 0
+	function areNoCandidatesSelected() {
+		return props.candidates.filter((c) => c.isSelected).length <= 0
 	}
+
+	if (props.isSingleCheckInOut) {
+		return renderSingleCheckout()
+	}
+
+	return renderMultiCheckout()
 }

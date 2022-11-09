@@ -1,5 +1,5 @@
 /* eslint-disable react/jsx-no-bind */
-import React, { Component } from 'react'
+import React, { useEffect, useState } from 'react'
 import {
 	Collapse,
 	Navbar,
@@ -29,59 +29,46 @@ function Nav(props) {
 	)
 }
 
-export class NavMenu extends Component {
-	static displayName = NavMenu.name
+export function NavMenu() {
+	const [state, setState] = useState({
+		collapsed: true,
+		location: location,
+		checkInOutClass: inactive,
+		guestCheckInClass: inactive,
+		overViewClass: inactive,
+		statisticClass: inactive,
+		manualClass: inactive,
+	})
 
-	constructor(props) {
-		super(props)
-
-		this.toggleNavbar = this.toggleNavbar.bind(this)
-		this.state = {
-			collapsed: true,
-			location: location,
-			checkInOutClass: inactive,
-			guestCheckInClass: inactive,
-			overViewClass: inactive,
-			statisticClass: inactive,
-			manualClass: inactive,
-		}
-
-		this.setTextStyles = this.setTextStyles.bind(this)
-		this.checkInActive = this.checkInActive.bind(this)
-		this.guestCheckInActive = this.guestCheckInActive.bind(this)
-		this.overviewActive = this.overviewActive.bind(this)
-		this.statisticActive = this.statisticActive.bind(this)
-		this.manualActive = this.manualActive.bind(this)
-	}
-
-	toggleNavbar() {
-		this.setState({
-			collapsed: !this.state.collapsed,
+	function toggleNavbar() {
+		setState({
+			...state,
+			collapsed: !state.collapsed,
 		})
 	}
 
-	componentDidMount() {
-		this.initTextStyles()
-	}
+	useEffect(() => {
+		initTextStyles()
+	}, [])
 
-	initTextStyles() {
-		this.setTextStyles(this.state.location.pathname)
+	function initTextStyles() {
+		setTextStyles(state.location.pathname)
 		const checkInOutClass =
-			this.state.location.pathname === '/checkin' ? active : inactive
+			state.location.pathname === '/checkin' ? active : inactive
 
 		const guestCheckInClass =
-			this.state.location.pathname === '/guest' ? active : inactive
+			state.location.pathname === '/guest' ? active : inactive
 
 		const overViewClass =
-			this.state.location.pathname === '/overview' ? active : inactive
+			state.location.pathname === '/overview' ? active : inactive
 
 		const statisticClass =
-			this.state.location.pathname === '/statistic' ? active : inactive
+			state.location.pathname === '/statistic' ? active : inactive
 
-		const manualClass =
-			this.state.location.pathname === '/' ? active : inactive
+		const manualClass = state.location.pathname === '/' ? active : inactive
 
-		this.setState({
+		setState({
+			...state,
 			checkInOutClass: checkInOutClass,
 			guestCheckInClass: guestCheckInClass,
 			overViewClass: overViewClass,
@@ -90,7 +77,7 @@ export class NavMenu extends Component {
 		})
 	}
 
-	setTextStyles(path) {
+	function setTextStyles(path) {
 		const checkInOutClass = path === '/checkin' ? active : inactive
 
 		const guestCheckInClass = path === '/guest' ? active : inactive
@@ -101,7 +88,8 @@ export class NavMenu extends Component {
 
 		const manualClass = path === '/' ? active : inactive
 
-		this.setState({
+		setState({
+			...state,
 			checkInOutClass: checkInOutClass,
 			guestCheckInClass: guestCheckInClass,
 			overViewClass: overViewClass,
@@ -110,71 +98,69 @@ export class NavMenu extends Component {
 		})
 	}
 
-	checkInActive() {
-		this.setTextStyles('/checkin')
+	function checkInActive() {
+		setTextStyles('/checkin')
 	}
 
-	guestCheckInActive() {
-		this.setTextStyles('/guest')
+	function guestCheckInActive() {
+		setTextStyles('/guest')
 	}
 
-	overviewActive() {
-		this.setTextStyles('/overview')
+	function overviewActive() {
+		setTextStyles('/overview')
 	}
 
-	statisticActive() {
-		this.setTextStyles('/statistic')
+	function statisticActive() {
+		setTextStyles('/statistic')
 	}
 
-	manualActive() {
-		this.setTextStyles('/')
+	function manualActive() {
+		setTextStyles('/')
 	}
 
-	render() {
-		return (
-			<Navbar
-				className="navbar-expand-sm navbar-toggleable-sm ng-white border-bottom box-shadow mb-3 sticky-nav"
-				light
-				sticky="top"
-				container={'md'}
+	return (
+		<Navbar
+			className="navbar-expand-sm navbar-toggleable-sm ng-white border-bottom box-shadow mb-3 sticky-nav"
+			light
+			sticky="top"
+			container={'md'}
+		>
+			<NavbarBrand tag={Link} to="/">
+				Kidstown
+			</NavbarBrand>
+			<NavbarToggler onClick={toggleNavbar} className="mr-2" />
+			<Collapse
+				className="d-sm-inline-flex flex-sm-row-reverse"
+				isOpen={!state.collapsed}
+				navbar
 			>
-				<NavbarBrand tag={Link} to="/">
-					Kidstown
-				</NavbarBrand>
-				<NavbarToggler onClick={this.toggleNavbar} className="mr-2" />
-				<Collapse
-					className="d-sm-inline-flex flex-sm-row-reverse"
-					isOpen={!this.state.collapsed}
-					navbar
-				>
-					<ul className="navbar-nav flex-grow">
-						<Nav
-							className={this.state.checkInOutClass}
-							to={'/checkin'}
-							onClick={this.checkInActive}
-							label={'CheckIn/Out'}
-						/>
-						<Nav
-							className={this.state.overViewClass}
-							to="/overview"
-							onClick={this.overviewActive}
-							label={'Overview'}
-						/>
-						<Nav
-							className={this.state.statisticClass}
-							to="/statistic"
-							onClick={this.statisticActive}
-							label={'Statistic'}
-						/>
-						<Nav
-							className={this.state.manualClass}
-							to="/"
-							onClick={this.manualActive}
-							label={'Anleitung'}
-						/>
-					</ul>
-				</Collapse>
-			</Navbar>
-		)
-	}
+				<ul className="navbar-nav flex-grow">
+					<Nav
+						className={state.checkInOutClass}
+						to={'/checkin'}
+						onClick={checkInActive}
+						label={'CheckIn/Out'}
+					/>
+					<Nav
+						className={state.overViewClass}
+						to="/overview"
+						onClick={overviewActive}
+						label={'Overview'}
+					/>
+					<Nav
+						className={state.statisticClass}
+						to="/statistic"
+						onClick={statisticActive}
+						label={'Statistic'}
+					/>
+					<Nav
+						className={state.manualClass}
+						to="/"
+						onClick={manualActive}
+						label={'Anleitung'}
+					/>
+				</ul>
+			</Collapse>
+		</Navbar>
+	)
 }

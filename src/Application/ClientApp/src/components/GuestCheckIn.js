@@ -1,4 +1,5 @@
-import React, { Component } from 'react'
+/* eslint-disable react/jsx-no-bind */
+import React, { useState, useEffect } from 'react'
 import TextField from '@material-ui/core/TextField'
 import 'bootstrap/dist/css/bootstrap.css'
 import { Grid, MuiThemeProvider } from '@material-ui/core'
@@ -36,53 +37,218 @@ function LargeButton(props) {
 	)
 }
 
-class CheckInGuest extends Component {
-	static displayName = CheckInGuest.name
-	constructor(props) {
-		super(props)
+function CheckInGuest() {
+	const securityCodeInput = React.createRef()
 
-		this.securityCodeInput = React.createRef()
+	const [state, setState] = useState({
+		locationGroups: [],
+		guestCheckInLocationGroup: null,
+		securityCode: '',
+		firstName: '',
+		lastName: '',
+		alert: { text: '', level: 1 },
+		loading: true,
+		lastActionAttendanceIds: [],
+		locationIsValid: true,
+		securityCodeIsValid: true,
+		firstNameIsValid: true,
+		lastNameIsValid: true,
+		createOption: localStorage.getItem('createOption') ?? 'Create',
+	})
 
-		this.checkin = this.checkin.bind(this)
-		this.createGuest = this.createGuest.bind(this)
-		this.resetView = this.resetView.bind(this)
-		this.updateOptions = this.updateOptions.bind(this)
-		this.undoAction = this.undoAction.bind(this)
-		this.selectCreateOption = this.selectCreateOption.bind(this)
+	useEffect(() => {
+		async function load() {
+			const locationGroups = await fetchLocationGroups()
+			setState({
+				...state,
+				locationGroups: locationGroups,
+				loading: false,
+			})
+		}
 
-		this.state = {
-			locationGroups: [],
-			guestCheckInLocationGroup: null,
+		load().then()
+	}, [])
+
+	const updateOptions = (options, key) => {
+		setState({ ...state, [key.name]: options })
+	}
+
+	const updateSecurityCode = (e) => {
+		setState({ ...state, securityCode: e.target.value })
+	}
+
+	const updateFirstName = (e) => {
+		setState({ ...state, firstName: e.target.value })
+	}
+
+	const updateLastName = (e) => {
+		setState({ ...state, lastName: e.target.value })
+	}
+
+	async function checkin() {
+		const isValid = await validateForm()
+
+		if (!isValid) {
+			return
+		}
+
+		await fetch('checkinout/guest/checkin', {
+			body: JSON.stringify({
+				securityCode: state.securityCode,
+				locationId: state.guestCheckInLocationGroup.value,
+				firstName: state.firstName,
+				lastName: state.lastName,
+			}),
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json',
+			},
+		})
+			.then((r) => r.json())
+			.then((j) => {
+				setState({
+					...state,
+					alert: { level: j['alertLevel'], text: j['text'] },
+					lastActionAttendanceIds: j['attendanceIds'] ?? [],
+				})
+				resetView(false)
+			})
+	}
+
+	async function createGuest() {
+		const isValid = await validateForm()
+
+		if (!isValid) {
+			return
+		}
+
+		await fetch('checkinout/guest/create', {
+			body: JSON.stringify({
+				securityCode: state.securityCode,
+				locationId: state.guestCheckInLocationGroup.value,
+				firstName: state.firstName,
+				lastName: state.lastName,
+			}),
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json',
+			},
+		})
+			.then((r) => r.json())
+			.then((j) => {
+				setState({
+					...state,
+					alert: { level: j['alertLevel'], text: j['text'] },
+					lastActionAttendanceIds: j['attendanceIds'] ?? [],
+				})
+				resetView(false)
+			})
+	}
+
+	async function validateForm() {
+		let isValid = true
+
+		if (state.guestCheckInLocationGroup.value === 0) {
+			isValid = false
+			setState({ ...state, locationIsValid: false })
+		} else {
+			setState({ ...state, locationIsValid: true })
+		}
+
+		if (state.securityCode.length !== 4) {
+			isValid = false
+			setState({ ...state, securityCodeIsValid: false })
+		} else {
+			setState({ ...state, securityCodeIsValid: true })
+		}
+
+		if (state.firstName.length < 2) {
+			isValid = false
+			setState({ ...state, firstNameIsValid: false })
+		} else {
+			setState({ ...state, firstNameIsValid: true })
+		}
+
+		if (state.lastName.length < 2) {
+			isValid = false
+			setState({ ...state, lastNameIsValid: false })
+		} else {
+			setState({ ...state, lastNameIsValid: true })
+		}
+
+		return isValid
+	}
+
+	async function undoAction() {
+		await fetch('checkinout/undo/GuestCheckIn', {
+			body: JSON.stringify(state.lastActionAttendanceIds),
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json',
+			},
+		})
+			.then((r) => r.json())
+			.then((j) => {
+				setState({
+					...state,
+					alert: { level: j['alertLevel'], text: j['text'] },
+					lastActionAttendanceIds: [],
+				})
+			})
+	}
+
+	function resetView(resetAlert = true) {
+		setState({
+			...state,
 			securityCode: '',
+			guestCheckInLocationGroup: null,
 			firstName: '',
 			lastName: '',
-			alert: { text: '', level: 1 },
-			loading: true,
-			lastActionAttendanceIds: [],
 			locationIsValid: true,
 			securityCodeIsValid: true,
 			firstNameIsValid: true,
 			lastNameIsValid: true,
-			createOption: localStorage.getItem('createOption') ?? 'Create',
+		})
+
+		if (resetAlert) {
+			setState({ ...state, alert: { text: '', level: 1 } })
 		}
 	}
 
-	async componentDidMount() {
-		const locationGroups = await this.fetchLocationGroups()
-		this.setState({ locationGroups: locationGroups, loading: false })
+	async function fetchLocationGroups() {
+		return await fetch(
+			`configuration/events/${await getSelectedEventFromStorage()}/locationGroups`,
+			{
+				method: 'GET',
+				headers: {
+					'Content-Type': 'application/json',
+				},
+			}
+		)
+			.then((r) => r.json())
+			.then((j) => {
+				return j
+			})
 	}
 
-	renderForm() {
+	function selectCreateOption(event) {
+		if (state.createOption !== event.target.id) {
+			setState({ ...state, createOption: event.target.id })
+			localStorage.setItem('createOption', event.target.id)
+		}
+	}
+
+	function renderForm() {
 		const toggleButtons = [
 			{
 				label: 'Create',
-				onClick: this.selectCreateOption,
-				isSelected: this.state.createOption === 'Create',
+				onClick: selectCreateOption,
+				isSelected: state.createOption === 'Create',
 			},
 			{
 				label: 'CheckIn',
-				onClick: this.selectCreateOption,
-				isSelected: this.state.createOption === 'CheckIn',
+				onClick: selectCreateOption,
+				isSelected: state.createOption === 'CheckIn',
 			},
 		]
 
@@ -101,26 +267,24 @@ class CheckInGuest extends Component {
 						<MultiSelect
 							name={'guestCheckInLocationGroup'}
 							isMulti={false}
-							onChange={this.updateOptions}
-							options={this.state.locationGroups}
-							value={this.state.guestCheckInLocationGroup}
+							onChange={updateOptions}
+							options={state.locationGroups}
+							value={state.guestCheckInLocationGroup}
 							minHeight={56}
 							borderColor={
-								this.state.locationIsValid
-									? '#bfbfbf'
-									: '#FF0000'
+								state.locationIsValid ? '#bfbfbf' : '#FF0000'
 							}
 						/>
 					</Grid>
 					<Grid item md={6} xs={12}>
 						<MuiThemeProvider theme={primaryTheme}>
 							<TextField
-								error={!this.state.securityCodeIsValid}
-								inputRef={this.securityCodeInput}
+								error={!state.securityCodeIsValid}
+								inputRef={securityCodeInput}
 								label="SecurityCode"
 								variant="outlined"
-								value={this.state.securityCode}
-								onChange={this.updateSecurityCode}
+								value={state.securityCode}
+								onChange={updateSecurityCode}
 								fullWidth={true}
 							/>
 						</MuiThemeProvider>
@@ -128,11 +292,11 @@ class CheckInGuest extends Component {
 					<Grid item md={6} xs={12}>
 						<MuiThemeProvider theme={primaryTheme}>
 							<TextField
-								error={!this.state.firstNameIsValid}
+								error={!state.firstNameIsValid}
 								label="FirstName"
 								variant="outlined"
-								value={this.state.firstName}
-								onChange={this.updateFirstName}
+								value={state.firstName}
+								onChange={updateFirstName}
 								fullWidth={true}
 							/>
 						</MuiThemeProvider>
@@ -140,12 +304,12 @@ class CheckInGuest extends Component {
 					<Grid item md={6} xs={12}>
 						<MuiThemeProvider theme={primaryTheme}>
 							<TextField
-								error={!this.state.lastNameIsValid}
-								inputRef={this.securityCodeInput}
+								error={!state.lastNameIsValid}
+								inputRef={securityCodeInput}
 								label="LastName"
 								variant="outlined"
-								value={this.state.lastName}
-								onChange={this.updateLastName}
+								value={state.lastName}
+								onChange={updateLastName}
 								fullWidth={true}
 							/>
 						</MuiThemeProvider>
@@ -157,14 +321,14 @@ class CheckInGuest extends Component {
 							color={'success'}
 							size="lg"
 							name={
-								this.state.createOption === 'Create'
+								state.createOption === 'Create'
 									? 'Create Guest'
 									: 'Create and CheckIn Guest'
 							}
 							onClick={
-								this.state.createOption === 'Create'
-									? this.createGuest
-									: this.checkin
+								state.createOption === 'Create'
+									? createGuest
+									: checkin
 							}
 						/>
 					</Grid>
@@ -173,17 +337,17 @@ class CheckInGuest extends Component {
 		)
 	}
 
-	renderAlert() {
+	function renderAlert() {
 		const undoLink =
-			this.state.lastActionAttendanceIds.length > 0 ? (
-				<UndoButton callback={this.undoAction} />
+			state.lastActionAttendanceIds.length > 0 ? (
+				<UndoButton callback={undoAction} />
 			) : (
 				<div />
 			)
 
 		return (
 			<Grid item xs={12}>
-				<Alert color={this.state.alert.level.toLowerCase()}>
+				<Alert color={state.alert.level.toLowerCase()}>
 					<Grid
 						container
 						direction="row"
@@ -192,7 +356,7 @@ class CheckInGuest extends Component {
 						spacing={1}
 					>
 						<Grid item xs={11}>
-							{this.state.alert.text}
+							{state.alert.text}
 						</Grid>
 						<Grid item xs={1}>
 							{undoLink}
@@ -203,198 +367,30 @@ class CheckInGuest extends Component {
 		)
 	}
 
-	render() {
-		const form = this.state.loading ? (
-			<p>
-				<em>Loading...</em>
-			</p>
-		) : (
-			this.renderForm()
-		)
+	const form = state.loading ? (
+		<p>
+			<em>Loading...</em>
+		</p>
+	) : (
+		renderForm()
+	)
 
-		const alert =
-			this.state.alert.text.length > 0 ? this.renderAlert() : <div />
+	const alert = state.alert.text.length > 0 ? renderAlert() : <div />
 
-		return (
-			<Grid
-				container
-				spacing={3}
-				justifyContent="space-between"
-				alignItems="center"
-			>
-				<Grid item xs={12}>
-					<h1 id="title">{'Guest CheckIn'}</h1>
-				</Grid>
-				{form}
-				{alert}
+	return (
+		<Grid
+			container
+			spacing={3}
+			justifyContent="space-between"
+			alignItems="center"
+		>
+			<Grid item xs={12}>
+				<h1 id="title">{'Guest CheckIn'}</h1>
 			</Grid>
-		)
-	}
-
-	updateOptions = (options, key) => {
-		this.setState({ [key.name]: options })
-	}
-
-	updateSecurityCode = (e) => {
-		this.setState({ securityCode: e.target.value })
-	}
-
-	updateFirstName = (e) => {
-		this.setState({ firstName: e.target.value })
-	}
-
-	updateLastName = (e) => {
-		this.setState({ lastName: e.target.value })
-	}
-
-	async checkin() {
-		const isValid = await this.validateForm()
-
-		if (!isValid) {
-			return
-		}
-
-		await fetch('checkinout/guest/checkin', {
-			body: JSON.stringify({
-				securityCode: this.state.securityCode,
-				locationId: this.state.guestCheckInLocationGroup.value,
-				firstName: this.state.firstName,
-				lastName: this.state.lastName,
-			}),
-			method: 'POST',
-			headers: {
-				'Content-Type': 'application/json',
-			},
-		})
-			.then((r) => r.json())
-			.then((j) => {
-				this.setState({
-					alert: { level: j['alertLevel'], text: j['text'] },
-					lastActionAttendanceIds: j['attendanceIds'] ?? [],
-				})
-				this.resetView(false)
-			})
-	}
-
-	async createGuest() {
-		const isValid = await this.validateForm()
-
-		if (!isValid) {
-			return
-		}
-
-		await fetch('checkinout/guest/create', {
-			body: JSON.stringify({
-				securityCode: this.state.securityCode,
-				locationId: this.state.guestCheckInLocationGroup.value,
-				firstName: this.state.firstName,
-				lastName: this.state.lastName,
-			}),
-			method: 'POST',
-			headers: {
-				'Content-Type': 'application/json',
-			},
-		})
-			.then((r) => r.json())
-			.then((j) => {
-				this.setState({
-					alert: { level: j['alertLevel'], text: j['text'] },
-					lastActionAttendanceIds: j['attendanceIds'] ?? [],
-				})
-				this.resetView(false)
-			})
-	}
-
-	async validateForm() {
-		let isValid = true
-
-		if (this.state.guestCheckInLocationGroup.value === 0) {
-			isValid = false
-			this.setState({ locationIsValid: false })
-		} else {
-			this.setState({ locationIsValid: true })
-		}
-
-		if (this.state.securityCode.length !== 4) {
-			isValid = false
-			this.setState({ securityCodeIsValid: false })
-		} else {
-			this.setState({ securityCodeIsValid: true })
-		}
-
-		if (this.state.firstName.length < 2) {
-			isValid = false
-			this.setState({ firstNameIsValid: false })
-		} else {
-			this.setState({ firstNameIsValid: true })
-		}
-
-		if (this.state.lastName.length < 2) {
-			isValid = false
-			this.setState({ lastNameIsValid: false })
-		} else {
-			this.setState({ lastNameIsValid: true })
-		}
-
-		return isValid
-	}
-
-	async undoAction() {
-		await fetch('checkinout/undo/GuestCheckIn', {
-			body: JSON.stringify(this.state.lastActionAttendanceIds),
-			method: 'POST',
-			headers: {
-				'Content-Type': 'application/json',
-			},
-		})
-			.then((r) => r.json())
-			.then((j) => {
-				this.setState({
-					alert: { level: j['alertLevel'], text: j['text'] },
-					lastActionAttendanceIds: [],
-				})
-			})
-	}
-
-	resetView(resetAlert = true) {
-		this.setState({
-			securityCode: '',
-			guestCheckInLocationGroup: null,
-			firstName: '',
-			lastName: '',
-			locationIsValid: true,
-			securityCodeIsValid: true,
-			firstNameIsValid: true,
-			lastNameIsValid: true,
-		})
-
-		if (resetAlert) {
-			this.setState({ alert: { text: '', level: 1 } })
-		}
-	}
-
-	async fetchLocationGroups() {
-		return await fetch(
-			`configuration/events/${await getSelectedEventFromStorage()}/locationGroups`,
-			{
-				method: 'GET',
-				headers: {
-					'Content-Type': 'application/json',
-				},
-			}
-		)
-			.then((r) => r.json())
-			.then((j) => {
-				return j
-			})
-	}
-
-	selectCreateOption(event) {
-		if (this.state.createOption !== event.target.id) {
-			this.setState({ createOption: event.target.id })
-			localStorage.setItem('createOption', event.target.id)
-		}
-	}
+			{form}
+			{alert}
+		</Grid>
+	)
 }
 
 export const GuestCheckIn = withAuth(CheckInGuest)

@@ -1,4 +1,4 @@
-import React, { Component } from 'react'
+import React, { useState, useEffect } from 'react'
 import { Grid } from '@material-ui/core'
 import {
 	getSelectedEventFromStorage,
@@ -10,44 +10,47 @@ import { Table } from 'reactstrap'
 import { withAuth } from '../auth/MsalAuthProvider'
 import { fetchLocationGroups } from '../helpers/BackendClient'
 
-class OverViewHeadCounts extends Component {
-	static displayName = OverViewHeadCounts.name
-	repeat
+function OverViewHeadCounts() {
+	let repeat = undefined
 
-	constructor(props) {
-		super(props)
+	const [state, setState] = useState({
+		headCounts: [],
+		loading: true,
+	})
 
-		this.state = {
-			headCounts: [],
-			loading: true,
+	useEffect(() => {
+		async function load() {
+			const locationGroups = await fetchLocationGroups()
+			setState({ ...state, locationGroups: locationGroups })
+			await fetchData()
+			setState({ ...state, loading: false })
 		}
+
+		load().then()
+
+		return () => {
+			clearTimeout(repeat)
+		}
+	}, [])
+
+	const sum = (a, b) => {
+		return a + b
 	}
 
-	async componentDidMount() {
-		const locationGroups = await fetchLocationGroups()
-		this.setState({ locationGroups: locationGroups })
-		await this.fetchData()
-		this.setState({ loading: false })
-	}
-
-	componentWillUnmount() {
-		clearTimeout(this.repeat)
-	}
-
-	renderCounts() {
-		if (this.state.loading) {
+	function renderCounts() {
+		if (state.loading) {
 			return <div />
 		}
 
-		const headCounts = this.state.headCounts
+		const headCounts = state.headCounts
 
 		let totalCount = <tr />
 		if (headCounts.length !== 1) {
 			totalCount = (
 				<tr key="Total">
 					<th>Total</th>
-					<th align="right">{this.GetTotalCount(false)}</th>
-					<th align="right">{this.GetTotalCount(true)}</th>
+					<th align="right">{getTotalCount(false)}</th>
+					<th align="right">{getTotalCount(true)}</th>
 				</tr>
 			)
 		}
@@ -65,8 +68,8 @@ class OverViewHeadCounts extends Component {
 					{headCounts.map((row) => (
 						<tr key={row['location']}>
 							<td> {row['location']}</td>
-							<td>{this.GetCount(row, false)}</td>
-							<td>{this.GetCount(row, true)}</td>
+							<td>{getCount(row, false)}</td>
+							<td>{getCount(row, true)}</td>
 						</tr>
 					))}
 					{totalCount}
@@ -75,7 +78,7 @@ class OverViewHeadCounts extends Component {
 		)
 	}
 
-	GetCount(headCounts, isVolunteer) {
+	function getCount(headCounts, isVolunteer) {
 		if (isVolunteer) {
 			return headCounts['volunteersCount']
 		}
@@ -83,48 +86,21 @@ class OverViewHeadCounts extends Component {
 		return headCounts['kidsCount']
 	}
 
-	GetTotalCount(isVolunteer) {
+	function getTotalCount(isVolunteer) {
 		if (isVolunteer) {
-			const locationCount = this.state.headCounts.map(
+			const locationCount = state.headCounts.map(
 				(h) => h['volunteersCount']
 			)
 
-			return locationCount.reduce(this.sum, 0)
+			return locationCount.reduce(sum, 0)
 		}
 
-		const locationCount = this.state.headCounts.map((h) => h['kidsCount'])
+		const locationCount = state.headCounts.map((h) => h['kidsCount'])
 
-		return locationCount.reduce(this.sum, 0)
+		return locationCount.reduce(sum, 0)
 	}
 
-	render() {
-		if (this.state.loading) {
-			return <div />
-		}
-
-		return (
-			<div>
-				<Grid
-					container
-					spacing={3}
-					justifyContent="space-between"
-					alignItems="flex-start"
-				>
-					<Grid item xs={12}>
-						<h3 />
-					</Grid>
-					<Grid item xs={12}>
-						<h3>CheckedIn</h3>
-					</Grid>
-					<Grid item xs={12}>
-						{this.renderCounts()}
-					</Grid>
-				</Grid>
-			</div>
-		)
-	}
-
-	async fetchData() {
+	async function fetchData() {
 		await fetch(
 			`overview/event/${await getSelectedEventFromStorage()}/attendees/headcounts?date=${getStringFromSession(
 				'overviewDate',
@@ -145,15 +121,36 @@ class OverViewHeadCounts extends Component {
 		)
 			.then((r) => r.json())
 			.then((j) => {
-				this.setState({ headCounts: j })
+				setState({ ...state, headCounts: j })
 			})
 
-		this.repeat = setTimeout(this.fetchData.bind(this), 500)
+		repeat = setTimeout(fetchData.bind(this), 500)
 	}
 
-	sum = (a, b) => {
-		return a + b
+	if (state.loading) {
+		return <div />
 	}
+
+	return (
+		<div>
+			<Grid
+				container
+				spacing={3}
+				justifyContent="space-between"
+				alignItems="flex-start"
+			>
+				<Grid item xs={12}>
+					<h3 />
+				</Grid>
+				<Grid item xs={12}>
+					<h3>CheckedIn</h3>
+				</Grid>
+				<Grid item xs={12}>
+					{renderCounts()}
+				</Grid>
+			</Grid>
+		</div>
+	)
 }
 
 export const OverviewHeadCount = withAuth(OverViewHeadCounts)
