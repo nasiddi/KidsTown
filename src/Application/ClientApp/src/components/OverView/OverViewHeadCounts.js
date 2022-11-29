@@ -1,41 +1,52 @@
 import React, { useState, useEffect } from 'react'
-import { Grid } from '@material-ui/core'
+import {
+	Grid,
+	Table,
+	TableBody,
+	TableCell,
+	TableHead,
+	TableRow,
+} from '@mui/material'
 import {
 	getSelectedEventFromStorage,
 	getStringFromSession,
 	getSelectedOptionsFromStorage,
 	getLastSunday,
-} from './Common'
-import { Table } from 'reactstrap'
-import { withAuth } from '../auth/MsalAuthProvider'
-import { fetchLocationGroups } from '../helpers/BackendClient'
+	TableHeadCell,
+	TableTotalCell,
+} from '../Common'
+import { fetchLocationGroups } from '../../helpers/BackendClient'
 
-function OverViewHeadCounts() {
-	let repeat = undefined
-
+export default function OverviewHeadCount() {
 	const [state, setState] = useState({
 		headCounts: [],
 		loading: true,
 	})
 
-	useEffect(() => {
-		async function load() {
-			const locationGroups = await fetchLocationGroups()
-			setState({ ...state, locationGroups: locationGroups })
-			await fetchData()
-			setState({ ...state, loading: false })
-		}
-
-		load().then()
-
-		return () => {
-			clearTimeout(repeat)
-		}
-	}, [])
+	async function loadData() {
+		const locationGroups = state.loading
+			? await fetchLocationGroups()
+			: state.locationGroups
+		const headCounts = await fetchData()
+		setState({
+			...state,
+			loading: false,
+			locationGroups: locationGroups,
+			headCounts: headCounts,
+		})
+	}
 
 	const sum = (a, b) => {
 		return a + b
 	}
+
+	useEffect(() => {
+		const interval = setInterval(() => {
+			loadData().then()
+		}, 500)
+
+		return () => clearInterval(interval)
+	}, [])
 
 	function renderCounts() {
 		if (state.loading) {
@@ -44,36 +55,48 @@ function OverViewHeadCounts() {
 
 		const headCounts = state.headCounts
 
-		let totalCount = <tr />
+		let totalCount = <TableRow />
 		if (headCounts.length !== 1) {
 			totalCount = (
-				<tr key="Total">
-					<th>Total</th>
-					<th align="right">{getTotalCount(false)}</th>
-					<th align="right">{getTotalCount(true)}</th>
-				</tr>
+				<TableRow key="Total">
+					<TableTotalCell>
+						<strong>Total</strong>
+					</TableTotalCell>
+					<TableTotalCell>
+						<strong>{getTotalCount(false)}</strong>
+					</TableTotalCell>
+					<TableTotalCell>
+						<strong>{getTotalCount(true)}</strong>
+					</TableTotalCell>
+				</TableRow>
 			)
 		}
 
 		return (
-			<Table>
-				<thead>
-					<tr>
-						<th>Location</th>
-						<th>Kinder</th>
-						<th>Betreuer</th>
-					</tr>
-				</thead>
-				<tbody>
+			<Table size="small">
+				<TableHead>
+					<TableRow>
+						<TableHeadCell>
+							<strong>Location</strong>
+						</TableHeadCell>
+						<TableHeadCell>
+							<strong>Kinder</strong>
+						</TableHeadCell>
+						<TableHeadCell>
+							<strong>Betreuer</strong>
+						</TableHeadCell>
+					</TableRow>
+				</TableHead>
+				<TableBody>
 					{headCounts.map((row) => (
-						<tr key={row['location']}>
-							<td> {row['location']}</td>
-							<td>{getCount(row, false)}</td>
-							<td>{getCount(row, true)}</td>
-						</tr>
+						<TableRow key={row['location']}>
+							<TableCell> {row['location']}</TableCell>
+							<TableCell>{getCount(row, false)}</TableCell>
+							<TableCell>{getCount(row, true)}</TableCell>
+						</TableRow>
 					))}
 					{totalCount}
-				</tbody>
+				</TableBody>
 			</Table>
 		)
 	}
@@ -101,7 +124,7 @@ function OverViewHeadCounts() {
 	}
 
 	async function fetchData() {
-		await fetch(
+		return await fetch(
 			`overview/event/${await getSelectedEventFromStorage()}/attendees/headcounts?date=${getStringFromSession(
 				'overviewDate',
 				getLastSunday().toISOString()
@@ -118,13 +141,7 @@ function OverViewHeadCounts() {
 					'Content-Type': 'application/json',
 				},
 			}
-		)
-			.then((r) => r.json())
-			.then((j) => {
-				setState({ ...state, headCounts: j })
-			})
-
-		repeat = setTimeout(fetchData.bind(this), 500)
+		).then((r) => r.json())
 	}
 
 	if (state.loading) {
@@ -152,5 +169,3 @@ function OverViewHeadCounts() {
 		</div>
 	)
 }
-
-export const OverviewHeadCount = withAuth(OverViewHeadCounts)

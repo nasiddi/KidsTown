@@ -69,7 +69,7 @@ public class CheckInOutService : ICheckInOutService
         IImmutableList<int> selectedLocationGroupIds
     )
     {
-        var locations = await _configurationRepository.GetLocations(eventId: eventId, selectedLocationGroups: null);
+        var locations = await _configurationRepository.GetLocations(eventId: eventId);
         var location = TryMapUnregisteredGuestSecurityCodeToLocationId(securityCode: securityCode, locations: locations);
         if (location == null)
         {

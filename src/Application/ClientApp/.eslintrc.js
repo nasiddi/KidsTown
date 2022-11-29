@@ -91,10 +91,9 @@ module.exports = {
 		'react/jsx-wrap-multilines': 0, // Prettier.
 		'react/no-danger': 0, // Control freaky.
 		'react/no-unescaped-entities': 0, // Prettier.
-		'react/no-unused-prop-types': 0, // Flow.
 		'react/prop-types': 0, // Flow.
 		'react/require-default-props': 0, // Flow.
-		'react/jsx-no-bind': 2,
+		'react/jsx-no-bind': 0,
 		'react/prefer-stateless-function': [2, { ignorePureComponents: true }],
 	},
 	settings: {

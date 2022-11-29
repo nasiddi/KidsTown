@@ -1,9 +1,9 @@
-/* eslint-disable react/jsx-no-bind */
 import React from 'react'
-import { Grid } from '@material-ui/core'
+import { Grid } from '@mui/material'
 import { FullText, SplitText, TextImageSplit, Title } from './DocElements'
+import { NarrowLayout } from './Layout'
 
-export function Documentation() {
+function Docs() {
 	return (
 		<div>
 			<Grid
@@ -421,5 +421,13 @@ export function Documentation() {
 				/>
 			</Grid>
 		</div>
+	)
+}
+
+export default function Documentation() {
+	return (
+		<NarrowLayout>
+			<Docs />
+		</NarrowLayout>
 	)
 }

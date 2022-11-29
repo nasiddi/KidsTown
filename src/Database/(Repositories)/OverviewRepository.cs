@@ -89,8 +89,8 @@ public class OverviewRepository : IOverviewRepository
                 where (selectedLocations != null && selectedLocations.Contains(l.Id) 
                         || selectedLocationGroups != null && selectedLocationGroups.Contains(l.LocationGroupId))
                     && l.EventId == eventId
-                    && a.InsertDate >= startDate.Date
-                    && a.InsertDate <= endDate.Date.AddDays(1)
+                    && a.InsertDate.Date >= startDate.Date
+                    && a.InsertDate.Date <= endDate.Date
                 select MapAttendee(a, p, at, l))
             .ToListAsync().ConfigureAwait(continueOnCapturedContext: false);
 

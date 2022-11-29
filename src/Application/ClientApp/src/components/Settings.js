@@ -1,14 +1,19 @@
-/* eslint-disable react/jsx-no-bind */
 import React, { useEffect, useState } from 'react'
-import { Grid } from '@material-ui/core'
-import Checkbox from '@material-ui/core/Checkbox'
-import FormControlLabel from '@material-ui/core/FormControlLabel'
+import {
+	Grid,
+	Checkbox,
+	FormControlLabel,
+	Chip,
+	Card,
+	CardContent,
+	CardHeader,
+} from '@mui/material'
 import { getGuid, getSelectedEventFromStorage } from './Common'
 import { withAuth } from '../auth/MsalAuthProvider'
-import { Badge, Card, CardBody, CardTitle } from 'reactstrap'
+import { NarrowLayout } from './Layout'
 
 function BoolBadge(props) {
-	return <Badge color={props['color']}>{props['label']}</Badge>
+	return <Chip color={props['color']} label={props['label']} />
 }
 
 function Task(props) {
@@ -44,7 +49,8 @@ function Task(props) {
 
 	return (
 		<Card>
-			<CardBody>
+			<CardHeader title={task['backgroundTaskType']} />
+			<CardContent>
 				<Grid
 					container
 					spacing={1}
@@ -52,27 +58,20 @@ function Task(props) {
 					alignItems="center"
 				>
 					<Grid item md={6} xs={12}>
-						<CardTitle tag="h5">
-							{task['backgroundTaskType']}
-						</CardTitle>
-					</Grid>
-					<Grid item md={6} xs={12}>
-						<CardTitle tag="h5">
-							{GetBadge(
-								task['isActive'],
-								'primary',
-								'active',
-								'secondary',
-								'inactive'
-							)}{' '}
-							{GetBadge(
-								task['taskRunsSuccessfully'],
-								'success',
-								'success',
-								'danger',
-								'failed'
-							)}
-						</CardTitle>
+						{GetBadge(
+							task['isActive'],
+							'primary',
+							'active',
+							'secondary',
+							'inactive'
+						)}{' '}
+						{GetBadge(
+							task['taskRunsSuccessfully'],
+							'success',
+							'success',
+							'error',
+							'failed'
+						)}
 					</Grid>
 					<Grid item xs={12}>
 						<hr />
@@ -114,7 +113,7 @@ function Task(props) {
 						Every {task['logFrequency']} executions
 					</Grid>
 				</Grid>
-			</CardBody>
+			</CardContent>
 		</Card>
 	)
 }
@@ -159,6 +158,7 @@ function Setting() {
 				(e) => e['name'] === event.target.name
 			)
 			localStorage.setItem('selectedEvent', selected['eventId'])
+			localStorage.setItem('statisticLocations', JSON.stringify([]))
 			setState({ ...state, selectedEvent: selected['eventId'] })
 		}
 	}
@@ -236,7 +236,7 @@ function Setting() {
 	}
 
 	return (
-		<div>
+		<NarrowLayout>
 			<Grid
 				container
 				spacing={3}
@@ -257,7 +257,7 @@ function Setting() {
 					{renderTasks()}
 				</Grid>
 			</Grid>
-		</div>
+		</NarrowLayout>
 	)
 }
 

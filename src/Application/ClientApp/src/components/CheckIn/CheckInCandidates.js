@@ -1,5 +1,5 @@
 import React from 'react'
-import { Grid } from '@material-ui/core'
+import { Grid } from '@mui/material'
 import { LargeButton } from '../Common'
 
 export function CheckInCandidates(props) {
@@ -76,7 +76,7 @@ export function CheckInCandidates(props) {
 		}
 
 		if (candidate['hasPeopleWithoutPickupPermission']) {
-			return 'danger'
+			return 'error'
 		}
 
 		if (!candidate['mayLeaveAlone']) {

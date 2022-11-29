@@ -36,11 +36,9 @@ public class ConfigurationController : ControllerBase
     [HttpPost]
     [Route(template: "events/{eventId:long}/location-groups/locations")]
     [Produces(contentType: "application/json")]
-    public async Task<IImmutableList<GroupedSelectOptions>> GetLocationsByLocationGroups(
-        [FromRoute] long eventId,
-        [FromBody] IImmutableList<int> selectedLocationGroups)
+    public async Task<IImmutableList<GroupedSelectOptions>> GetLocationsByLocationGroups([FromRoute] long eventId)
     {
-        var locations = await _configurationService.GetLocations(eventId: eventId, selectedLocationGroups: selectedLocationGroups)
+        var locations = await _configurationService.GetLocations(eventId: eventId)
             .ConfigureAwait(continueOnCapturedContext: false);
 
         return locations.GroupBy(keySelector: l => l.LocationGroupId)
@@ -48,19 +46,7 @@ public class ConfigurationController : ControllerBase
             {
                 GroupId = g.Key,
                 Options = g.Select(selector: MapOptions).ToImmutableList(),
-                OptionCount = g.Count()
             }).ToImmutableList();
-    }
-        
-    [HttpGet]
-    [Route(template: "events/{eventId:long}/locations")]
-    [Produces(contentType: "application/json")]
-    public async Task<IImmutableList<SelectOption>> GetLocations([FromRoute] long eventId)
-    {
-        var locations = await _configurationService.GetLocations(eventId: eventId, selectedLocationGroups: null)
-            .ConfigureAwait(continueOnCapturedContext: false);
-
-        return locations.Select(selector: MapOptions).ToImmutableList();
     }
 
     [HttpGet]

@@ -1,27 +1,24 @@
 import React, { useCallback } from 'react'
-import { loadCSS } from 'fg-loadcss'
-import Icon from '@material-ui/core/Icon'
-import { Grid } from '@material-ui/core'
-import { Image } from 'react-bootstrap'
-import PropTypes from 'prop-types'
+import { Grid } from '@mui/material'
+import Image from 'mui-image'
+import ArrowCircleRightOutlinedIcon from '@mui/icons-material/ArrowCircleRightOutlined'
+import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined'
+import WarningAmberOutlinedIcon from '@mui/icons-material/WarningAmberOutlined'
 
-const action = 'far fa-arrow-alt-circle-right'
-const info = 'fas fa-info-circle'
-const warning = 'fas fa-exclamation-triangle'
+const action = 'action'
+const info = 'info'
+const warning = 'warning'
 
 export function DocsIcon(props) {
-	React.useEffect(() => {
-		const node = loadCSS(
-			'https://use.fontawesome.com/releases/v5.12.0/css/all.css',
-			document.querySelector('#font-awesome-css')
-		)
+	if (props.name === action) {
+		return <ArrowCircleRightOutlinedIcon />
+	}
 
-		return () => {
-			node.parentNode.removeChild(node)
-		}
-	}, [])
+	if (props.name === info) {
+		return <InfoOutlinedIcon />
+	}
 
-	return <Icon className={props['name']} />
+	return <WarningAmberOutlinedIcon />
 }
 
 export function Title(props) {
@@ -33,11 +30,6 @@ export function Title(props) {
 			<a className="anchor hash" id={props['id']} href={props['id']} />
 		</Grid>
 	)
-}
-
-Title.propTypes = {
-	text: PropTypes.string.isRequired,
-	size: PropTypes.number.isRequired,
 }
 
 function stylizedText(props, size) {
@@ -130,26 +122,12 @@ function splitImageInner(props, func, open) {
 	)
 }
 
-SplitImage.propTypes = {
-	fileName: PropTypes.string.isRequired,
-}
-
 export function SplitText(props) {
 	return stylizedText(props, 6)
 }
 
 export function FullText(props) {
 	return stylizedText(props, 12)
-}
-
-FullText.propTypes = {
-	title: PropTypes.string,
-	paragraphs: PropTypes.arrayOf(
-		PropTypes.shape({
-			icon: PropTypes.oneOf(['Info', 'Action']),
-			text: PropTypes.string.isRequired,
-		})
-	).isRequired,
 }
 
 export function TextImageSplit(props) {
@@ -175,25 +153,4 @@ export function TextImageSplit(props) {
 			</Grid>
 		</Grid>
 	)
-}
-
-TextImageSplit.propTypes = {
-	title: PropTypes.string,
-	fileName: PropTypes.string.isRequired,
-	paragraphs: PropTypes.arrayOf(
-		PropTypes.shape({
-			icon: PropTypes.oneOf(['Info', 'Action', 'Warning']),
-			text: PropTypes.string.isRequired,
-		})
-	).isRequired,
-}
-
-SplitText.propTypes = {
-	title: PropTypes.string,
-	paragraphs: PropTypes.arrayOf(
-		PropTypes.shape({
-			icon: PropTypes.oneOf(['Info', 'Action', 'Warning']),
-			text: PropTypes.string.isRequired,
-		})
-	).isRequired,
 }

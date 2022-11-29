@@ -1,25 +1,22 @@
 import React, { useState } from 'react'
-import { Grid } from '@material-ui/core'
-import { getSelectedFromSession } from './Common'
-import { withAuth } from '../auth/MsalAuthProvider'
-import { Button } from 'reactstrap'
-
-const _ = require('lodash')
+import { Grid } from '@mui/material'
+import { getSelectedFromSession, StyledButton } from '../Common'
 
 function FilterButton(props) {
 	return (
-		<Button
+		<StyledButton
 			color={props['color']}
-			block
 			onClick={props['onClick']}
-			outline={!props['isSelected']}
+			variant={!props['isSelected'] ? 'outlined' : 'contained'}
+			fullWidth={true}
+			size={'large'}
 		>
 			{props['label']}
-		</Button>
+		</StyledButton>
 	)
 }
 
-function Filter() {
+export default function OverviewFilter() {
 	const [state, setState] = useState({
 		selectedStates: getSelectedFromSession('selectedOverviewStates', [
 			'PreCheckedIn',
@@ -27,6 +24,10 @@ function Filter() {
 			'CheckedOut',
 		]),
 	})
+
+	function stateIsSelected(target) {
+		return state.selectedStates.includes(target)
+	}
 
 	function renderFilter() {
 		return (
@@ -45,10 +46,7 @@ function Filter() {
 							label="PreCheckedIn"
 							color={'info'}
 							onClick={togglePreCheckedIn}
-							isSelected={_.includes(
-								state.selectedStates,
-								'PreCheckedIn'
-							)}
+							isSelected={stateIsSelected('PreCheckedIn')}
 						/>
 					</Grid>
 					<Grid item md={4}>
@@ -56,10 +54,7 @@ function Filter() {
 							label="CheckedIn"
 							color={'success'}
 							onClick={toggleCheckedIn}
-							isSelected={_.includes(
-								state.selectedStates,
-								'CheckedIn'
-							)}
+							isSelected={stateIsSelected('CheckedIn')}
 						/>
 					</Grid>
 					<Grid item md={4}>
@@ -67,10 +62,7 @@ function Filter() {
 							label="CheckedOut"
 							color={'primary'}
 							onClick={toggleCheckedOut}
-							isSelected={_.includes(
-								state.selectedStates,
-								'CheckedOut'
-							)}
+							isSelected={stateIsSelected('CheckedOut')}
 						/>
 					</Grid>
 				</Grid>
@@ -91,10 +83,9 @@ function Filter() {
 	}
 
 	function toggleState(toggledState) {
-		// eslint-disable-next-line prefer-const
 		let currentStates = state.selectedStates
-		if (_.includes(currentStates, toggledState)) {
-			_.remove(currentStates, (p) => p === toggledState)
+		if (currentStates.includes(toggledState)) {
+			currentStates = currentStates.filter((p) => p !== toggledState)
 		} else {
 			currentStates.push(toggledState)
 		}
@@ -121,5 +112,3 @@ function Filter() {
 		</div>
 	)
 }
-
-export const OverviewFilter = withAuth(Filter)

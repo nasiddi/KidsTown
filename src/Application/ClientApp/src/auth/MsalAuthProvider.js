@@ -1,4 +1,3 @@
-/* eslint-disable react/jsx-no-bind */
 import React, { Component } from 'react'
 import { msalConfig } from './MsalConfig'
 import { UserAgentApplication } from 'msal'

@@ -1,5 +1,4 @@
 import { getGuid, getSelectedEventFromStorage } from '../components/Common'
-const _ = require('lodash')
 
 const postJson = {
 	method: 'POST',
@@ -9,7 +8,7 @@ const postJson = {
 }
 
 function getPostRequest() {
-	return _.cloneDeep(postJson)
+	return JSON.parse(JSON.stringify(postJson))
 }
 
 export async function fetchLocationGroups() {
@@ -46,11 +45,10 @@ export async function postSecurityCode(
 	return await fetch('checkinout/people', request).then((r) => r.json())
 }
 
-export async function fetchLocations(locationsGroups) {
+export async function fetchLocations() {
 	return await fetch(
 		`configuration/events/${await getSelectedEventFromStorage()}/location-groups/locations`,
 		{
-			body: JSON.stringify(locationsGroups.map((l) => l.value)),
 			method: 'POST',
 			headers: {
 				'Content-Type': 'application/json',

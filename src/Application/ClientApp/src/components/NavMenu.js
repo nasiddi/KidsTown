@@ -1,33 +1,9 @@
-/* eslint-disable react/jsx-no-bind */
 import React, { useEffect, useState } from 'react'
-import {
-	Collapse,
-	Navbar,
-	NavbarBrand,
-	NavbarToggler,
-	NavItem,
-	NavLink,
-} from 'reactstrap'
-import { Link } from 'react-router-dom'
-import './NavMenu.css'
+import { AppBar, Button, Toolbar, Typography } from '@mui/material'
+import { useNavigate } from 'react-router-dom'
 
 const active = 'text-dark font-weight-bold'
 const inactive = 'text-dark'
-
-function Nav(props) {
-	return (
-		<NavItem>
-			<NavLink
-				tag={Link}
-				className={props['className']}
-				to={props['to']}
-				onClick={props['onClick']}
-			>
-				{props['label']}
-			</NavLink>
-		</NavItem>
-	)
-}
 
 export function NavMenu() {
 	const [state, setState] = useState({
@@ -40,16 +16,16 @@ export function NavMenu() {
 		manualClass: inactive,
 	})
 
-	function toggleNavbar() {
-		setState({
-			...state,
-			collapsed: !state.collapsed,
-		})
-	}
-
 	useEffect(() => {
 		initTextStyles()
 	}, [])
+
+	const navigate = useNavigate()
+
+	const onRouteChange = (event) => {
+		const path = `/${event.currentTarget.name ?? ''}`
+		navigate(path)
+	}
 
 	function initTextStyles() {
 		setTextStyles(state.location.pathname)
@@ -98,69 +74,44 @@ export function NavMenu() {
 		})
 	}
 
-	function checkInActive() {
-		setTextStyles('/checkin')
+	function isSelected(location) {
+		if (location.length === 0) {
+			return window.location.href.slice(-1) === '/'
+		}
+
+		return window.location.href
+			.toLowerCase()
+			.includes(location.toLowerCase())
 	}
 
-	function guestCheckInActive() {
-		setTextStyles('/guest')
-	}
+	function getNavButton(route, label) {
+		const selected = isSelected(route)
 
-	function overviewActive() {
-		setTextStyles('/overview')
-	}
-
-	function statisticActive() {
-		setTextStyles('/statistic')
-	}
-
-	function manualActive() {
-		setTextStyles('/')
+		return (
+			<Button
+				style={{ width: 115 }}
+				disableElevation
+				color={selected ? 'secondary' : 'primary'}
+				name={route}
+				variant={selected ? 'outlined' : 'contained'}
+				onClick={onRouteChange}
+			>
+				{label ?? route}
+			</Button>
+		)
 	}
 
 	return (
-		<Navbar
-			className="navbar-expand-sm navbar-toggleable-sm ng-white border-bottom box-shadow mb-3 sticky-nav"
-			light
-			sticky="top"
-			container={'md'}
-		>
-			<NavbarBrand tag={Link} to="/">
-				Kidstown
-			</NavbarBrand>
-			<NavbarToggler onClick={toggleNavbar} className="mr-2" />
-			<Collapse
-				className="d-sm-inline-flex flex-sm-row-reverse"
-				isOpen={!state.collapsed}
-				navbar
-			>
-				<ul className="navbar-nav flex-grow">
-					<Nav
-						className={state.checkInOutClass}
-						to={'/checkin'}
-						onClick={checkInActive}
-						label={'CheckIn/Out'}
-					/>
-					<Nav
-						className={state.overViewClass}
-						to="/overview"
-						onClick={overviewActive}
-						label={'Overview'}
-					/>
-					<Nav
-						className={state.statisticClass}
-						to="/statistic"
-						onClick={statisticActive}
-						label={'Statistic'}
-					/>
-					<Nav
-						className={state.manualClass}
-						to="/"
-						onClick={manualActive}
-						label={'Anleitung'}
-					/>
-				</ul>
-			</Collapse>
-		</Navbar>
+		<AppBar position="sticky">
+			<Toolbar variant="dense">
+				<Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
+					KidsTown
+				</Typography>
+				{getNavButton('Checkin', 'CheckIn/Out')}
+				{getNavButton('Overview')}
+				{getNavButton('Statistic')}
+				{getNavButton('', 'Anleitung')}
+			</Toolbar>
+		</AppBar>
 	)
 }

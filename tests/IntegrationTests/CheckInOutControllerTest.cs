@@ -68,7 +68,7 @@ public class CheckInOutControllerTest
                     controller: controller)
                 .ConfigureAwait(continueOnCapturedContext: false);
 
-            Assert.That(actual: checkInOutResult.AlertLevel, expression: Is.EqualTo(expected: AlertLevel.Danger));
+            Assert.That(actual: checkInOutResult.AlertLevel, expression: Is.EqualTo(expected: AlertLevel.Error));
         });
     }
 

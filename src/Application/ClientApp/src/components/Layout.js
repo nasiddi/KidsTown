@@ -1,22 +1,10 @@
 import React from 'react'
-import { Container } from 'reactstrap'
-import { NavMenu } from './NavMenu'
+import { Container } from '@mui/material'
 
-export const CheckInLayout = (props) => {
-	return (
-		<div>
-			<NavMenu />
-			<Container>{props.children}</Container>
-		</div>
-	)
+export const NarrowLayout = (props) => {
+	return <Container maxWidth={'lg'}>{props.children}</Container>
 }
 
-export const OverviewLayout = (props) => {
-	return (
-		<div>
-			<Container className="themed-container" fluid={true}>
-				{props.children}
-			</Container>
-		</div>
-	)
+export const WideLayout = (props) => {
+	return <Container maxWidth={'xl'}>{props.children}</Container>
 }

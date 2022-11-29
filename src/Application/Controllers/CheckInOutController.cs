@@ -48,7 +48,7 @@ public class CheckInOutController : ControllerBase
         return Ok(value: new CheckInOutResult
         {
             Text = $"{CheckType.CheckIn.ToString()} für {candidate.Name} ist fehlgeschlagen",
-            AlertLevel = AlertLevel.Danger
+            AlertLevel = AlertLevel.Error
         });
     }
 
@@ -75,7 +75,7 @@ public class CheckInOutController : ControllerBase
         return Ok(value: new CheckInOutResult
         {
             Text = $"{request.CheckType.ToString()} für ({request.SecurityCode}) {string.Join(separator: ", ", values: names)} ist fehlgeschlagen",
-            AlertLevel = AlertLevel.Danger
+            AlertLevel = AlertLevel.Error
         });
     }
 
@@ -92,13 +92,13 @@ public class CheckInOutController : ControllerBase
                 return Ok(value: new CheckInOutResult
                 {
                     Text = "Suche ohne Location Filter ist nur bei CheckIn erlaubt.",
-                    AlertLevel = AlertLevel.Danger
+                    AlertLevel = AlertLevel.Error
                 });
             case true when request.SelectedLocationGroupIds.Count == 0:
                 return Ok(value: new CheckInOutResult
                 {
                     Text = "Bitte Locations auswählen.",
-                    AlertLevel = AlertLevel.Danger
+                    AlertLevel = AlertLevel.Error
                 });
         }
 
@@ -130,7 +130,7 @@ public class CheckInOutController : ControllerBase
             return Ok(value: new CheckInOutResult
             {
                 Text = $"Es wurde niemand mit SecurityCode {request.SecurityCode} gefunden. Locations Filter überprüfen.",
-                AlertLevel = AlertLevel.Danger,
+                AlertLevel = AlertLevel.Error,
                 FilteredSearchUnsuccessful = true
             });
         }
@@ -211,7 +211,7 @@ public class CheckInOutController : ControllerBase
         return Ok(value: new CheckInOutResult
         {
             Text = "Rückgänig machen ist fehlgeschlagen",
-            AlertLevel = AlertLevel.Danger
+            AlertLevel = AlertLevel.Error
         }); 
             
     }
@@ -232,7 +232,7 @@ public class CheckInOutController : ControllerBase
             return Ok(value: new CheckInOutResult
             {
                 Text = $"Der SecurityCode {request.SecurityCode} existiert bereits.",
-                AlertLevel = AlertLevel.Danger
+                AlertLevel = AlertLevel.Error
             });
         }
 
@@ -264,7 +264,7 @@ public class CheckInOutController : ControllerBase
             return Ok(value: new CheckInOutResult
             {
                 Text = $"Der SecurityCode {request.SecurityCode} existiert bereits.",
-                AlertLevel = AlertLevel.Danger
+                AlertLevel = AlertLevel.Error
             });
         }
             
@@ -300,7 +300,7 @@ public class CheckInOutController : ControllerBase
         }
             
         text = "Bei Kindern mit rotem Hintergrund gibt es Personen, die nicht abholberechtigt sind";
-        level = AlertLevel.Danger;
+        level = AlertLevel.Error;
 
         return text;
     }

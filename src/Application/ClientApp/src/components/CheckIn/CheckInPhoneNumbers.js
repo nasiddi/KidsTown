@@ -1,10 +1,73 @@
-import React from 'react'
-import { Grid, MuiThemeProvider } from '@material-ui/core'
-import { LargeButton, primaryTheme } from '../Common'
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import TextField from '@material-ui/core/TextField'
+import React, { useState, useEffect } from 'react'
+import { Grid } from '@mui/material'
+import { getEventId, LargeButton, StyledTextField } from '../Common'
+import StarIcon from '@mui/icons-material/Star'
+import {
+	fetchParentPhoneNumbers,
+	postPhoneNumbers,
+} from '../../helpers/BackendClient'
 
 export function CheckInPhoneNumbers(props) {
+	const [adults, setAdults] = useState([])
+
+	useEffect(() => {
+		async function load() {
+			const phoneNumbers = await loadPhoneNumbers(props.attendanceIds)
+			setAdults(phoneNumbers)
+		}
+
+		load().then()
+	}, [props.attendanceIds])
+
+	async function loadPhoneNumbers(attendanceIds) {
+		if (attendanceIds.length === 0) {
+			return []
+		}
+
+		const json = await fetchParentPhoneNumbers(attendanceIds)
+		json.forEach((a) => (a.isEdit = false))
+
+		return json
+	}
+
+	async function onPrimaryContactChange(event) {
+		const id = getEventId(event)
+		const primary = adults.find((a) => a.personId === id)
+
+		if (primary.isPrimaryContact) {
+			primary.isPrimaryContact = false
+		} else {
+			adults.forEach((a) => (a.isPrimaryContact = false))
+			primary.isPrimaryContact = true
+		}
+
+		setAdults([...adults])
+		await postPhoneNumbers(adults, false)
+	}
+
+	async function onSave(event) {
+		const eventId = getEventId(event)
+		adults.find((f) => f.personId === eventId).isEdit = false
+
+		setAdults([...adults])
+		await postPhoneNumbers(adults, true)
+	}
+
+	function onEdit(event) {
+		const eventId = getEventId(event)
+		adults.find((f) => f.personId === eventId).isEdit = true
+
+		setAdults([...adults])
+	}
+
+	const onPhoneNumberChange = (e) => {
+		const eventId = getEventId(e)
+		const adult = adults.find((a) => a.personId === eventId)
+		adult.phoneNumber = e.target.value
+
+		setAdults([...adults])
+	}
+
 	function renderPhoneNumberEditButton(id, phoneNumber, isEdit) {
 		if (isEdit) {
 			return (
@@ -13,7 +76,7 @@ export function CheckInPhoneNumbers(props) {
 						id={id}
 						name="Save"
 						color="success"
-						onClick={props.onSave}
+						onClick={onSave}
 					/>
 				</Grid>
 			)
@@ -25,7 +88,7 @@ export function CheckInPhoneNumbers(props) {
 					id={id}
 					name="Edit"
 					color="primary"
-					onClick={props.onEdit}
+					onClick={onEdit}
 				/>
 			</Grid>
 		)
@@ -35,16 +98,14 @@ export function CheckInPhoneNumbers(props) {
 		if (isEdit) {
 			return (
 				<Grid item md={3} xs={8}>
-					<MuiThemeProvider theme={primaryTheme}>
-						<TextField
-							id={id}
-							label="PhoneNumber"
-							variant="outlined"
-							value={phoneNumber}
-							fullWidth={true}
-							onChange={props.onChange}
-						/>
-					</MuiThemeProvider>
+					<StyledTextField
+						id={id}
+						label="PhoneNumber"
+						variant="outlined"
+						value={phoneNumber}
+						fullWidth={true}
+						onChange={onPhoneNumberChange}
+					/>
 				</Grid>
 			)
 		}
@@ -65,13 +126,13 @@ export function CheckInPhoneNumbers(props) {
 	}
 
 	function getPhoneNumberIsEdit(personId) {
-		const flag = _.find(props.phoneNumberEditFlags, { id: personId })
+		const adult = adults.find((a) => a.personId === personId)
 
-		return flag['isEdit']
+		return adult.isEdit
 	}
 
-	const adults = props.adults.map((a) => (
-		<Grid item xs={12} key={a['personId']}>
+	const entries = adults.map((a) => (
+		<Grid item xs={12} key={a.personId}>
 			<Grid
 				container
 				spacing={3}
@@ -80,15 +141,15 @@ export function CheckInPhoneNumbers(props) {
 			>
 				<Grid item md={1} xs={3}>
 					<LargeButton
-						id={a['personId']}
+						id={a.personId}
 						name={
-							<span id={a['personId']}>
-								<FontAwesomeIcon icon="star" />
+							<span id={a.personId}>
+								<StarIcon />
 							</span>
 						}
-						color={a['isPrimaryContact'] ? 'success' : 'secondary'}
-						isOutline={!a['isPrimaryContact']}
-						onClick={props.onPrimaryContactChange}
+						color={'primary'}
+						isOutline={!a.isPrimaryContact}
+						onClick={onPrimaryContactChange}
 					/>
 				</Grid>
 				<Grid item md={6} xs={9}>
@@ -99,18 +160,18 @@ export function CheckInPhoneNumbers(props) {
 							margin: 0,
 						}}
 					>
-						{`${a['firstName']} ${a['lastName']}`}
+						{`${a.firstName} ${a.lastName}`}
 					</h4>
 				</Grid>
 				{renderPhoneNumber(
-					a['personId'],
-					a['phoneNumber'],
-					getPhoneNumberIsEdit(a['personId'])
+					a.personId,
+					a.phoneNumber,
+					getPhoneNumberIsEdit(a.personId)
 				)}
 				{renderPhoneNumberEditButton(
-					a['personId'],
-					a['phoneNumber'],
-					getPhoneNumberIsEdit(a['personId'])
+					a.personId,
+					a.phoneNumber,
+					getPhoneNumberIsEdit(a.personId)
 				)}
 			</Grid>
 		</Grid>
@@ -123,7 +184,7 @@ export function CheckInPhoneNumbers(props) {
 			justifyContent="space-between"
 			alignItems="center"
 		>
-			{adults}
+			{entries}
 		</Grid>
 	)
 }

@@ -40,12 +40,9 @@ public class ConfigurationService : IConfigurationService
         return activeEvents?.Data?.Select(selector: MapCheckInsEvent).ToImmutableList() ?? ImmutableList<CheckInsEvent>.Empty;
     }
 
-    public async Task<IImmutableList<Location>> GetLocations(
-        long eventId,
-        IImmutableList<int>? selectedLocationGroups
-    )
+    public async Task<IImmutableList<Location>> GetLocations(long eventId)
     {
-        return await _configurationRepository.GetLocations(eventId: eventId, selectedLocationGroups: selectedLocationGroups);
+        return await _configurationRepository.GetLocations(eventId: eventId);
     }
 
     private static CheckInsEvent MapCheckInsEvent(Datum data)

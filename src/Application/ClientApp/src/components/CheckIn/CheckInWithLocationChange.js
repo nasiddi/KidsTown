@@ -1,7 +1,6 @@
 import React from 'react'
-import { Grid } from '@material-ui/core'
-import { LargeButton, MultiSelect } from '../Common'
-import { Fade } from 'reactstrap'
+import { FormControl, Grid, InputLabel, MenuItem, Select } from '@mui/material'
+import { LargeButton } from '../Common'
 
 export function CheckInWithLocationChange(props) {
 	const candidates = props.candidates
@@ -9,15 +8,12 @@ export function CheckInWithLocationChange(props) {
 	if (candidates.length === 0) {
 		return (
 			<Grid item xs={12}>
-				<Fade in={props.fadeIn}>
-					<LargeButton
-						id={'unfilteredSearch'}
-						name={'Suche ohne Location Filter'}
-						color={'warning'}
-						onClick={props.onSearch}
-						isOutline={false}
-					/>
-				</Fade>
+				<LargeButton
+					id={'unfilteredSearch'}
+					name={'Suche ohne Location Filter'}
+					color={'warning'}
+					onClick={props.onSearch}
+				/>
 			</Grid>
 		)
 	}
@@ -38,29 +34,45 @@ export function CheckInWithLocationChange(props) {
 			<Grid item xs={12}>
 				<Grid
 					container
-					spacing={1}
+					spacing={2}
 					justifyContent="space-between"
 					alignItems="center"
 				>
 					{candidateButtons}
 					<Grid item xs={12}>
-						<MultiSelect
-							name={'changeLocationGroup'}
-							onChange={props.onLocationGroupChange}
-							isMulti={false}
-							options={props.locationGroups}
-							minHeight={44}
-						/>
+						<FormControl fullWidth>
+							<InputLabel>Select Location</InputLabel>
+							<Select
+								name={'changeLocationGroup'}
+								onChange={props.onLocationGroupChange}
+								label={'Select Location'}
+								value={props.selectedLocationGroupId ?? ''}
+							>
+								{props.locationGroups.map((l) => (
+									<MenuItem value={l.value} key={l.value}>
+										{l.label}
+									</MenuItem>
+								))}
+							</Select>
+						</FormControl>
 					</Grid>
 					{props.locations.length > 1 ? (
 						<Grid item xs={12}>
-							<MultiSelect
-								name={'changeLocation'}
-								onChange={props.onLocationChange}
-								isMulti={false}
-								options={props.locations}
-								minHeight={44}
-							/>
+							<FormControl fullWidth>
+								<InputLabel>Select SubLocation</InputLabel>
+								<Select
+									name={'changeLocation'}
+									onChange={props.onLocationChange}
+									label={'Select SubLocation'}
+									value={props.selectedLocation.value ?? ''}
+								>
+									{props.locations.map((l) => (
+										<MenuItem value={l.value} key={l.value}>
+											{l.label}
+										</MenuItem>
+									))}
+								</Select>
+							</FormControl>
 						</Grid>
 					) : (
 						<div />

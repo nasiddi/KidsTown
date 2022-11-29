@@ -1,9 +1,6 @@
-/* eslint-disable react/jsx-no-bind */
 import React, { useEffect, useState } from 'react'
-import 'bootstrap/dist/css/bootstrap.css'
-import { Grid } from '@material-ui/core'
+import { Grid } from '@mui/material'
 import {
-	getEventId,
 	getSelectedOptionsFromStorage,
 	getStateFromLocalStorage,
 } from './Common'
@@ -13,31 +10,31 @@ import { CheckInInput } from './CheckIn/CheckInInput'
 import { CheckInAlert } from './CheckIn/CheckInAlert'
 import { CheckInPhoneNumbers } from './CheckIn/CheckInPhoneNumbers'
 import { CheckInCandidates } from './CheckIn/CheckInCandidates'
+import { CheckInWithLocationChange } from './CheckIn/CheckInWithLocationChange'
 import {
 	fetchLocationGroups,
 	fetchLocations,
-	fetchParentPhoneNumbers,
 	postChangeLocationAndCheckIn,
 	postCheckInOut,
-	postPhoneNumbers,
 	postSecurityCode,
 	postUndo,
 } from '../helpers/BackendClient'
-import { CheckInWithLocationChange } from './CheckIn/CheckInWithLocationChange'
-
-const _ = require('lodash')
+import { NarrowLayout } from './Layout'
+import dayjs from 'dayjs'
 
 const cleanState = {
 	checkInOutCandidates: [],
 	securityCode: '',
 	showUnfilteredSearch: false,
 	locations: [],
+	allLocations: [],
 	selectedChangeLocation: {},
+	selectedChangeLocationGroupId: '',
 }
 
-const clearedAlert = { alert: { text: '', level: 1 } }
+const clearedAttendanceIds = { lastActionAttendanceIds: [] }
 
-const clearedAdults = { adults: [] }
+const clearedAlert = { alert: { text: '', level: 1 } }
 
 function CheckIn() {
 	const [state, setState] = useState({
@@ -55,11 +52,9 @@ function CheckIn() {
 		checkType: localStorage.getItem('checkType') ?? 'CheckIn',
 		loading: true,
 		lastActionAttendanceIds: [],
-		adults: [],
-		phoneNumberEditFlags: {},
-		lastCodeSubmission: new Date(),
+		lastCodeSubmission: dayjs().startOf('date'),
 		showUnfilteredSearch: false,
-		locations: [],
+		availableLocations: [],
 		selectedChangeLocation: {},
 	})
 
@@ -74,9 +69,11 @@ function CheckIn() {
 	useEffect(() => {
 		async function load() {
 			const locationGroups = await fetchLocationGroups()
+			const allLocations = await fetchLocations()
 			setState({
 				...state,
 				locationGroups: locationGroups,
+				allLocations: allLocations,
 				loading: false,
 			})
 		}
@@ -84,13 +81,10 @@ function CheckIn() {
 		load().then()
 	}, [])
 
-	// eslint-disable-next-line no-unused-vars
-
 	useEffect(() => {
 		if (state.securityCode.length === 4) {
 			const currentDate = new Date()
 			if (currentDate - state.lastCodeSubmission > 2000) {
-				setState({ ...state, lastCodeSubmission: new Date() })
 				submitSecurityCodeWithLocationFilter().then()
 			} else {
 				setState({ ...state, ...cleanState })
@@ -98,18 +92,60 @@ function CheckIn() {
 		}
 	}, [state.securityCode])
 
+	const updateOptions = (options, key) => {
+		localStorage.setItem(key.name, JSON.stringify(options))
+		setState({
+			...state,
+			...cleanState,
+			...clearedAlert,
+			...clearedAttendanceIds,
+			[key.name]: [...options],
+		})
+	}
+
+	function onLocationDeselect(event) {
+		let id = event.target.parentElement.id
+		if (id.length === 0) {
+			id = event.target.parentElement.parentElement.id
+		}
+
+		const options = state.checkInOutLocationGroups.filter(
+			(l) => l.value.toString() !== id
+		)
+
+		updateOptions(options, { name: 'checkInOutLocationGroups' })
+	}
+
+	function onLocationSelect(event) {
+		const location = state.locationGroups.find(
+			(l) => l.value.toString() === event.target.id
+		)
+		const options = state.checkInOutLocationGroups
+		options.push(location)
+		updateOptions(options, { name: 'checkInOutLocationGroups' })
+	}
+
 	async function onChangeLocationChange(event) {
-		setState({ ...state, selectedChangeLocation: event })
+		setState({
+			...state,
+			selectedChangeLocation: state.availableLocations.options.find(
+				(l) => l.value === event.target.value
+			),
+		})
 	}
 
 	async function onChangeLocationGroupChange(event) {
-		const locations = await fetchLocations([event])
+		const locationsByGroup = state.allLocations.find(
+			(l) => l.groupId === parseInt(event.target.value, 10)
+		)
+
 		setState({
 			...state,
-			locations: locations[0],
+			availableLocations: locationsByGroup,
+			selectedChangeLocationGroupId: locationsByGroup.groupId,
 			selectedChangeLocation:
-				locations[0]['optionCount'] === 1
-					? locations[0]['options'][0]
+				locationsByGroup.options.length === 1
+					? locationsByGroup['options'][0]
 					: {},
 		})
 	}
@@ -126,28 +162,8 @@ function CheckIn() {
 		setState({ ...state, [event.target.name]: event.target.checked })
 	}
 
-	const updateOptions = (options, key) => {
-		localStorage.setItem(key.name, JSON.stringify(options))
-		setState({
-			...state,
-			...cleanState,
-			...clearedAlert,
-			...clearedAdults,
-			[key.name]: options,
-		})
-	}
-
 	const updateSecurityCode = (e) => {
 		setState({ ...state, securityCode: e.target.value })
-	}
-
-	const updatePhoneNumber = (e) => {
-		const eventId = getEventId(e)
-		const adults = state.adults
-		const adult = _.find(adults, { personId: eventId })
-		adult['phoneNumber'] = e.target.value
-
-		setState({ ...state, adults: adults })
 	}
 
 	async function submitSecurityCodeWithoutLocationFilter() {
@@ -181,37 +197,40 @@ function CheckIn() {
 
 		const attendanceIds = json['attendanceIds'] ?? []
 
-		const resetState = {
-			adults: [],
-			alert: {
-				level: json['alertLevel'],
-				text: json['text'],
-			},
-			lastActionAttendanceIds: attendanceIds,
+		const alert = {
+			level: json['alertLevel'],
+			text: json['text'],
 		}
 
-		if (json['successfulFastCheckout'] === true) {
-			const result = await loadPhoneNumbers(attendanceIds)
+		const candidates = json['checkInOutCandidates'].map(function (el) {
+			const o = Object.assign({}, el)
+			o.isSelected = true
+
+			return o
+		})
+
+		if (
+			json['successfulFastCheckout'] === true ||
+			(candidates.length === 0 && !json['filteredSearchUnsuccessful'])
+		) {
 			const newVar = {
 				...state,
 				...cleanState,
-				...resetState,
-				adults: result.adults,
-				phoneNumberEditFlags: result.phoneNumberEditFlags,
+				...clearedAttendanceIds,
+				lastCodeSubmission: new Date(),
+				alert: alert,
 			}
 			setState(newVar)
 		} else {
-			const candidates = json['checkInOutCandidates'].map(function (el) {
-				const o = Object.assign({}, el)
-				o.isSelected = true
-
-				return o
-			})
-
 			setState({
 				...state,
+				alert: alert,
 				checkInOutCandidates: candidates,
+				lastCodeSubmission: new Date(),
 				showUnfilteredSearch: json['filteredSearchUnsuccessful'],
+				lastActionAttendanceIds: json['filteredSearchUnsuccessful']
+					? []
+					: attendanceIds,
 			})
 		}
 	}
@@ -256,42 +275,30 @@ function CheckIn() {
 		setState({
 			...state,
 			...cleanState,
-			...clearedAdults,
+			...clearedAttendanceIds,
 			alert: { level: json['alertLevel'], text: json['text'] },
 			lastActionAttendanceIds: [],
 		})
 	}
 
-	async function loadPhoneNumbers(attendanceIds) {
-		if (state.checkType === 'CheckOut' || !state.showPhoneNumbers) {
-			return { adults: [], phoneNumberEditFlags: {} }
-		}
-
-		const json = await fetchParentPhoneNumbers(attendanceIds)
-
-		const editMap = _.map(json, function (adult) {
-			return { id: adult['personId'], isEdit: false }
-		})
-
-		return { adults: json, phoneNumberEditFlags: editMap }
-	}
-
 	async function processCheckInOutResult(json) {
 		const attendanceIds = json['attendanceIds'] ?? []
-		const result = await loadPhoneNumbers(attendanceIds)
 
 		setState({
 			...state,
 			...cleanState,
 			alert: { level: json['alertLevel'], text: json['text'] },
 			lastActionAttendanceIds: attendanceIds,
-			adults: result.adults,
-			phoneNumberEditFlags: result.phoneNumberEditFlags,
 		})
 	}
 
 	function resetView() {
-		setState({ ...state, ...cleanState, ...clearedAlert, ...clearedAdults })
+		setState({
+			...state,
+			...cleanState,
+			...clearedAlert,
+			...clearedAttendanceIds,
+		})
 	}
 
 	function invertSelectCandidate(event) {
@@ -308,50 +315,11 @@ function CheckIn() {
 				...state,
 				...cleanState,
 				...clearedAlert,
-				...clearedAdults,
+				...clearedAttendanceIds,
 				checkType: event.target.id,
 			})
 			localStorage.setItem('checkType', event.target.id)
 		}
-	}
-
-	async function changePrimaryContact(event) {
-		const id = getEventId(event)
-
-		const adults = state.adults
-		const primary = _.find(adults, { personId: id })
-
-		if (primary['isPrimaryContact']) {
-			primary['isPrimaryContact'] = false
-		} else {
-			_.forEach(adults, function (a) {
-				a['isPrimaryContact'] = false
-			})
-
-			primary['isPrimaryContact'] = true
-		}
-
-		setState({ ...state, adults: adults })
-		await postPhoneNumbers(adults, false)
-	}
-
-	async function savePhoneNumber(event) {
-		const eventId = getEventId(event)
-		const flags = state.phoneNumberEditFlags
-		const flag = _.find(flags, { id: eventId })
-		flag['isEdit'] = false
-
-		setState({ ...state, phoneNumberEditFlags: flags })
-		await postPhoneNumbers(state.adults, true)
-	}
-
-	function setPhoneNumberIsEdit(event) {
-		const eventId = getEventId(event)
-		const flags = state.phoneNumberEditFlags
-		const flag = _.find(flags, { id: eventId })
-		flag['isEdit'] = true
-
-		setState({ ...state, phoneNumberEditFlags: flags })
 	}
 
 	function renderOptions() {
@@ -367,9 +335,10 @@ function CheckIn() {
 				singleCheckInOut={state.singleCheckInOut}
 				showPhoneNumbers={state.showPhoneNumbers}
 				onCheckBoxChange={handleChange}
-				onLocationGroupChange={updateOptions}
 				locationGroups={state.locationGroups}
 				checkInOutLocationGroups={state.checkInOutLocationGroups}
+				onLocationDeselect={onLocationDeselect}
+				onLocationSelect={onLocationSelect}
 			/>
 		)
 	}
@@ -415,18 +384,13 @@ function CheckIn() {
 		)
 	}
 
-	function renderAdults() {
-		return state.adults.length <= 0 ? (
+	function renderPhoneNumbers() {
+		return state.checkType !== 'CheckIn' || !state.showPhoneNumbers ? (
 			<div />
 		) : (
 			<Grid item xs={12}>
 				<CheckInPhoneNumbers
-					adults={state.adults}
-					onPrimaryContactChange={changePrimaryContact}
-					onSave={savePhoneNumber}
-					onEdit={setPhoneNumberIsEdit}
-					onChange={updatePhoneNumber}
-					phoneNumberEditFlags={state.phoneNumberEditFlags}
+					attendanceIds={state.lastActionAttendanceIds}
 				/>
 			</Grid>
 		)
@@ -446,8 +410,9 @@ function CheckIn() {
 				onLocationChange={onChangeLocationChange}
 				onSelectCandidate={selectCandidateForLocationChange}
 				locationGroups={state.checkInOutLocationGroups}
-				locations={state.locations['options'] ?? []}
+				locations={state.availableLocations['options'] ?? []}
 				selectedLocation={state.selectedChangeLocation}
+				selectedLocationGroupId={state.selectedChangeLocationGroupId}
 				onCheckIn={changeLocationAndCheckIn}
 			/>
 		)
@@ -458,22 +423,28 @@ function CheckIn() {
 	const alert = renderAlert()
 
 	return (
-		<Grid
-			container
-			spacing={3}
-			justifyContent="space-between"
-			alignItems="center"
-		>
-			<Grid item xs={12}>
-				<h1 id="title">{state.checkType}</h1>
+		<NarrowLayout>
+			<Grid
+				container
+				spacing={3}
+				justifyContent="space-between"
+				alignItems="center"
+			>
+				<Grid item xs={12}>
+					<h1 id="title">{state.checkType}</h1>
+				</Grid>
+				{options}
+				{input}
+				{alert}
+				{state.showUnfilteredSearch ? <div /> : renderCandidates()}
+				{state.showUnfilteredSearch ? <div /> : renderPhoneNumbers()}
+				{state.showUnfilteredSearch ? (
+					renderUnfilteredSearch()
+				) : (
+					<div />
+				)}
 			</Grid>
-			{options}
-			{input}
-			{alert}
-			{state.showUnfilteredSearch ? <div /> : renderCandidates()}
-			{state.showUnfilteredSearch ? <div /> : renderAdults()}
-			{state.showUnfilteredSearch ? renderUnfilteredSearch() : <div />}
-		</Grid>
+		</NarrowLayout>
 	)
 }
 

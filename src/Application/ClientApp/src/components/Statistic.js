@@ -1,180 +1,84 @@
-import React, { Component } from 'react'
-import { Grid } from '@material-ui/core'
+import React, { useState, useEffect } from 'react'
+import {
+	Grid,
+	Table,
+	TableBody,
+	TableCell,
+	TableHead,
+	TableRow,
+} from '@mui/material'
 import {
 	getFormattedDate,
 	getSelectedEventFromStorage,
 	getSelectedOptionsFromStorage,
-	MultiSelect,
+	LargeButton,
+	TableHeadCell,
 } from './Common'
-import { Table } from 'reactstrap'
 import { fetchLocationGroups, fetchLocations } from '../helpers/BackendClient'
 import { withAuth } from '../auth/MsalAuthProvider'
+import { NarrowLayout } from './Layout'
+import MultiSelect, { getOnDeselectId } from './MultiSelect'
+import dayjs from 'dayjs'
 
-const _ = require('lodash')
+function Statistic() {
+	const [state, setState] = useState({
+		locationGroups: [],
+		allLocations: [],
+		selectedLocations: [],
+		attendees: [],
+		renderLocationSelect: false,
+		loading: true,
+		loadingData: true,
+		furthestYear: dayjs().year(),
+	})
 
-class Statistic extends Component {
-	static displayName = Statistic.name
-	repeat
+	useEffect(() => {
+		async function load() {
+			const allLocationGroups = await fetchLocationGroups()
 
-	constructor(props) {
-		super(props)
-
-		this.updateSelectedLocationGroups =
-			this.updateSelectedLocationGroups.bind(this)
-
-		this.state = {
-			locationGroups: [],
-			statisticLocationGroups: getSelectedOptionsFromStorage(
-				'statisticLocationGroups',
+			const selectedLocations = getSelectedOptionsFromStorage(
+				'statisticLocations',
 				[]
-			),
-			singleLocations: [],
-			multiLocations: [],
-			statisticLocations: [],
-			attendees: {},
-			renderLocationSelect: false,
-			loading: true,
+			)
+			setState({
+				...state,
+				allLocationGroups: allLocationGroups,
+				allLocations: await fetchLocations(),
+				selectedLocations: selectedLocations,
+				loading: false,
+			})
 		}
-	}
+		load().then()
+	}, [])
 
-	async componentDidMount() {
-		const locationGroups = await fetchLocationGroups()
-		this.setState({ locationGroups: locationGroups })
-		await this.setLocations(this.state.statisticLocationGroups)
-		this.setState({
-			attendees: await this.fetchData(this.state.statisticLocations),
-		})
-		this.setState({ loading: false })
-	}
-
-	componentWillUnmount() {
-		clearTimeout(this.repeat)
-	}
-
-	renderLocationGroupSelect() {
-		return (
-			<div>
-				<Grid
-					container
-					spacing={3}
-					justifyContent="space-between"
-					alignItems="center"
-				>
-					<Grid item xs={12}>
-						<MultiSelect
-							name={'statisticLocationGroups'}
-							isMulti={true}
-							onChange={this.updateSelectedLocationGroups}
-							options={this.state.locationGroups}
-							defaultOptions={this.state.statisticLocationGroups}
-							minHeight={0}
-						/>
-					</Grid>
-				</Grid>
-			</div>
-		)
-	}
-
-	renderLocationSelect() {
-		return (
-			<div>
-				<Grid
-					container
-					spacing={3}
-					justifyContent="space-between"
-					alignItems="center"
-				>
-					<Grid item xs={12}>
-						<MultiSelect
-							name={'statisticLocations'}
-							isMulti={true}
-							onChange={this.updateSelectedLocations}
-							options={this.state.multiLocations}
-							defaultOptions={this.state.statisticLocations}
-							minHeight={0}
-						/>
-					</Grid>
-				</Grid>
-			</div>
-		)
-	}
-
-	renderCounts() {
-		if (this.state.loading) {
-			return <div />
+	useEffect(() => {
+		async function load() {
+			setState({
+				...state,
+				attendees: await fetchData(state.selectedLocations),
+				loadingData: false,
+			})
 		}
+		load().then()
+	}, [state.selectedLocations, state.furthestYear])
 
-		return (
-			<Table>
-				<thead>
-					<tr>
-						<th>Datum</th>
-						<th>Kinder</th>
-						<th>davon Gäste</th>
-						<th>Betreuer</th>
-						<th>kein CheckIn</th>
-						<th>kein CheckOut</th>
-					</tr>
-				</thead>
-				<tbody>
-					{this.state.attendees
-						.sort((a, b) => (a['date'] > b['date'] ? -1 : 1))
-						.map((row) => (
-							<tr key={row['date']}>
-								<td>{getFormattedDate(row['date'])}</td>
-								<td>
-									{row['regularCount'] + row['guestCount']}
-								</td>
-								<td>{row['guestCount']}</td>
-								<td>{row['volunteerCount']}</td>
-								<td>{row['preCheckInOnlyCount']}</td>
-								<td>{row['noCheckOutCount']}</td>
-							</tr>
-						))}
-				</tbody>
-			</Table>
-		)
-	}
-
-	render() {
-		if (this.state.loading) {
-			return <div />
+	async function fetchData(locations) {
+		if (locations.length === 0) {
+			return []
 		}
-
-		let locationSelect = <div />
-		if (this.state.renderLocationSelect) {
-			locationSelect = this.renderLocationSelect()
-		}
-
-		return (
-			<div>
-				<Grid
-					container
-					spacing={3}
-					justifyContent="space-between"
-					alignItems="flex-start"
-				>
-					<Grid item xs={12}>
-						{this.renderLocationGroupSelect()}
-					</Grid>
-					<Grid item xs={12}>
-						{locationSelect}
-					</Grid>
-					<Grid item xs={12}>
-						{this.renderCounts()}
-					</Grid>
-				</Grid>
-			</div>
-		)
-	}
-
-	async fetchData(multiLocations) {
-		const locations = multiLocations.concat(this.state.singleLocations)
 
 		return await fetch(
-			`overview/event/${await getSelectedEventFromStorage()}/attendees/history`,
+			`overview/event/${await getSelectedEventFromStorage()}/attendees/history?startDate=${
+				state.furthestYear
+			}-01-01&endDate=${dayjs().year()}-12-31`,
 			{
-				body: JSON.stringify(locations.map((l) => l.value)),
+				body: JSON.stringify(
+					locations.flatMap((l) =>
+						l.options
+							.filter((o) => o.isSelected)
+							.map((o) => o.value)
+					)
+				),
 				method: 'POST',
 				headers: {
 					'Content-Type': 'application/json',
@@ -187,47 +91,237 @@ class Statistic extends Component {
 			})
 	}
 
-	updateSelectedLocationGroups = async (options, key) => {
-		localStorage.setItem(key.name, JSON.stringify(options))
-		await this.setLocations(options)
+	function updateLocalStorage(locations) {
+		localStorage.setItem('statisticLocations', JSON.stringify(locations))
+	}
 
-		await this.setState({
-			[key.name]: options,
-			attendees: await this.fetchData(this.state.statisticLocations),
+	function onLocationGroupSelect(event) {
+		const locations = state.allLocations.find(
+			(l) => l.groupId === parseInt(event.target.id, 10)
+		)
+
+		const selectedLocations = [...state.selectedLocations, locations]
+		updateLocalStorage(selectedLocations)
+
+		setState({
+			...state,
+			selectedLocations: selectedLocations,
 		})
 	}
 
-	updateSelectedLocations = async (options, key) => {
-		await this.setState({
-			[key.name]: options,
-			attendees: await this.fetchData(options),
+	function onLocationGroupDeselect(event) {
+		const id = getOnDeselectId(event)
+
+		const selectedLocations = state.selectedLocations.filter(
+			(l) => l.groupId !== parseInt(id, 10)
+		)
+
+		updateLocalStorage(selectedLocations)
+
+		setState({
+			...state,
+			selectedLocations: selectedLocations,
 		})
 	}
 
-	setLocations = async (locationGroups) => {
-		const locations = await fetchLocations(locationGroups)
-
-		const singleLocations = _.filter(locations, function (l) {
-			return l['optionCount'] === 1
+	function updateOption(id, isSelected) {
+		const locations = state.selectedLocations.find((l) => {
+			return l.options.some((o) => o.value === id)
 		})
 
-		const multiLocations = _.filter(locations, function (l) {
-			return l['optionCount'] > 1
-		})
+		locations.options.find((o) => o.value === id).isSelected = isSelected
 
-		this.setState({
-			renderLocationSelect: multiLocations.length > 0,
-			statisticLocations: _.flatMap(multiLocations, function (l) {
-				return l.options
-			}),
-			singleLocations: _.flatMap(singleLocations, function (l) {
-				return l.options
-			}),
-			multiLocations: _.flatMap(multiLocations, function (l) {
-				return l.options
-			}),
+		updateLocalStorage(state.selectedLocations)
+
+		setState({
+			...state,
+			selectedLocations: [...state.selectedLocations],
 		})
 	}
+
+	function onLocationSelect(event) {
+		const id = parseInt(event.target.id, 10)
+		updateOption(id, true)
+	}
+
+	function onLocationDeselect(event) {
+		const id = getOnDeselectId(event)
+		updateOption(id, false)
+	}
+
+	function loadAnotherYear() {
+		setState({
+			...state,
+			furthestYear: state.furthestYear - 1,
+			loadingData: true,
+		})
+	}
+
+	function renderLocationGroupSelect() {
+		const selectedGroups = state.allLocationGroups.filter((g) =>
+			state.selectedLocations.map((l) => l.groupId).includes(g.value)
+		)
+
+		return (
+			<div>
+				<Grid
+					container
+					spacing={3}
+					justifyContent="space-between"
+					alignItems="center"
+				>
+					<Grid item xs={12}>
+						<MultiSelect
+							options={state.allLocationGroups}
+							selectedOptions={selectedGroups}
+							onSelectOption={onLocationGroupSelect}
+							onRemoveOption={onLocationGroupDeselect}
+						/>
+					</Grid>
+				</Grid>
+			</div>
+		)
+	}
+
+	function renderLocationSelect() {
+		return (
+			<div>
+				<Grid
+					container
+					spacing={3}
+					justifyContent="space-between"
+					alignItems="center"
+				>
+					<Grid item xs={12}>
+						<MultiSelect
+							options={state.selectedLocations
+								.filter((l) => l.options.length > 1)
+								.flatMap((l) =>
+									l.options.filter((o) => !o.isSelected)
+								)}
+							selectedOptions={state.selectedLocations
+								.filter((l) => l.options.length > 1)
+								.flatMap((l) =>
+									l.options.filter((o) => o.isSelected)
+								)}
+							onSelectOption={onLocationSelect}
+							onRemoveOption={onLocationDeselect}
+						/>
+					</Grid>
+				</Grid>
+			</div>
+		)
+	}
+
+	function renderCounts() {
+		if (state.loading) {
+			return <div />
+		}
+
+		return (
+			<Table size={'small'}>
+				<TableHead>
+					<TableRow>
+						<TableHeadCell>
+							<strong>Datum</strong>
+						</TableHeadCell>
+						<TableHeadCell align="right">
+							<strong>Kinder</strong>
+						</TableHeadCell>
+						<TableHeadCell align="right">
+							<strong>davon Gäste</strong>
+						</TableHeadCell>
+						<TableHeadCell align="right">
+							<strong>Betreuer</strong>
+						</TableHeadCell>
+						<TableHeadCell align="right">
+							<strong>kein CheckIn</strong>
+						</TableHeadCell>
+						<TableHeadCell align="right">
+							<strong>kein CheckOut</strong>
+						</TableHeadCell>
+					</TableRow>
+				</TableHead>
+				<TableBody>
+					{state.attendees
+						.sort((a, b) => (a['date'] > b['date'] ? -1 : 1))
+						.map((row) => (
+							<TableRow key={row['date']}>
+								<TableCell>
+									{getFormattedDate(row['date'])}
+								</TableCell>
+								<TableCell align="right">
+									{row['regularCount'] + row['guestCount']}
+								</TableCell>
+								<TableCell align="right">
+									{row['guestCount']}
+								</TableCell>
+								<TableCell align="right">
+									{row['volunteerCount']}
+								</TableCell>
+								<TableCell align="right">
+									{row['preCheckInOnlyCount']}
+								</TableCell>
+								<TableCell align="right">
+									{row['noCheckOutCount']}
+								</TableCell>
+							</TableRow>
+						))}
+				</TableBody>
+			</Table>
+		)
+	}
+
+	if (state.loading) {
+		return <div />
+	}
+
+	const locationSelect = state.selectedLocations.some(
+		(s) => s.options.length > 1
+	) ? (
+		renderLocationSelect()
+	) : (
+		<div />
+	)
+
+	const noMoreDataAvailable = !state.attendees.some((a) =>
+		a.date.startsWith(state.furthestYear)
+	)
+
+	return (
+		<NarrowLayout>
+			<Grid
+				container
+				spacing={3}
+				justifyContent="space-between"
+				alignItems="flex-start"
+			>
+				<Grid item xs={12}>
+					{renderLocationGroupSelect()}
+				</Grid>
+				<Grid item xs={12}>
+					{locationSelect}
+				</Grid>
+				<Grid item xs={12}>
+					{renderCounts()}
+				</Grid>
+				<Grid item xs={12}>
+					<LargeButton
+						name={
+							state.loadingData
+								? 'loading'
+								: noMoreDataAvailable
+								? 'No more data'
+								: `Load ${state.furthestYear - 1}`
+						}
+						onClick={loadAnotherYear}
+						disabled={noMoreDataAvailable}
+					/>
+				</Grid>
+			</Grid>
+			<br />
+		</NarrowLayout>
+	)
 }
 
 export const Statistics = withAuth(Statistic)

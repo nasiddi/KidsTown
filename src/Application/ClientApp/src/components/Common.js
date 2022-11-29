@@ -1,51 +1,48 @@
-import { createTheme, Grid, MuiThemeProvider } from '@material-ui/core'
-import Select from 'react-select'
 import React from 'react'
-import { loadCSS } from 'fg-loadcss'
-import Icon from '@material-ui/core/Icon'
-import FormControlLabel from '@material-ui/core/FormControlLabel'
-import Checkbox from '@material-ui/core/Checkbox'
-import { Button, ButtonGroup } from 'reactstrap'
-
-import { withStyles } from '@material-ui/styles'
-import Tooltip from '@material-ui/core/Tooltip'
 import { fetchDefaultEvent } from '../helpers/BackendClient'
+import {
+	Checkbox,
+	FormControlLabel,
+	Grid,
+	Button,
+	ButtonGroup,
+	TextField,
+	Tooltip,
+	createTheme,
+	TableCell,
+} from '@mui/material'
+import { styled } from '@mui/material/styles'
 
-function selectStyles(minHeight, borderColor) {
-	return {
-		menu: (base) => ({
-			...base,
-			zIndex: 100,
-		}),
-		control: (base) => ({
-			...base,
-			minHeight: minHeight ?? 0,
-			borderColor: borderColor ?? '#bfbfbf',
-		}),
-	}
-}
-
-export function UndoButton(props) {
-	return (
-		<a onClick={props['callback']} className="alert-link">
-			<FAIcon name={'fas fa-undo-alt'} />
-		</a>
-	)
-}
+export const paletteOverrideTheme = createTheme({
+	palette: {
+		success: {
+			main: '#28a745',
+			contrastText: '#fff',
+		},
+		info: {
+			main: '#17a2b8',
+			contrastText: '#fff',
+		},
+		secondary: {
+			main: '#ffffff',
+			contrastText: '#007bff',
+		},
+	},
+})
 
 export function LargeButton(props) {
 	return (
-		<Button
+		<StyledButton
 			id={props['id']}
-			block
 			color={props['color']}
-			size="lg"
 			onClick={props['onClick']}
-			outline={props['isOutline']}
 			disabled={props['disabled']}
+			fullWidth={true}
+			variant={props['isOutline'] ? 'outlined' : 'contained'}
+			size={'large'}
 		>
 			{props['name']}
-		</Button>
+		</StyledButton>
 	)
 }
 
@@ -75,17 +72,24 @@ export function getFormattedDate(dateString) {
 	)}-${`0${date.getUTCDate()}`.slice(-2)}`
 }
 
-export const primaryTheme = createTheme({
-	palette: {
-		primary: { main: '#047bff' },
-	},
-})
-
 export function getStateFromLocalStorage(boolean, fallback) {
 	const s = localStorage.getItem(boolean)
 
 	return s === null ? fallback : JSON.parse(s)
 }
+
+export const StyledTextField = styled(TextField)({
+	primary: { main: '#047bff' },
+})
+
+export const StyledButton = styled(Button)({
+	secondary: '#047bff',
+	height: 56,
+})
+
+export const StyledCheckBox = styled(Checkbox)({
+	primary: { main: '#047bff' },
+})
 
 export async function getSelectedEventFromStorage() {
 	const s = localStorage.getItem('selectedEvent')
@@ -104,55 +108,36 @@ export function getLastSunday() {
 	return t
 }
 
-export function MultiSelect(props) {
-	return (
-		<Select
-			styles={selectStyles(props['minHeight'], props['borderColor'])}
-			value={props['value']}
-			isMulti={props['isMulti']}
-			placeholder="Select locations"
-			name={props['name']}
-			options={props['options']}
-			className="basic-multi-select"
-			classNamePrefix="select"
-			onChange={props['onChange']}
-			defaultValue={props['defaultOptions']}
-			minWidth="100px"
-		/>
-	)
-}
-
 export function PrimaryCheckBox(props) {
 	return (
-		<MuiThemeProvider theme={primaryTheme}>
-			<FormControlLabel
-				control={
-					<Checkbox
-						name={props['name']}
-						color="primary"
-						checked={props['checked']}
-						onChange={props['onChange']}
-						disabled={props['disabled']}
-					/>
-				}
-				label={props['label']}
-				labelPlacement="end"
-			/>
-		</MuiThemeProvider>
+		<FormControlLabel
+			control={
+				<StyledCheckBox
+					name={props['name']}
+					color="primary"
+					checked={props['checked']}
+					onChange={props['onChange']}
+					disabled={props['disabled']}
+				/>
+			}
+			label={props['label']}
+			labelPlacement="end"
+		/>
 	)
 }
 
 export function ToggleButtons(props) {
 	const buttons = props['buttons'].map((b) => (
-		<Button
+		<StyledButton
 			key={b['label']}
 			id={b['label']}
 			onClick={b['onClick']}
 			color="primary"
-			outline={!b['isSelected']}
+			variant={!b['isSelected'] ? 'outlined' : 'contained'}
+			size={'large'}
 		>
 			{b['label']}
-		</Button>
+		</StyledButton>
 	))
 
 	return (
@@ -177,7 +162,7 @@ export function getGuid() {
 export function getEventId(event) {
 	let id = parseInt(event.currentTarget.id, 10)
 	if (isNaN(id)) {
-		id = this.getElementId(event.currentTarget)
+		id = getElementId(event.currentTarget)
 	}
 
 	return id
@@ -189,33 +174,25 @@ export function getElementId(element) {
 		return id
 	}
 
-	return this.getElementId(element['parentElement'])
+	return getElementId(element['parentElement'])
 }
 
-export function FAIcon(props) {
-	React.useEffect(() => {
-		const node = loadCSS(
-			'https://use.fontawesome.com/releases/v5.12.0/css/all.css',
-			document.querySelector('#font-awesome-css')
-		)
+export const HtmlTooltip = styled(Tooltip)({
+	backgroundColor: '#1c1c1f',
+	color: 'rgba(255,255,255,0.87)',
+	maxWidth: 500,
+	border: '1px solid #dadde9',
+	fontsize: '30px',
+})
 
-		return () => {
-			node.parentNode.removeChild(node)
-		}
-	}, [])
+export const TableHeadCell = styled(TableCell)({
+	borderBottom: '1.5px solid rgba(0, 0, 0, 0.54)',
+})
 
-	return <Icon className={props['name']} />
-}
-
-export const HtmlTooltip = withStyles(() => ({
-	tooltip: {
-		backgroundColor: '#1c1c1f',
-		color: 'rgba(255,255,255,0.87)',
-		maxWidth: 500,
-		border: '1px solid #dadde9',
-		fontsize: '30px',
-	},
-}))(Tooltip)
+export const TableTotalCell = styled(TableCell)({
+	borderBottom: '0px solid rgba(0, 0, 0, 0.54)',
+	borderTop: '1.5px solid rgba(0, 0, 0, 0.54)',
+})
 
 function createGuid() {
 	return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(

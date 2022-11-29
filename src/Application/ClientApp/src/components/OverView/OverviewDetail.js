@@ -5,7 +5,13 @@ import {
 	AccordionSummary,
 	Grid,
 	Typography,
-} from '@material-ui/core'
+	Chip,
+	Table,
+	TableCell,
+	TableHead,
+	TableRow,
+	TableBody,
+} from '@mui/material'
 import {
 	getLastSunday,
 	getSelectedEventFromStorage,
@@ -13,13 +19,18 @@ import {
 	getSelectedOptionsFromStorage,
 	getStringFromSession,
 	HtmlTooltip,
-} from './Common'
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { Badge, Table } from 'reactstrap'
-import ExpandMoreIcon from '@material-ui/icons/ExpandMore'
-import { withAuth } from '../auth/MsalAuthProvider'
+	TableHeadCell,
+} from '../Common'
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
+import PhoneIphoneIcon from '@mui/icons-material/PhoneIphone'
+import StarIcon from '@mui/icons-material/Star'
+import { styled } from '@mui/material/styles'
 
-function Detail() {
+const StyledTableCell = styled(TableCell)({
+	height: 37,
+})
+
+export default function OverviewDetail() {
 	let repeat = undefined
 
 	const [state, setState] = useState({
@@ -80,48 +91,55 @@ function Detail() {
 			'CheckedIn',
 			'CheckedOut',
 		])
-
-		const filteredKids = _.filter(kids, (p) =>
-			_.includes(selectedState, p['checkState'])
+		const filteredKids = kids.filter((k) =>
+			selectedState.includes(k.checkState)
 		)
 
 		return (
 			<div>
 				<h4>Kinder</h4>
-				<Table>
-					<thead>
-						<tr>
-							<th>First Name</th>
-							<th>Last Name</th>
-							<th>
+				<Table size="small">
+					<TableHead>
+						<TableRow>
+							<TableHeadCell>
+								<strong>First Name</strong>
+							</TableHeadCell>
+							<TableHeadCell>
+								<strong>Last Name</strong>
+							</TableHeadCell>
+							<TableHeadCell>
 								<div style={{ textAlign: 'center' }}>
-									<FontAwesomeIcon
-										icon={['fas', 'mobile-alt']}
-									/>
+									<PhoneIphoneIcon fontSize={'small'} />
 								</div>
-							</th>
-							<th>Status</th>
-							<th>SecurityCode</th>
-						</tr>
-					</thead>
-					<tbody>
+							</TableHeadCell>
+							<TableHeadCell style={{ width: 100 }}>
+								<strong>Status</strong>
+							</TableHeadCell>
+							<TableHeadCell>
+								<strong>SecurityCode</strong>
+							</TableHeadCell>
+						</TableRow>
+					</TableHead>
+					<TableBody>
 						{filteredKids.map((row) => (
-							<tr key={row['attendanceId']}>
-								<td>{row['firstName']}</td>
-								<td>{row['lastName']}</td>
-								<td>
+							<TableRow key={row['attendanceId']}>
+								<TableCell>{row['firstName']}</TableCell>
+								<TableCell>{row['lastName']}</TableCell>
+								<TableCell>
 									<div
 										id={getToolTipTarget(row)}
 										style={{ textAlign: 'center' }}
 									>
 										{getTooltip(row)}
 									</div>
-								</td>
-								<td>{getStateBadge(row['checkState'])}</td>
-								<td>{row['securityCode']}</td>
-							</tr>
+								</TableCell>
+								<TableCell style={{ width: 100 }}>
+									{getStateBadge(row['checkState'])}
+								</TableCell>
+								<TableCell>{row['securityCode']}</TableCell>
+							</TableRow>
 						))}
-					</tbody>
+					</TableBody>
 				</Table>
 			</div>
 		)
@@ -139,9 +157,14 @@ function Detail() {
 				leaveTouchDelay={10000}
 				title={<React.Fragment>{getAdultInfos(row)}</React.Fragment>}
 			>
-				<span>
-					<FontAwesomeIcon icon={['fas', 'mobile-alt']} />
-				</span>
+				<PhoneIphoneIcon
+					style={{
+						border: 'none',
+						backgroundColor: 'white',
+						color: 'black',
+					}}
+					fontSize={'small'}
+				/>
 			</HtmlTooltip>
 		)
 	}
@@ -156,21 +179,29 @@ function Detail() {
 		return (
 			<div>
 				<h4>Betreuer</h4>
-				<Table responsive>
-					<thead>
-						<tr>
-							<th>First Name</th>
-							<th>Last Name</th>
-						</tr>
-					</thead>
-					<tbody>
+				<Table size="small">
+					<TableHead>
+						<TableRow>
+							<TableHeadCell>
+								<strong>First Name</strong>
+							</TableHeadCell>
+							<TableHeadCell>
+								<strong>Last Name</strong>
+							</TableHeadCell>
+						</TableRow>
+					</TableHead>
+					<TableBody>
 						{volunteers.map((row) => (
-							<tr key={row['attendanceId']}>
-								<td>{row['firstName']}</td>
-								<td>{row['lastName']}</td>
-							</tr>
+							<TableRow key={row['attendanceId']}>
+								<StyledTableCell>
+									{row['firstName']}
+								</StyledTableCell>
+								<StyledTableCell>
+									{row['lastName']}
+								</StyledTableCell>
+							</TableRow>
 						))}
-					</tbody>
+					</TableBody>
 				</Table>
 			</div>
 		)
@@ -218,15 +249,23 @@ function Detail() {
 			color = 'primary'
 		}
 
-		return <Badge color={color}>{state}</Badge>
+		// noinspection JSValidateTypes
+		return (
+			<Chip
+				color={color}
+				label={state}
+				size="small"
+				style={{ width: '-webkit-fill-available' }}
+			/>
+		)
 	}
 
 	function getAdultInfos(row) {
 		return (
-			<div>
+			<span>
 				{row['adults'].map((a) => {
 					const primary = a['isPrimaryContact'] ? (
-						<FontAwesomeIcon icon="star" />
+						<StarIcon />
 					) : (
 						<div />
 					)
@@ -241,7 +280,7 @@ function Detail() {
 						</Typography>
 					)
 				})}
-			</div>
+			</span>
 		)
 	}
 
@@ -264,5 +303,3 @@ function Detail() {
 		</div>
 	)
 }
-
-export const OverviewDetail = withAuth(Detail)

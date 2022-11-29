@@ -55,12 +55,15 @@ public class OverviewController : ControllerBase
     [Produces(contentType: "application/json")]
     public async Task<IImmutableList<HeadCounts>> GetAttendanceHistory(
         [FromRoute] long eventId,
+        [FromQuery] DateTime startDate,
+        [FromQuery] DateTime endDate,
         [FromBody] IImmutableList<int> selectedLocations)
     {
         return await _overviewService.GetSummedUpHeadCounts(
                 eventId: eventId,
                 selectedLocations: selectedLocations,
-                startDate: new())
+                startDate: startDate,
+                endDate: endDate)
             .ConfigureAwait(continueOnCapturedContext: false);
     }
 }

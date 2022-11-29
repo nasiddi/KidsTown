@@ -67,16 +67,16 @@ public class OverviewService : IOverviewService
             .ToImmutableList();
     }
 
-    public async Task<IImmutableList<HeadCounts>> GetSummedUpHeadCounts(
-        long eventId,
+    public async Task<IImmutableList<HeadCounts>> GetSummedUpHeadCounts(long eventId,
         IImmutableList<int> selectedLocations,
-        DateTime startDate)
+        DateTime startDate,
+        DateTime endDate)
     {
         var attendees = await _overviewRepository.GetAttendanceHistoryByLocations(
                 selectedLocations: selectedLocations,
                 eventId: eventId,
                 startDate: startDate,
-                endDate: DateTime.Today)
+                endDate: endDate)
             .ConfigureAwait(continueOnCapturedContext: false);
             
         return attendees.GroupBy(keySelector: a => a.InsertDate.Date)

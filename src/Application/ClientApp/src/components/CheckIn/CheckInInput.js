@@ -1,7 +1,15 @@
 import React from 'react'
-import { Grid, MuiThemeProvider } from '@material-ui/core'
-import { LargeButton, primaryTheme } from '../Common'
-import TextField from '@material-ui/core/TextField'
+import { createTheme, Grid, ThemeProvider } from '@mui/material'
+import { LargeButton, StyledTextField } from '../Common'
+
+const theme = createTheme({
+	palette: {
+		neutral: {
+			main: '#64748B',
+			contrastText: '#fff',
+		},
+	},
+})
 
 export function CheckInInput(props) {
 	return (
@@ -13,21 +21,19 @@ export function CheckInInput(props) {
 				alignItems="center"
 			>
 				<Grid item md={8} xs={12}>
-					<MuiThemeProvider theme={primaryTheme}>
-						<TextField
-							inputRef={props.inputRef}
-							id="outlined-basic"
-							label="SecurityCode"
-							variant="outlined"
-							value={props.securityCode}
-							onChange={props.onChange}
-							fullWidth={true}
-							InputLabelProps={{
-								shrink: true,
-							}}
-							autoFocus
-						/>
-					</MuiThemeProvider>
+					<StyledTextField
+						inputRef={props.inputRef}
+						id="outlined-basic"
+						label="SecurityCode"
+						variant="outlined"
+						value={props.securityCode}
+						onChange={props.onChange}
+						fullWidth={true}
+						InputLabelProps={{
+							shrink: true,
+						}}
+						autoFocus
+					/>
 				</Grid>
 				<Grid item md={2} xs={12}>
 					<LargeButton
@@ -38,12 +44,14 @@ export function CheckInInput(props) {
 					/>
 				</Grid>
 				<Grid item md={2} xs={12}>
-					<LargeButton
-						id={'clear'}
-						name={'Clear'}
-						color="secondary"
-						onClick={props.onClear}
-					/>
+					<ThemeProvider theme={theme}>
+						<LargeButton
+							id={'clear'}
+							name={'Clear'}
+							color="neutral"
+							onClick={props.onClear}
+						/>
+					</ThemeProvider>
 				</Grid>
 			</Grid>
 		</Grid>

@@ -12,10 +12,10 @@ public interface IOverviewService
         IImmutableList<int> selectedLocationGroups,
         DateTime date);
 
-    Task<IImmutableList<HeadCounts>> GetSummedUpHeadCounts(
-        long eventId,
+    Task<IImmutableList<HeadCounts>> GetSummedUpHeadCounts(long eventId,
         IImmutableList<int> selectedLocations,
-        DateTime startDate);
+        DateTime startDate,
+        DateTime endDate);
 
     Task<IImmutableList<LiveHeadCounts>> GetHeadCountsByLocations(
         long eventId,

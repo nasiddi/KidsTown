@@ -30,16 +30,12 @@ public class ConfigurationRepository : IConfigurationRepository
             .ToImmutableList();
     }
 
-    public async Task<IImmutableList<KidsTown.Models.Location>> GetLocations(
-        long eventId,
-        IImmutableList<int>? selectedLocationGroups
-    )
+    public async Task<IImmutableList<KidsTown.Models.Location>> GetLocations(long eventId)
     {
         await using var db = CommonRepository.GetDatabase(serviceScopeFactory: _serviceScopeFactory);
             
         var locations = await db.Locations
-            .Where(predicate: l => l.EventId == eventId 
-                && (selectedLocationGroups == null || selectedLocationGroups.Contains(l.LocationGroupId)))
+            .Where(predicate: l => l.EventId == eventId)
             .ToListAsync()
             .ConfigureAwait(continueOnCapturedContext: false);
                 

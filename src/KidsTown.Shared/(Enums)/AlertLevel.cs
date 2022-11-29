@@ -2,7 +2,7 @@ namespace KidsTown.Shared;
 
 public enum AlertLevel
 {
-    Danger,
+    Error,
     Warning,
     Info,
     Success
