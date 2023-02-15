@@ -9,4 +9,6 @@ public interface IAdultUpdateRepository
     Task<int> UpdateAdults(IImmutableList<AdultUpdate> parentUpdates);
     Task<int> RemovePeopleFromFamilies(ImmutableList<long> peopleIds);
     Task<int> SetFamilyUpdateDate(IImmutableList<Family> families);
+    Task<ImmutableList<long>> GetVolunteerPersonIdsWithoutFamiliesToUpdate(int daysLookBack, int take);
+    Task<int> UpdateVolunteers(ImmutableList<long> peopleIds, ImmutableList<VolunteerUpdate> volunteerUpdates);
 }

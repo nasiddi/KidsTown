@@ -44,6 +44,23 @@ public class AdultUpdateService : IAdultUpdateService
         return adultUpdateCount + removeCount + updateDateCount;
     }
 
+    public async Task<int> UpdateVolunteersWithoutFamilies(int daysLookBack, int batchSize)
+    {
+        var peopleIds = await _adultUpdateRepository.GetVolunteerPersonIdsWithoutFamiliesToUpdate(daysLookBack: daysLookBack, take: batchSize);
+        var people = await _planningCenterClient.GetPeopleUpdates(peopleIds: peopleIds);
+        var data = people.SelectMany(selector: p => p.Data ?? new List<Datum>()).ToImmutableList();
+        var volunteerUpdates = data.Select(MapVolunteerUpdate).ToImmutableList();
+        return await _adultUpdateRepository.UpdateVolunteers(peopleIds, volunteerUpdates);
+    }
+
+    private static VolunteerUpdate MapVolunteerUpdate(Datum datum)
+    {
+        return new(
+            peopleId: datum.Id,
+            firstName: datum.Attributes?.FirstName ?? string.Empty,
+            lastName: datum.Attributes?.LastName ?? string.Empty);
+    }
+
     private async Task<List<Family>> GetHouseholds(IImmutableList<Family> families)
     {
         var households = new List<Family>();

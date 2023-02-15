@@ -25,8 +25,10 @@ public class AdultUpdateTask : BackgroundTask
     protected override int Interval => 15000;
     protected override int LogFrequency => 4;
 
-    protected override Task<int> ExecuteRun()
+    protected override async Task<int> ExecuteRun()
     {
-        return _adultUpdateService.UpdateParents(daysLookBack: DaysLookBack, batchSize: 50);
+        var updateCount = await _adultUpdateService.UpdateParents(daysLookBack: DaysLookBack, batchSize: 50);
+        updateCount += await _adultUpdateService.UpdateVolunteersWithoutFamilies(daysLookBack: DaysLookBack, batchSize: 50);
+        return updateCount;
     }
 }

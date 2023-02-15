@@ -48,7 +48,55 @@ public class AdultUpdateRepository : IAdultUpdateRepository
 
         return families.Select(selector: MapFamily).ToImmutableList();
     }
+    
+    public async Task<ImmutableList<long>> GetVolunteerPersonIdsWithoutFamiliesToUpdate(int daysLookBack, int take)
+    {
+        await using var db = CommonRepository.GetDatabase(serviceScopeFactory: _serviceScopeFactory);
+            
+        var personIds = await db.Attendances.Where(predicate: a
+                => a.InsertDate >= DateTime.Today.AddDays(-daysLookBack) 
+                   && a.AttendanceTypeId == (int) AttendanceTypeId.Volunteer)
+            .Select(selector: a => a.PersonId)
+            .Distinct()
+            .ToListAsync().ConfigureAwait(continueOnCapturedContext: false);
+            
+        return (await db.People
+            .Where(predicate: p => !p.FamilyId.HasValue && personIds.Contains(p.Id) && p.PeopleId != null)
+            .OrderBy(keySelector: f => f.UpdateDate)
+            .Select(selector: p => p.PeopleId!.Value)
+            .Distinct()
+            .Take(count: take)
+            .ToListAsync().ConfigureAwait(continueOnCapturedContext: false))
+            .ToImmutableList();
+
+    }
+
+    public async Task<int> UpdateVolunteers(
+        ImmutableList<long> peopleIds,
+        ImmutableList<VolunteerUpdate> volunteerUpdates)
+    {
+        await using var db = CommonRepository.GetDatabase(serviceScopeFactory: _serviceScopeFactory);
+        var people = await db.People
+            .Where(e => e.PeopleId.HasValue && peopleIds.Contains(e.PeopleId!.Value))
+            .ToListAsync();
         
+        foreach (var volunteerUpdate in volunteerUpdates)
+        {
+            var person = people.Single(e => e.PeopleId == volunteerUpdate.PeopleId);
+            person.FirstName = volunteerUpdate.FirstName;
+            person.LastName = volunteerUpdate.LastName;
+        }
+
+        var updateDate = DateTime.UtcNow;
+        
+        foreach (var person in people)
+        {
+            person.UpdateDate = updateDate;
+        }
+        
+        return await db.SaveChangesAsync();
+    }
+
     public async Task<int> UpdateAdults(IImmutableList<AdultUpdate> parentUpdates)
     {
         await using var db = CommonRepository.GetDatabase(serviceScopeFactory: _serviceScopeFactory);
