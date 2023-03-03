@@ -1,6 +1,5 @@
 import React from 'react'
 import { Route, Routes } from 'react-router'
-import './custom-theme.scss'
 import './custom.css'
 import { CheckInOut } from './components/CheckIn'
 import { Statistics } from './components/Statistic'

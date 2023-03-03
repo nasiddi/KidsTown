@@ -216,7 +216,7 @@ function CheckIn() {
 			const newVar = {
 				...state,
 				...cleanState,
-				...clearedAttendanceIds,
+				lastActionAttendanceIds: attendanceIds,
 				lastCodeSubmission: new Date(),
 				alert: alert,
 			}

@@ -102,7 +102,7 @@ export function NavMenu() {
 	}
 
 	return (
-		<AppBar position="sticky">
+		<AppBar>
 			<Toolbar variant="dense">
 				<Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
 					KidsTown

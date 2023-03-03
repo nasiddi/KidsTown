@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { Grid, TextField } from '@mui/material'
+import { Grid } from '@mui/material'
 import {
 	getStringFromSession,
 	getSelectedOptionsFromStorage,
@@ -10,6 +10,7 @@ import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs'
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider'
 import { DatePicker } from '@mui/x-date-pickers/DatePicker'
 import MultiSelect, { onDeselect, onSelect } from '../MultiSelect'
+import dayjs from 'dayjs'
 
 const optionKey = 'overviewLocationGroups'
 
@@ -21,18 +22,19 @@ export default function OverviewOptions() {
 			[]
 		),
 		loading: true,
-		date: '',
+		date: dayjs(getLastSunday().toISOString().substring(0, 10)),
 	})
 
 	useEffect(() => {
 		async function load() {
 			const locationGroups = await fetchLocationGroups()
+			const dateString = getStringFromSession(
+				'overviewDate',
+				getLastSunday().toISOString().substring(0, 10)
+			)
 			setState({
 				...state,
-				date: getStringFromSession(
-					'overviewDate',
-					getLastSunday().toISOString().substring(0, 10)
-				),
+				date: dayjs(dateString),
 				locationGroups: locationGroups,
 				loading: false,
 			})
@@ -42,13 +44,9 @@ export default function OverviewOptions() {
 	}, [])
 
 	function updateDate(value) {
-		if (value === null) {
-			return
-		}
-
 		const overviewDate = `${value.$y}-${value.$M + 1}-${value.$D}`
 		sessionStorage.setItem('overviewDate', overviewDate)
-		setState({ ...state, date: overviewDate })
+		setState({ ...state, date: value })
 	}
 
 	function onLocationDeselect(event) {
@@ -79,13 +77,9 @@ export default function OverviewOptions() {
 					<Grid item xs={3}>
 						<LocalizationProvider dateAdapter={AdapterDayjs}>
 							<DatePicker
-								style={{ color: 'black' }}
 								value={state.date}
-								inputFormat={'DD.MM.YYYY'}
-								onChange={updateDate}
-								renderInput={(params) => (
-									<TextField {...params} />
-								)}
+								onChange={(newValue) => updateDate(newValue)}
+								format={'DD.MM.YYYY'}
 							/>
 						</LocalizationProvider>
 					</Grid>

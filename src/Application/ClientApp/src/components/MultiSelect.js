@@ -99,7 +99,7 @@ export default function MultiSelect(props) {
 							borderRadius: '4px',
 							borderStyle: 'solid',
 							borderWidth: '1px',
-							minHeight: props.height ?? '56px',
+							minHeight: props.height ?? '34px',
 							padding: '10px',
 						}}
 						onClick={openLocationMenu}
