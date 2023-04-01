@@ -210,7 +210,7 @@ function Docs() {
 					]}
 				/>
 				<TextImageSplit
-					title={'Personen erfassen (Mitglieder & Gäste)'}
+					title={'Personen erfassen'}
 					fileName={'manned_add.png'}
 					paragraphs={[
 						{
@@ -219,7 +219,7 @@ function Docs() {
 						},
 						{
 							icon: 'Info',
-							text: "Auf der nächsten Seite hat man drei Optionen: Einen neuen Haushalt erstellen (2), einem Bestehenden Haushalt hinzufügen (3) oder als Gast erfassen (4). Das weitere vorgehen für (2) und (3) entspricht dem Abschnitt 'Haushalt editieren'",
+							text: "Auf der nächsten Seite hat man zwei Optionen: Einen neuen Haushalt erstellen oder einem bestehenden Haushalt hinzufügen. Das weitere Vorgehen für 'zu bestehendem hinzufügen' entspricht dem Abschnitt 'Haushalt editieren'",
 						},
 						{
 							icon: 'Action',
@@ -228,24 +228,28 @@ function Docs() {
 					]}
 				/>
 				<TextImageSplit
-					title={'Gast in einem Haushalt eintragen'}
+					title={'Gast erfassen'}
 					fileName={'household_visitor.png'}
 					paragraphs={[
 						{
 							icon: 'Action',
-							text: "Oben rechts auf der Haushaltsübersicht muss man auf den Knopf 'Add Visitor tippen.",
+							text: "Nach 'Gast KidsTown' suchen, oder schneller 'ga ki' und 'The KidsTown HouseHold' auswählen.",
 						},
 						{
 							icon: 'Action',
-							text: "Im neuen Fenster werden die Angaben des Kindes eingetragen. Und dann weiter mit 'Next' unten rechts.",
+							text: "Im neuen Fenster werden die Angaben des Kindes und eine Kontaktperson eingetragen. Und dann weiter mit 'Next' unten rechts.",
 						},
 						{
 							icon: 'Action',
-							text: 'Nun ist der Gast auf der Haushaltsübersicht erschienen und man kann wie gewohnt die Location anpassen, oder zusätzliche Labels auswählen.',
+							text: "Nun kann bben rechts auf der Haushaltübersicht 'Add Visitor' auswählt werden.",
 						},
 						{
-							icon: 'Info',
-							text: 'Auf diese Art sollten Gastkinder erfasst werden, die mit einer Familie mitgekommen sind. Wenn ein Kind unabhängig gekommen ist, sollte es über die Startseite erfasst werden. Wenn das Gastkind mit anderen Kindern im Haushalt eingecheckt wird, erhalten alle den gleichen SecurityCode.',
+							icon: 'Action',
+							text: 'Nun ist der Gast auf der Haushaltsübersicht erschienen und kann gleich wie die anderen Kinder einchecken.',
+						},
+						{
+							icon: 'Warning',
+							text: "Die automatisch ausgwählte Location ist meist nicht korrekt und kann, wie in 'Location anpassen' beschrieben, angepasst werden.",
 						},
 					]}
 				/>
