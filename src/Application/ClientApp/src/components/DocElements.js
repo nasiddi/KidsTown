@@ -61,7 +61,10 @@ function stylizedText(props, size) {
 		return (
 			<div key={index}>
 				{icon}
-				<p>{p['text']}</p>
+				<p>
+					{p['text']}
+					<br />
+				</p>
 			</div>
 		)
 	})

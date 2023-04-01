@@ -241,7 +241,7 @@ function Docs() {
 						},
 						{
 							icon: 'Action',
-							text: "Nun kann bben rechts auf der Haushaltübersicht 'Add Visitor' auswählt werden.",
+							text: "Nun kann oben rechts auf der Haushaltübersicht 'Add Visitor' auswählt werden.",
 						},
 						{
 							icon: 'Action',

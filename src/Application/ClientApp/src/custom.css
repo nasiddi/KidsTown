@@ -70,3 +70,7 @@ legend {
 .MuiButtonBase-root {
   text-transform: unset !important;
 }
+
+p {
+  min-height: 48px;
+}
