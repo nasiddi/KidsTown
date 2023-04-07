@@ -1,6 +1,6 @@
 import React from 'react'
 import { Grid } from '@mui/material'
-import { FullText, SplitText, TextImageSplit, Title } from './DocElements'
+import { FullText, TextImageSplit, Title } from './DocElements'
 import { NarrowLayout } from './Layout'
 
 function Docs() {
@@ -262,11 +262,6 @@ function Docs() {
 							text: 'Wenn man die Haushaltsübersicht geöffnet hat, kann man oben beim Haushalt auf den Stift tippen um ihn zu editieren',
 						},
 					]}
-				/>
-
-				<SplitText
-					title="Fehlende Abschnitte"
-					paragraphs={[{ text: 'Manned Station, Settings' }]}
 				/>
 			</Grid>
 			<Grid

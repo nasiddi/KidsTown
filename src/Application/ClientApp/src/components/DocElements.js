@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react'
+import React from 'react'
 import { Grid } from '@mui/material'
 import Image from 'mui-image'
 import ArrowCircleRightOutlinedIcon from '@mui/icons-material/ArrowCircleRightOutlined'
@@ -25,83 +25,9 @@ export function Title(props) {
 	const TitleSize = `h${props['size']}`
 
 	return (
-		<Grid item xs={12}>
+		<Grid item xs={props.gridItemSize}>
 			<TitleSize>{props['text']}</TitleSize>
 			<a className="anchor hash" id={props['id']} href={props['id']} />
-		</Grid>
-	)
-}
-
-function stylizedText(props, size) {
-	const paragraphs = props.paragraphs.map((p, index) => {
-		let icon = <div />
-		if (p.icon === 'Info') {
-			icon = (
-				<div className="wrap-icon">
-					<DocsIcon name={info} />
-				</div>
-			)
-		}
-		if (p.icon === 'Action') {
-			icon = (
-				<div className="wrap-icon">
-					<DocsIcon name={action} />
-				</div>
-			)
-		}
-
-		if (p.icon === 'Warning') {
-			icon = (
-				<div className="wrap-icon">
-					<DocsIcon name={warning} />
-				</div>
-			)
-		}
-
-		return (
-			<div key={index}>
-				{icon}
-				<p>
-					{p['text']}
-					<br />
-				</p>
-			</div>
-		)
-	})
-
-	return (
-		<Grid item sm={size} xs={12}>
-			<h5>{props.title}</h5>
-			{paragraphs}
-		</Grid>
-	)
-}
-
-export function SplitImage(props) {
-	const [open, setOpen] = React.useState(6)
-
-	let image = ''
-	try {
-		image = require(`../docs/${props['fileName']}`)
-	} catch (e) {
-		console.log(e.toString())
-	}
-
-	const handleOpen = useCallback(() => {
-		if (open === 6) {
-			setOpen(12)
-		} else {
-			setOpen(6)
-		}
-	}, [setOpen])
-
-	const mediaCard = (
-		<Image src={image} alt={props['fileName']} onClick={handleOpen} fluid />
-	)
-
-	return (
-		<Grid item sm={open} xs={12}>
-			{mediaCard}
 		</Grid>
 	)
 }
@@ -110,9 +36,7 @@ function splitImageInner(props, func, open) {
 	let image = ''
 	try {
 		image = require(`../docs/${props['fileName']}`)
-	} catch (e) {
-		console.log(e)
-	}
+	} catch (e) {}
 
 	const mediaCard = (
 		<Image src={image} alt={props['fileName']} onClick={func} fluid />
@@ -125,10 +49,7 @@ function splitImageInner(props, func, open) {
 	)
 }
 
-export function SplitText(props) {
-	return stylizedText(props, 6)
-}
-
+// todo delete this once old doc is removed
 export function FullText(props) {
 	return stylizedText(props, 12)
 }
