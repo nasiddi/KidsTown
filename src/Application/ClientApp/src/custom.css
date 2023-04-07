@@ -52,13 +52,6 @@ code {
   margin: 12px 10px 0 6px;
 }
 
-a.anchor {
-  display: block;
-  position: relative;
-  top: -170px;
-  visibility: hidden;
-}
-
 .btn {
   color: white;
 }
