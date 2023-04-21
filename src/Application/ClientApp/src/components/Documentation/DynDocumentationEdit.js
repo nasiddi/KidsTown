@@ -308,10 +308,14 @@ function DynDocsEdit() {
 
 	async function onAddImages(event) {
 		const files = event.target.files
+		const id = event.currentTarget.id
 
-		const element = state.documentation.find(
-			(e) => e.id.toString() === event.currentTarget.id
-		)
+		setState({
+			...state,
+			isSaving: true,
+		})
+
+		const element = state.documentation.find((e) => e.id.toString() === id)
 
 		const results = await postImages(files, element.id)
 		let previousImage = sortDocElements(element.images)[
@@ -332,7 +336,11 @@ function DynDocsEdit() {
 			element.images.push(image)
 		}
 
-		setState({ ...state, documentation: state.documentation })
+		setState({
+			...state,
+			documentation: state.documentation,
+			isSaving: false,
+		})
 	}
 
 	function getLargestParagraphId() {
@@ -409,6 +417,7 @@ function DynDocsEdit() {
 						onUpImage={onUpImage}
 						onDownImage={onDownImage}
 						isLast={state.documentation.length - 1 === i}
+						isSaving={state.isSaving}
 					/>
 				))}
 				<Grid item xs={12}>

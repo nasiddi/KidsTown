@@ -151,6 +151,7 @@ export function DynDocEditElement(props) {
 											variant="contained"
 											component="label"
 											fullWidth={true}
+											disabled={props.isSaving}
 										>
 											Bilder hinzufügen
 											<input
