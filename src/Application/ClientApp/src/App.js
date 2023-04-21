@@ -8,8 +8,8 @@ import { NavMenu } from './components/NavMenu'
 import { ThemeProvider } from '@mui/material'
 import { paletteOverrideTheme } from './components/Common'
 import { OverView } from './components/OverView/OverView'
-import DynDocumentation from './components/DynDocumentation'
-import { DynDocumentationEdit } from './components/DynDocumentationEdit'
+import DynDocumentation from './components/Documentation/DynDocumentation'
+import { DynDocumentationEdit } from './components/Documentation/DynDocumentationEdit'
 
 export const App = () => {
 	return (

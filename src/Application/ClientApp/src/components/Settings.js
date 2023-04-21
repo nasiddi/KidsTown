@@ -7,10 +7,12 @@ import {
 	Card,
 	CardContent,
 	CardHeader,
+	Button,
 } from '@mui/material'
 import { getGuid, getSelectedEventFromStorage } from './Common'
 import { withAuth } from '../auth/MsalAuthProvider'
 import { NarrowLayout } from './Layout'
+import { useNavigate } from 'react-router-dom'
 
 function BoolBadge(props) {
 	return <Chip color={props['color']} label={props['label']} />
@@ -126,6 +128,8 @@ function Setting() {
 		loading: true,
 	})
 
+	const navigate = useNavigate()
+
 	useEffect(() => {
 		async function load() {
 			setState({
@@ -161,6 +165,10 @@ function Setting() {
 			localStorage.setItem('statisticLocations', JSON.stringify([]))
 			setState({ ...state, selectedEvent: selected['eventId'] })
 		}
+	}
+
+	const onRouteChange = () => {
+		navigate('/settings/documentation')
 	}
 
 	function renderEvents() {
@@ -246,9 +254,19 @@ function Setting() {
 				<Grid item xs={12}>
 					<h1>Settings</h1>
 				</Grid>
-				<Grid item xs={12}>
+				<Grid item xs={6}>
 					<h3>Device</h3>
 					<p>{getGuid()}</p>
+				</Grid>
+				<Grid item xs={6}>
+					<Button
+						color={'primary'}
+						variant={'contained'}
+						fullWidth={true}
+						onClick={onRouteChange}
+					>
+						Edit Manual
+					</Button>
 				</Grid>
 				<Grid item xs={4}>
 					{renderEvents()}

@@ -1,19 +1,20 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace KidsTown.Database.EfCore;
-
-public partial class Family
+namespace KidsTown.Database.EfCore
 {
-    public Family()
+    public partial class Family
     {
-        People = new HashSet<Person>();
+        public Family()
+        {
+            People = new HashSet<Person>();
+        }
+
+        public int Id { get; set; }
+        public long? HouseholdId { get; set; }
+        public string Name { get; set; } = null!;
+        public DateTime UpdateDate { get; set; }
+
+        public virtual ICollection<Person> People { get; set; }
     }
-
-    public int Id { get; set; }
-    public long? HouseholdId { get; set; }
-    public string Name { get; set; } = null!;
-    public DateTime UpdateDate { get; set; }
-
-    public virtual ICollection<Person> People { get; set; }
 }

@@ -106,3 +106,31 @@ export async function postPhoneNumbers(adults, numberChanged) {
 		request
 	).then()
 }
+
+export async function postImages(files, elementId) {
+	const request = {
+		method: 'POST',
+	}
+
+	const formData = new FormData()
+
+	for (let i = 0; i < files.length; i++) {
+		formData.append(`file${i}`, files[i])
+	}
+
+	request.body = formData
+
+	const res = await fetch(`documentation/${elementId}/image-upload/`, request)
+
+	return await res.json()
+}
+
+export async function saveDocumentation(documentation) {
+	const request = getPostRequest()
+
+	request.body = JSON.stringify(documentation)
+
+	const res = await fetch('documentation', request)
+
+	return res.status
+}

@@ -16,5 +16,9 @@
       <ProjectReference Include="..\KidsTown.Shared\KidsTown.Shared.csproj" />
       <ProjectReference Include="..\PlanningCenterApiClient\PlanningCenterApiClient.csproj" />
     </ItemGroup>
+
+    <ItemGroup>
+      <PackageReference Include="Google.Apis.Drive.v3" Version="1.60.0.3024" />
+    </ItemGroup>
     
 </Project>

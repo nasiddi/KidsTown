@@ -1,9 +1,9 @@
 import React from 'react'
 import { Grid } from '@mui/material'
-import { NarrowLayout } from './Layout'
+import { NarrowLayout } from '../Layout'
 import { useEffect, useState } from 'react'
-import { Title } from './DocElements'
-import { DynDocElement } from './DynDocElement'
+import { DynDocElement, Title } from './DynDocElement'
+import { fetchDocumentation, sortDocElements } from './DynDocHelpers'
 
 function DynDocs() {
 	const [state, setState] = useState({
@@ -23,16 +23,23 @@ function DynDocs() {
 		load().then()
 	}, [])
 
-	async function fetchDocumentation() {
-		const response = await fetch('documentation')
-
-		return await response.json()
-	}
-
 	console.log(state)
 
 	if (state.loading) {
 		return <></>
+	}
+
+	function renderDocSection(title, sectionId) {
+		return (
+			<>
+				<Title text={title} size={2} />
+				{sortDocElements(
+					state.documentation.filter((e) => e.sectionId === sectionId)
+				).map((e, i) => (
+					<DynDocElement docElement={e} key={i} />
+				))}
+			</>
+		)
 	}
 
 	return (
@@ -44,15 +51,13 @@ function DynDocs() {
 				alignItems="flex-start"
 				id={'checkinsAppTabName'}
 			>
-				<Title text="Anleitung Checkin KidsTown" size={1} />
 				<Title
-					text="CheckIns App (Label Stationen)"
-					size={2}
-					id={'CheckInsApp'}
+					text="Anleitung Checkin KidsTown"
+					size={1}
+					gridItemSize={12}
 				/>
-				{state.documentation.map((e, i) => (
-					<DynDocElement docElement={e} key={i} />
-				))}
+				{renderDocSection('CheckIns App (Label Stationen)', 1)}
+				{renderDocSection('Kidstown WebApp (Scan Stationen)', 2)}
 			</Grid>
 		</div>
 	)
