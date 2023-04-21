@@ -7,8 +7,9 @@ import TitleIcon from '@mui/icons-material/Title'
 import DeleteIcon from '@mui/icons-material/Delete'
 import EditOffIcon from '@mui/icons-material/EditOff'
 import { DynDocEditParagraph } from './DynDocEditParagraph'
-import { sortParagraphs, splitImageInner, stylizedText } from './DynDocElement'
-import { Title } from './DocElements'
+import { DynDocImage, stylizedText, Title } from './DynDocElement'
+import { sortDocElements } from './DynDocHelpers'
+import Image from 'mui-image'
 
 export function DynDocEditElement(props) {
 	const element = props.docElement
@@ -25,8 +26,6 @@ export function DynDocEditElement(props) {
 			border: '1px solid #0366d6',
 		}
 	}
-
-	function onImageClick() {}
 
 	return (
 		<Grid
@@ -56,8 +55,8 @@ export function DynDocEditElement(props) {
 							<IconButton
 								color={'primary'}
 								onClick={props.onUp}
-								id={element.elementId.toString()}
-								disabled={element.previousElementId === 0}
+								id={element.id.toString()}
+								disabled={element.previousId === 0}
 							>
 								<ExpandLessIcon />
 							</IconButton>
@@ -67,7 +66,7 @@ export function DynDocEditElement(props) {
 								<IconButton
 									color={'primary'}
 									onClick={props.onEditOff}
-									id={element.elementId.toString()}
+									id={element.id.toString()}
 								>
 									<EditOffIcon />
 								</IconButton>
@@ -75,7 +74,7 @@ export function DynDocEditElement(props) {
 								<IconButton
 									color={'primary'}
 									onClick={props.onEdit}
-									id={element.elementId.toString()}
+									id={element.id.toString()}
 								>
 									<EditIcon />
 								</IconButton>
@@ -84,7 +83,7 @@ export function DynDocEditElement(props) {
 								<IconButton
 									color={'error'}
 									onClick={props.onElementDelete}
-									id={element.elementId.toString()}
+									id={element.id.toString()}
 								>
 									<DeleteIcon />
 								</IconButton>
@@ -94,7 +93,7 @@ export function DynDocEditElement(props) {
 							<IconButton
 								color={'primary'}
 								onClick={props.onDown}
-								id={element.elementId.toString()}
+								id={element.id.toString()}
 								disabled={props.isLast}
 							>
 								<ExpandMoreIcon />
@@ -113,14 +112,17 @@ export function DynDocEditElement(props) {
 							<Title
 								text={element.title?.text}
 								size={element.title?.size}
-								gridItemSize={props.onEdit ? 11 : 12}
+								gridItemSize={props?.onEdit ? 11 : 12}
 							/>
 						) : (
 							<></>
 						)}
-						{stylizedText(element, element.imageUrl ? 6 : 11)}
-						{element.imageUrl ? (
-							splitImageInner(element.imageUrl, onImageClick, 5)
+						{stylizedText(
+							element,
+							element.images?.length > 0 ? 6 : 11
+						)}
+						{element.images?.length > 0 ? (
+							splitImageInner(props)
 						) : (
 							<></>
 						)}
@@ -133,13 +135,42 @@ export function DynDocEditElement(props) {
 									justifyContent="space-between"
 									alignItems="center"
 								>
+									<Grid item sm={6} xs={12}>
+										<Button
+											id={element.id}
+											onClick={props.onAddParagraph}
+											color="primary"
+											variant={'contained'}
+											fullWidth={true}
+										>
+											Neuer Paragraph
+										</Button>
+									</Grid>
+									<Grid item sm={6} xs={12}>
+										<Button
+											variant="contained"
+											component="label"
+											fullWidth={true}
+										>
+											Bilder hinzufügen
+											<input
+												id={element.id.toString()}
+												hidden
+												accept="image/*"
+												multiple
+												type="file"
+												onChange={props.onAddImages}
+											/>
+										</Button>
+									</Grid>
 									<Grid item sm={10} xs={12}>
 										<TextField
-											id={element.elementId.toString()}
+											id={element.id.toString()}
 											label={'Titel'}
 											fullWidth={true}
 											value={element.title.text}
 											onChange={props.onTitleChange}
+											style={{ marginTop: '5px' }}
 										/>
 									</Grid>
 									<Grid item>
@@ -147,7 +178,7 @@ export function DynDocEditElement(props) {
 											size={'small'}
 											color={'primary'}
 											onClick={props.onTitleSizeChange}
-											id={element.elementId}
+											id={element.id}
 											name={'5'}
 											style={setTitleSizeStyle(
 												5,
@@ -162,7 +193,7 @@ export function DynDocEditElement(props) {
 											size={'medium'}
 											color={'primary'}
 											onClick={props.onTitleSizeChange}
-											id={element.elementId}
+											id={element.id}
 											name={'4'}
 											style={setTitleSizeStyle(
 												4,
@@ -177,7 +208,7 @@ export function DynDocEditElement(props) {
 											size={'large'}
 											color={'primary'}
 											onClick={props.onTitleSizeChange}
-											id={element.elementId}
+											id={element.id}
 											name={'3'}
 											style={setTitleSizeStyle(
 												3,
@@ -187,10 +218,10 @@ export function DynDocEditElement(props) {
 											<TitleIcon />
 										</IconButton>
 									</Grid>
-									{sortParagraphs(element.paragraphs).map(
+									{sortDocElements(element.paragraphs).map(
 										(e, i) => (
 											<DynDocEditParagraph
-												key={e.paragraphId}
+												key={e.id}
 												paragraph={e}
 												onUpParagraph={
 													props.onUpParagraph
@@ -215,23 +246,105 @@ export function DynDocEditElement(props) {
 											/>
 										)
 									)}
-									<Grid item xs={12}>
-										<Button
-											id={element.elementId}
-											onClick={props.onAddParagraph}
-											color="primary"
-											variant={'outlined'}
-											fullWidth={true}
-										>
-											Neuer Paragraph
-										</Button>
-									</Grid>
 								</Grid>
 							</Grid>
 						) : (
 							<></>
 						)}
 					</Grid>
+				</Grid>
+			</Grid>
+		</Grid>
+	)
+}
+
+function DynDocEditImage(props) {
+	const img = props.image
+
+	return (
+		<Grid
+			item
+			xs={12}
+			style={{
+				border: '2px solid lightgrey',
+				borderRadius: '5px',
+				padding: '5px',
+				marginBottom: '5px',
+			}}
+		>
+			<Grid
+				container
+				spacing={1}
+				justifyContent="space-between"
+				alignItems="flex-start"
+			>
+				<Grid item xs={12}>
+					<Image
+						src={`https://drive.google.com/uc?export=view&id=${img.fileId}`}
+						alt={img.fileId}
+						fluid
+					/>
+				</Grid>
+				<Grid item>
+					<IconButton
+						color={'primary'}
+						onClick={props.onUp}
+						id={img.id.toString()}
+						disabled={img.previousId === 0}
+					>
+						<ExpandLessIcon />
+					</IconButton>
+				</Grid>
+				<Grid item>
+					<IconButton
+						color={'error'}
+						onClick={props.onDelete}
+						id={img.id.toString()}
+					>
+						<DeleteIcon />
+					</IconButton>
+				</Grid>
+				<Grid item>
+					<IconButton
+						color={'primary'}
+						onClick={props.onDown}
+						id={img.id.toString()}
+						disabled={props.isLast}
+					>
+						<ExpandMoreIcon />
+					</IconButton>
+				</Grid>
+			</Grid>
+		</Grid>
+	)
+}
+
+function splitImageInner(props) {
+	const mediaCards = sortDocElements(props.docElement.images).map((e, i) =>
+		props.docElement.isEdit ? (
+			<DynDocEditImage
+				key={e.id}
+				image={e}
+				onUp={props.onUpImage}
+				onDown={props.onDownImage}
+				onDelete={props.onDeleteImage}
+				isLast={props.docElement.images.length - 1 === i}
+			/>
+		) : (
+			<DynDocImage key={e.id} fileId={e.fileId} />
+		)
+	)
+
+	return (
+		<Grid item sm={6} xs={12}>
+			<Grid
+				container
+				spacing={1}
+				justifyContent="space-between"
+				alignItems="flex-start"
+			>
+				<Grid item xs={12}>
+					{mediaCards}
 				</Grid>
 			</Grid>
 		</Grid>

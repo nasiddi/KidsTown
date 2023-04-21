@@ -11,7 +11,7 @@ export function DynDocEditParagraph(props) {
 	const paragraph = props.paragraph
 
 	return (
-		<Grid item xs={12} key={paragraph.paragraphId}>
+		<Grid item xs={12} key={paragraph.id}>
 			<Grid
 				container
 				spacing={1}
@@ -31,8 +31,8 @@ export function DynDocEditParagraph(props) {
 							<IconButton
 								color={'primary'}
 								onClick={props.onUpParagraph}
-								id={paragraph.paragraphId.toString()}
-								disabled={paragraph.previousParagraphId === 0}
+								id={paragraph.id.toString()}
+								disabled={paragraph.previousId === 0}
 							>
 								<ExpandLessIcon />
 							</IconButton>
@@ -41,7 +41,7 @@ export function DynDocEditParagraph(props) {
 							<IconButton
 								color={'primary'}
 								onClick={props.onDownParagraph}
-								id={paragraph.paragraphId.toString()}
+								id={paragraph.id.toString()}
 								disabled={props.isLast}
 							>
 								<ExpandMoreIcon />
@@ -54,7 +54,7 @@ export function DynDocEditParagraph(props) {
 						size={'medium'}
 						color={paragraph.icon === 'Action' ? 'primary' : ''}
 						onClick={props.onParagraphIconChange}
-						id={paragraph.paragraphId}
+						id={paragraph.id}
 						name={'Action'}
 					>
 						<ArrowCircleRightOutlinedIcon />
@@ -65,7 +65,7 @@ export function DynDocEditParagraph(props) {
 						size={'medium'}
 						color={paragraph.icon === 'Info' ? 'primary' : ''}
 						onClick={props.onParagraphIconChange}
-						id={paragraph.paragraphId}
+						id={paragraph.id}
 						name={'Info'}
 					>
 						<InfoOutlinedIcon />
@@ -76,7 +76,7 @@ export function DynDocEditParagraph(props) {
 						size={'medium'}
 						color={paragraph.icon === 'Warning' ? 'primary' : ''}
 						onClick={props.onParagraphIconChange}
-						id={paragraph.paragraphId}
+						id={paragraph.id}
 						name={'Warning'}
 					>
 						<WarningAmberOutlinedIcon />
@@ -85,7 +85,7 @@ export function DynDocEditParagraph(props) {
 				<Grid item xs={9}>
 					<TextField
 						value={paragraph.text}
-						id={paragraph.paragraphId.toString()}
+						id={paragraph.id.toString()}
 						onChange={props.onParagraphChange}
 						multiline
 						fullWidth={true}
@@ -96,7 +96,7 @@ export function DynDocEditParagraph(props) {
 					<IconButton
 						color={'error'}
 						onClick={props.onParagraphDelete}
-						id={paragraph.paragraphId.toString()}
+						id={paragraph.id.toString()}
 					>
 						<DeleteIcon />
 					</IconButton>

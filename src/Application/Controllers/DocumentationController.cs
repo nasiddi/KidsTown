@@ -1,5 +1,11 @@
+using System;
+using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Linq;
 using System.Threading.Tasks;
+using Google.Apis.Drive.v3;
+using KidsTown.KidsTown;
+using KidsTown.KidsTown.Models;
 using Microsoft.AspNetCore.Mvc;
 
 namespace KidsTown.Application.Controllers;
@@ -8,73 +14,72 @@ namespace KidsTown.Application.Controllers;
 [Route(template: "[controller]")]
 public class DocumentationController : ControllerBase
 {
+    private readonly IDocumentationService _documentationService;
+
+    public DocumentationController(IDocumentationService documentationService)
+    {
+        _documentationService = documentationService;
+    }
+    
     [HttpGet]
     [Produces(contentType: "application/json")]
-    public async Task<IImmutableList<DocumentationElement>> GetDocumentation()
+    [Route("{sectionId}")]
+    public async Task<IImmutableSet<DocumentationElement>> GetDocumentation([FromRoute]int sectionId)
     {
-        await Task.CompletedTask;
+        return await _documentationService.GetDocumentation((Section) sectionId);
+    }
+    
+    [HttpPost]
+    [Produces(contentType: "application/json")]
+    public async Task<IActionResult> SaveDocumentation([FromBody]IImmutableSet<DocumentationElement> documentationElements)
+    {
+        var result = await _documentationService.UpdateDocumentation(documentationElements);
 
-        return ImmutableList.Create(
-            new DocumentationElement(
-                ElementId: 1,
-                PreviousElementId: 0,
-                Title: new Title(Text: "Stationstypen", Size: 3),
-                Paragraphs: ImmutableList.Create(item: new Paragraph(
-                    ParagraphId: 4,
-                    PreviousParagraphId: 0,
-                    Text:
-                    "Das App bietet verschiedene Typen von Station. Wir brauchen die 'Self' Station und die 'Manned' Station.\nBei 'Self' Stationen können Eltern die Label für ihre Kinder selber drucken. 'Manned' Stationen müssen aus Datenschutzgründen immer von Mitarbeitern betreut werden.",
-                    Icon: null))),
-            new DocumentationElement(
-                ElementId: 2,
-                PreviousElementId: 1,
-                Title: new Title(Text: "Self Station Ablauf", Size: 4),
-                Paragraphs: ImmutableList<Paragraph>.Empty),
-            new DocumentationElement(
-                ElementId: 3,
-                PreviousElementId: 2,
-                Title: new Title(Text: "Startseite", Size: 5),
-                ImageUrl: "self_start.png",
-                Paragraphs: ImmutableList.Create(new Paragraph(
-                        ParagraphId: 1,
-                        PreviousParagraphId: 0,
-                        Text:
-                        "Paul Muster möchte seine vier Kinder einchecken, also gibt er dafür seine Handynummer ein und tippt auf 'Search!'.",
-                        Icon: ParagraphIcon.Action),
-                    new Paragraph(
-                        ParagraphId: 2,
-                        PreviousParagraphId: 1,
-                        Text:
-                        "Oder Paul Muster hat bereits einen BarCode für sich registriert und tippt deshalb auf den BarCode und hält seinen BarCode in die Kamera.",
-                        Icon: ParagraphIcon.Action),
-                    new Paragraph(
-                        ParagraphId: 3,
-                        PreviousParagraphId: 2,
-                        Text: "Blub blub blub",
-                        Icon: ParagraphIcon.Action),
-                    new Paragraph(
-                        ParagraphId: 4,
-                        PreviousParagraphId: 3,
-                        Text:
-                        "Das ist die Startseite. Hier kann man über eine beliebige Telefonnummer, die in diesem Haushalt erfasst ist, ober über einen hinterlegten BarCode zum Haushalt gelangen. Telefonnummern können nur über Manned Stationen hinzugefügt oder bearbeitet werden.",
-                        Icon: ParagraphIcon.Info))));
+        try
+        {
+            switch (result)
+            {
+                case UpdateResult.Success:
+                    return Ok();
+                case UpdateResult.HasChanged:
+                    return Conflict();
+                case UpdateResult.Failed:
+                    return Problem();
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
+        }
+        finally
+        {
+            Response.OnCompleted(async () =>
+            {
+                if (result == UpdateResult.Success)
+                {
+                    await _documentationService.CleanupImages();
+                }
+            });
+        }
+    }
+
+    [HttpPost]
+    [Produces(contentType: "application/json")]
+    [Route("{elementId}/image-upload")]
+    public async Task<ImmutableList<string>> SaveImages(int elementId, [FromQuery]int? previousImageId = default)
+    {
+        var files = Request.Form.Files.ToList();
+        
+        var fileIds = new List<string>();
+        
+        foreach (var file in files)
+        {
+            if (file.Length > 0)
+            {
+                var uploadedFileId = await _documentationService.SaveImage(file.OpenReadStream(), file.FileName);
+                fileIds.Add(uploadedFileId);
+            }
+        }
+        
+        return fileIds.ToImmutableList();
     }
 }
 
-public record DocumentationElement(
-    int ElementId,
-    int PreviousElementId,
-    Title Title,
-    ImmutableList<Paragraph> Paragraphs,
-    string? ImageUrl = default);
-
-public record Title(string Text = "", int Size = 5);
-
-public record Paragraph(int ParagraphId, int PreviousParagraphId, string Text, ParagraphIcon? Icon);
-
-public enum ParagraphIcon
-{
-    Action,
-    Info,
-    Warning
-}

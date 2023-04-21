@@ -1,5 +1,8 @@
 using System;
 using System.Text.Json.Serialization;
+using Google.Apis.Auth.OAuth2;
+using Google.Apis.Drive.v3;
+using Google.Apis.Services;
 using KidsTown.BackgroundTasks.Adult;
 using KidsTown.BackgroundTasks.Attendance;
 using KidsTown.BackgroundTasks.CheckOut;
@@ -81,6 +84,19 @@ public class Startup
         services.AddScoped<IOverviewRepository, OverviewRepository>();
         services.AddScoped<IPeopleRepository, PeopleRepository>();
         services.AddScoped<ISearchLoggingRepository, SearchLoggingRepository>();
+        services.AddScoped<IDocumentationRepository, DocumentationRepository>();
+        services.AddScoped<IDocumentationService, DocumentationService>();
+        
+        var credential = GoogleCredential.FromFile(Configuration.GetValue<string>("GoogleSecretsFile"))
+            .CreateScoped(DriveService.ScopeConstants.Drive);
+        
+        var service = new DriveService(new BaseClientService.Initializer()
+        {
+            HttpClientInitializer = credential
+        });
+        
+        services.AddSingleton(service);
+
     }
 
     // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

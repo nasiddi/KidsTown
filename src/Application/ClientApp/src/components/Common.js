@@ -162,19 +162,19 @@ export function getGuid() {
 export function getEventId(event) {
 	let id = parseInt(event.currentTarget.id, 10)
 	if (isNaN(id)) {
-		id = getElementId(event.currentTarget)
+		id = getId(event.currentTarget)
 	}
 
 	return id
 }
 
-export function getElementId(element) {
+export function getId(element) {
 	const id = parseInt(element['parentElement']['id'], 10)
 	if (!isNaN(id)) {
 		return id
 	}
 
-	return getElementId(element['parentElement'])
+	return getId(element['parentElement'])
 }
 
 export const HtmlTooltip = styled(Tooltip)({

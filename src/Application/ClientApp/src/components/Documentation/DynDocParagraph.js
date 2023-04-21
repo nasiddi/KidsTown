@@ -1,9 +1,23 @@
 import React from 'react'
-import { DocsIcon } from './DocElements'
+import ArrowCircleRightOutlinedIcon from '@mui/icons-material/ArrowCircleRightOutlined'
+import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined'
+import WarningAmberOutlinedIcon from '@mui/icons-material/WarningAmberOutlined'
 
 const action = 'action'
 const info = 'info'
 const warning = 'warning'
+
+export function DocsIcon(props) {
+	if (props.name === action) {
+		return <ArrowCircleRightOutlinedIcon />
+	}
+
+	if (props.name === info) {
+		return <InfoOutlinedIcon />
+	}
+
+	return <WarningAmberOutlinedIcon />
+}
 
 export function DynDocParagraph(props) {
 	let icon = <div />

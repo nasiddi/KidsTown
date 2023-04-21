@@ -32,6 +32,7 @@
         <None Include="$(SpaRoot)**" Exclude="$(SpaRoot)node_modules\**" />
         <None Remove="ClientApp\node_modules\eslint-plugin-prettier\**" />
         <Content Remove="ClientApp\node_modules\eslint-plugin-prettier\**" />
+        <Content Remove="kidstown-383913-9d816a38c5b8.json" />
     </ItemGroup>
 
     <ItemGroup>
