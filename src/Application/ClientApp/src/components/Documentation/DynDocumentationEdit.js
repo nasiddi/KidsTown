@@ -314,7 +314,9 @@ function DynDocsEdit() {
 		)
 
 		const results = await postImages(files, element.id)
-		let previousImage = sortDocElements(element.images)[element.images - 1]
+		let previousImage = sortDocElements(element.images)[
+			element.images.length - 1
+		]
 
 		const largestImageId = getLargestImageId()
 

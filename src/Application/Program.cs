@@ -37,7 +37,7 @@ public static class Program
             {
                 webBuilder
                     .UseStartup<Startup>()
-                    .UseUrls(preLoadedConfig.GetValue<string>(key: "Url"));
+                    .UseUrls(preLoadedConfig.GetValue<string>(key: "Url")!);
             })
             .ConfigureServices(configureDelegate: services =>
             {

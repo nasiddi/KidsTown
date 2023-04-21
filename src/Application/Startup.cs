@@ -71,7 +71,7 @@ public class Startup
         services.AddSingleton<ISearchLogCleanupRepository, SearchLoggingRepository>();
 
         services.AddDbContext<KidsTownContext>(optionsAction: o 
-            => o.UseSqlServer(connectionString: Configuration.GetConnectionString(name: "Database")));
+            => o.UseSqlServer(connectionString: Configuration.GetConnectionString(name: "Database")!));
 
         services.AddScoped<ICheckInOutService, CheckInOutService>();
         services.AddScoped<IConfigurationService, ConfigurationService>();
