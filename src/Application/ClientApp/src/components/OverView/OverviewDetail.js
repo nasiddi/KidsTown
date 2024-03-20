@@ -27,7 +27,11 @@ import StarIcon from '@mui/icons-material/Star'
 import { styled } from '@mui/material/styles'
 
 const StyledTableCell = styled(TableCell)({
-	height: 37,
+	height: 25,
+})
+
+const StyledTableHeadCell = styled(TableHeadCell)({
+	height: 30,
 })
 
 export default function OverviewDetail() {
@@ -101,42 +105,48 @@ export default function OverviewDetail() {
 				<Table size="small">
 					<TableHead>
 						<TableRow>
-							<TableHeadCell>
+							<StyledTableHeadCell>
 								<strong>First Name</strong>
-							</TableHeadCell>
-							<TableHeadCell>
+							</StyledTableHeadCell>
+							<StyledTableHeadCell>
 								<strong>Last Name</strong>
-							</TableHeadCell>
-							<TableHeadCell>
+							</StyledTableHeadCell>
+							<StyledTableHeadCell>
 								<div style={{ textAlign: 'center' }}>
 									<PhoneIphoneIcon fontSize={'small'} />
 								</div>
-							</TableHeadCell>
-							<TableHeadCell style={{ width: 100 }}>
+							</StyledTableHeadCell>
+							<StyledTableHeadCell style={{ width: 100 }}>
 								<strong>Status</strong>
-							</TableHeadCell>
-							<TableHeadCell>
+							</StyledTableHeadCell>
+							<StyledTableHeadCell>
 								<strong>SecurityCode</strong>
-							</TableHeadCell>
+							</StyledTableHeadCell>
 						</TableRow>
 					</TableHead>
 					<TableBody>
 						{filteredKids.map((row) => (
 							<TableRow key={row['attendanceId']}>
-								<TableCell>{row['firstName']}</TableCell>
-								<TableCell>{row['lastName']}</TableCell>
-								<TableCell>
+								<StyledTableCell>
+									{row['firstName']}
+								</StyledTableCell>
+								<StyledTableCell>
+									{row['lastName']}
+								</StyledTableCell>
+								<StyledTableCell>
 									<div
 										id={getToolTipTarget(row)}
 										style={{ textAlign: 'center' }}
 									>
 										{getTooltip(row)}
 									</div>
-								</TableCell>
-								<TableCell style={{ width: 100 }}>
+								</StyledTableCell>
+								<StyledTableCell style={{ width: 100 }}>
 									{getStateBadge(row['checkState'])}
-								</TableCell>
-								<TableCell>{row['securityCode']}</TableCell>
+								</StyledTableCell>
+								<StyledTableCell>
+									{row['securityCode']}
+								</StyledTableCell>
 							</TableRow>
 						))}
 					</TableBody>
@@ -180,14 +190,14 @@ export default function OverviewDetail() {
 			<div>
 				<h4>Betreuer</h4>
 				<Table size="small">
-					<TableHead>
+					<TableHead sx={{ padding: '-50px' }}>
 						<TableRow>
-							<TableHeadCell>
+							<StyledTableHeadCell>
 								<strong>First Name</strong>
-							</TableHeadCell>
-							<TableHeadCell>
+							</StyledTableHeadCell>
+							<StyledTableHeadCell>
 								<strong>Last Name</strong>
-							</TableHeadCell>
+							</StyledTableHeadCell>
 						</TableRow>
 					</TableHead>
 					<TableBody>

@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFramework>net7.0</TargetFramework>
+        <TargetFramework>net8.0</TargetFramework>
         <RootNamespace>KidsTown.KidsTown</RootNamespace>
         <Nullable>enable</Nullable>
     </PropertyGroup>
@@ -18,7 +18,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <PackageReference Include="Google.Apis.Drive.v3" Version="1.60.0.3024" />
+      <PackageReference Include="Google.Apis.Drive.v3" Version="1.67.0.3309" />
     </ItemGroup>
     
 </Project>
