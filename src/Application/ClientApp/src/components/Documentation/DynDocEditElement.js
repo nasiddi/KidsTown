@@ -281,7 +281,7 @@ function DynDocEditImage(props) {
 			>
 				<Grid item xs={12}>
 					<Image
-						src={`https://drive.google.com/uc?export=view&id=${img.fileId}`}
+						src={`https://lh3.googleusercontent.com/d/${img.fileId}`}
 						alt={img.fileId}
 						fluid
 					/>

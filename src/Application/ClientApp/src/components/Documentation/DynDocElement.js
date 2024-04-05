@@ -62,7 +62,7 @@ export function DynDocImage(props) {
 	return (
 		<Grid item xs={12} style={{ marginBottom: '10px' }}>
 			<Image
-				src={`https://drive.google.com/uc?export=view&id=${props.fileId}`}
+				src={`https://lh3.googleusercontent.com/d/${props.fileId}`}
 				alt={props.fileId}
 				onClick={props.onClick}
 				fluid
