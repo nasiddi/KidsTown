@@ -311,8 +311,8 @@ function Statistic() {
 							state.loadingData
 								? 'loading'
 								: noMoreDataAvailable
-								? 'No more data'
-								: `Load ${state.furthestYear - 1}`
+									? 'No more data' 
+									: `Load ${state.furthestYear - 1}`
 						}
 						onClick={loadAnotherYear}
 						disabled={noMoreDataAvailable}
