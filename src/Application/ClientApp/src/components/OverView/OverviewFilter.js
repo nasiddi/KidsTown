@@ -39,6 +39,7 @@ export default function OverviewFilter() {
 					alignItems="center"
 				>
 					<Grid item xs={12}>
+						{/* eslint-disable-next-line */}
 						<h3 />
 					</Grid>
 					<Grid item md={4}>

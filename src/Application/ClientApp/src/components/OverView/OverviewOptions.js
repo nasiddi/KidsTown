@@ -41,7 +41,7 @@ export default function OverviewOptions() {
 		}
 
 		load().then()
-	}, [])
+	})
 
 	function updateDate(value) {
 		const overviewDate = `${value.$y}-${value.$M + 1}-${value.$D}`

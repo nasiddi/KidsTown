@@ -142,7 +142,7 @@ function Setting() {
 		}
 
 		load().then()
-	}, [])
+	})
 
 	async function fetchAvailableEvents() {
 		const response = await fetch('configuration/events')

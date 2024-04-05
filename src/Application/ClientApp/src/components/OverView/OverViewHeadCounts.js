@@ -157,6 +157,7 @@ export default function OverviewHeadCount() {
 				alignItems="flex-start"
 			>
 				<Grid item xs={12}>
+					{/* eslint-disable-next-line */}
 					<h3 />
 				</Grid>
 				<Grid item xs={12}>
