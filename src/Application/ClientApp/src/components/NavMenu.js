@@ -8,7 +8,7 @@ const inactive = 'text-dark'
 export function NavMenu() {
 	const [state, setState] = useState({
 		collapsed: true,
-		location: location,
+		location: window.location,
 		checkInOutClass: inactive,
 		guestCheckInClass: inactive,
 		overViewClass: inactive,
