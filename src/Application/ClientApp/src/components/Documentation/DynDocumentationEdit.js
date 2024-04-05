@@ -37,7 +37,8 @@ function DynDocsEdit() {
 		}
 
 		load().then()
-	})
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [])
 
 	async function saveDoc() {
 		setState({

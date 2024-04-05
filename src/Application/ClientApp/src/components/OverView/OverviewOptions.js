@@ -41,7 +41,8 @@ export default function OverviewOptions() {
 		}
 
 		load().then()
-	})
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [])
 
 	function updateDate(value) {
 		const overviewDate = `${value.$y}-${value.$M + 1}-${value.$D}`

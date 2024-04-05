@@ -18,7 +18,8 @@ export function NavMenu() {
 
 	useEffect(() => {
 		initTextStyles()
-	})
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [])
 
 	const navigate = useNavigate()
 

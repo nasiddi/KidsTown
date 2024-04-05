@@ -80,7 +80,7 @@ function CheckIn() {
 		}
 
 		load().then()
-	})
+	}, [])
 
 	useEffect(() => {
 		if (state.securityCode.length === 4) {

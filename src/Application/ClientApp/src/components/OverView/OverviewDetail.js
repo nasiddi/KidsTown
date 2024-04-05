@@ -52,7 +52,8 @@ export default function OverviewDetail() {
 		return () => {
 			clearTimeout(repeat)
 		}
-	})
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [])
 
 	function renderDetails() {
 		return (

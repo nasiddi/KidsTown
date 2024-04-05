@@ -49,7 +49,8 @@ function Statistic() {
 			})
 		}
 		load().then()
-	})
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [])
 
 	useEffect(() => {
 		async function fetchData(locations) {
