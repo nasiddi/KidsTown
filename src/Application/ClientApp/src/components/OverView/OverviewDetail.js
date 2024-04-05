@@ -52,7 +52,7 @@ export default function OverviewDetail() {
 		return () => {
 			clearTimeout(repeat)
 		}
-	}, [])
+	})
 
 	function renderDetails() {
 		return (

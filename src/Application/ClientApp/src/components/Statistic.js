@@ -49,9 +49,37 @@ function Statistic() {
 			})
 		}
 		load().then()
-	}, [])
+	})
 
 	useEffect(() => {
+		async function fetchData(locations) {
+			if (locations.length === 0) {
+				return []
+			}
+
+			return await fetch(
+				`overview/event/${await getSelectedEventFromStorage()}/attendees/history?startDate=${
+					state.furthestYear
+				}-01-01&endDate=${dayjs().year()}-12-31`,
+				{
+					body: JSON.stringify(
+						locations.flatMap((l) =>
+							l.options
+								.filter((o) => o.isSelected)
+								.map((o) => o.value)
+						)
+					),
+					method: 'POST',
+					headers: {
+						'Content-Type': 'application/json',
+					},
+				}
+			)
+				.then((r) => r.json())
+				.then((j) => {
+					return j
+				})
+		}
 		async function load() {
 			setState({
 				...state,
@@ -60,36 +88,8 @@ function Statistic() {
 			})
 		}
 		load().then()
+		// eslint-disable-next-line
 	}, [state.selectedLocations, state.furthestYear])
-
-	async function fetchData(locations) {
-		if (locations.length === 0) {
-			return []
-		}
-
-		return await fetch(
-			`overview/event/${await getSelectedEventFromStorage()}/attendees/history?startDate=${
-				state.furthestYear
-			}-01-01&endDate=${dayjs().year()}-12-31`,
-			{
-				body: JSON.stringify(
-					locations.flatMap((l) =>
-						l.options
-							.filter((o) => o.isSelected)
-							.map((o) => o.value)
-					)
-				),
-				method: 'POST',
-				headers: {
-					'Content-Type': 'application/json',
-				},
-			}
-		)
-			.then((r) => r.json())
-			.then((j) => {
-				return j
-			})
-	}
 
 	function updateLocalStorage(locations) {
 		localStorage.setItem('statisticLocations', JSON.stringify(locations))
@@ -310,7 +310,7 @@ function Statistic() {
 						name={
 							state.loadingData
 								? 'loading'
-								: noMoreDataAvailable
+								: noMoreDataAvailable 
 									? 'No more data' 
 									: `Load ${state.furthestYear - 1}`
 						}

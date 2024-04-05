@@ -46,7 +46,7 @@ export default function OverviewHeadCount() {
 		}, 500)
 
 		return () => clearInterval(interval)
-	}, [])
+	})
 
 	function renderCounts() {
 		if (state.loading) {

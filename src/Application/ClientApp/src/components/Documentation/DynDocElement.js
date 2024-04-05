@@ -98,7 +98,6 @@ export function Title(props) {
 	return (
 		<Grid item xs={props.gridItemSize}>
 			<TitleSize>{props['text']}</TitleSize>
-			<a className="anchor hash" id={props['id']} href={props['id']} />
 		</Grid>
 	)
 }

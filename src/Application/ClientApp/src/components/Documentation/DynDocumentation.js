@@ -21,7 +21,7 @@ function DynDocs() {
 		}
 
 		load().then()
-	}, [])
+	})
 
 	console.log(state)
 

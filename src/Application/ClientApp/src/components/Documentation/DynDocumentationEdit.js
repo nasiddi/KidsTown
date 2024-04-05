@@ -37,7 +37,7 @@ function DynDocsEdit() {
 		}
 
 		load().then()
-	}, [])
+	})
 
 	async function saveDoc() {
 		setState({

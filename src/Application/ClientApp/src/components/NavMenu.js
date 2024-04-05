@@ -18,7 +18,7 @@ export function NavMenu() {
 
 	useEffect(() => {
 		initTextStyles()
-	}, [])
+	})
 
 	const navigate = useNavigate()
 
