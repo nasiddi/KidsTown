@@ -25,16 +25,20 @@
         <ProjectReference Include="..\KidsTown\KidsTown.csproj"/>
     </ItemGroup>
 
-    <Target Name="BuildFrontend" BeforeTargets="Build">
-        <Exec Command="npm install" WorkingDirectory="./ClientApp/kidstown" />
-        <Exec Command="npm run build" WorkingDirectory="./ClientApp/kidstown" />
-    </Target>
+    <Target Name="PublishRunWebpack" AfterTargets="ComputeFilesToPublish">
+        <!-- As part of publishing, ensure the JS resources are freshly built in production mode -->
+        <Exec WorkingDirectory="$(SpaRoot)" Command="npm install" />
+        <Exec WorkingDirectory="$(SpaRoot)" Command="npm run build" />
 
-    <Target Name="CopyFrontendFiles" AfterTargets="Build">
+        <!-- Include the newly-built files in the publish output -->
         <ItemGroup>
-            <FrontendFiles Include="./ClientApp/kidstown/out" />
+            <DistFiles Include="$(SpaRoot)out\**" />
+            <ResolvedFileToPublish Include="@(DistFiles->'%(FullPath)')" Exclude="@(ResolvedFileToPublish)">
+                <RelativePath>%(DistFiles.Identity)</RelativePath>
+                <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+                <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+            </ResolvedFileToPublish>
         </ItemGroup>
-        <Copy SourceFiles="@(FrontendFiles)" DestinationFolder="$(WebRootPath)\%(RecursiveDir)" />
     </Target>
 
 </Project>
