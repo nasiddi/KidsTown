@@ -22,13 +22,5 @@
         <ProjectReference Include="..\KidsTown.Shared\KidsTown.Shared.csproj"/>
         <ProjectReference Include="..\KidsTown\KidsTown.csproj"/>
     </ItemGroup>
-
-    <ItemGroup>
-        <ExtraFiles Include=".\ClientApp\**\*" />
-    </ItemGroup>
-
-    <Target Name="CopyExtraFiles" AfterTargets="Publish">
-        <Copy SourceFiles="@(ExtraFiles)" DestinationFolder="$(PublishDir)%(RecursiveDir)" />
-    </Target>
-
+    
 </Project>
