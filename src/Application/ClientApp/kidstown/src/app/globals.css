@@ -38,6 +38,10 @@ code {
     color: #e01a76;
 }
 
+.btn {
+    color: white;
+}
+
 .btn:focus,
 .btn:active {
     box-shadow: none;
@@ -50,10 +54,6 @@ code {
 .wrap-icon {
     float: left;
     margin: 12px 10px 0 6px;
-}
-
-.btn {
-    color: white;
 }
 
 legend {
