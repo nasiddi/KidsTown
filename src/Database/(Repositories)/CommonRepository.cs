@@ -16,10 +16,9 @@ public static class CommonRepository
     )
     {
         return await db.People
-            .Where(p => p.PeopleId.HasValue && peopleIds.Contains(p.PeopleId.Value))
-            .Include(p => p.Kid)
-            .ToListAsync()
-            .ConfigureAwait(continueOnCapturedContext: false);
+                .Where(p => p.PeopleId.HasValue && peopleIds.Contains(p.PeopleId.Value))
+                .Include(p => p.Kid)
+                .ToListAsync();
     }
 
     public static KidsTownContext GetDatabase(IServiceScopeFactory serviceScopeFactory)

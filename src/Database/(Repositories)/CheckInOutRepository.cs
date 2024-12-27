@@ -39,7 +39,7 @@ public class CheckInOutRepository(IServiceScopeFactory serviceScopeFactory) : IC
     {
         await using var db = CommonRepository.GetDatabase(serviceScopeFactory);
 
-        var attendances = await GetAttendances(attendanceIds, db).ConfigureAwait(continueOnCapturedContext: false);
+        var attendances = await GetAttendances(attendanceIds, db);
         attendances.ForEach(a => a.CheckInDate = DateTime.UtcNow);
         var result = await db.SaveChangesAsync();
         return result > 0;
@@ -49,7 +49,7 @@ public class CheckInOutRepository(IServiceScopeFactory serviceScopeFactory) : IC
     {
         await using var db = CommonRepository.GetDatabase(serviceScopeFactory);
 
-        var attendances = await GetAttendances(attendanceIds, db).ConfigureAwait(continueOnCapturedContext: false);
+        var attendances = await GetAttendances(attendanceIds, db);
         attendances.ForEach(a => a.CheckOutDate = DateTime.UtcNow);
         var result = await db.SaveChangesAsync();
         return result > 0;
@@ -59,7 +59,7 @@ public class CheckInOutRepository(IServiceScopeFactory serviceScopeFactory) : IC
     {
         await using var db = CommonRepository.GetDatabase(serviceScopeFactory);
 
-        var attendances = await GetAttendances(attendanceIds, db).ConfigureAwait(continueOnCapturedContext: false);
+        var attendances = await GetAttendances(attendanceIds, db);
 
         switch (revertedCheckState)
         {
@@ -137,7 +137,7 @@ public class CheckInOutRepository(IServiceScopeFactory serviceScopeFactory) : IC
         await using var db = CommonRepository.GetDatabase(serviceScopeFactory);
 
         var attendance = (await GetAttendances(ImmutableList.Create(attendanceId), db)
-                .ConfigureAwait(continueOnCapturedContext: false))
+            )
             .Single();
 
         attendance.LocationId = locationId;
@@ -152,10 +152,9 @@ public class CheckInOutRepository(IServiceScopeFactory serviceScopeFactory) : IC
         KidsTownContext db)
     {
         var attendances = await db.Attendances.Where(
-                a =>
-                    attendanceIds.Contains(a.Id))
-            .ToListAsync()
-            .ConfigureAwait(continueOnCapturedContext: false);
+                    a =>
+                        attendanceIds.Contains(a.Id))
+                .ToListAsync();
 
         return attendances;
     }

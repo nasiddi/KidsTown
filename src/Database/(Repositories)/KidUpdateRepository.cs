@@ -21,24 +21,22 @@ public class KidUpdateRepository(IServiceScopeFactory serviceScopeFactory) : IKi
         await using var db = CommonRepository.GetDatabase(serviceScopeFactory);
 
         var personIds = await db.Attendances.Where(
-                a
-                    => a.InsertDate >= DateTime.Today.AddDays(-daysLookBack)
-                    && a.AttendanceTypeId == (int) AttendanceTypeId.Regular)
-            .Select(a => a.PersonId)
-            .Distinct()
-            .ToListAsync()
-            .ConfigureAwait(continueOnCapturedContext: false);
+                    a
+                        => a.InsertDate >= DateTime.Today.AddDays(-daysLookBack)
+                        && a.AttendanceTypeId == (int) AttendanceTypeId.Regular)
+                .Select(a => a.PersonId)
+                .Distinct()
+                .ToListAsync();
 
         var attendees = await db.People
-            .Include(p => p.Kid)
-            .Where(
-                p => p.PeopleId.HasValue
-                    && personIds.Contains(p.Id))
-            .OrderBy(p => p.Kid!.UpdateDate)
-            .Take(take)
-            .Select(p => p.PeopleId!.Value)
-            .ToListAsync()
-            .ConfigureAwait(continueOnCapturedContext: false);
+                .Include(p => p.Kid)
+                .Where(
+                    p => p.PeopleId.HasValue
+                        && personIds.Contains(p.Id))
+                .OrderBy(p => p.Kid!.UpdateDate)
+                .Take(take)
+                .Select(p => p.PeopleId!.Value)
+                .ToListAsync();
 
         return attendees.ToImmutableList();
     }
@@ -53,11 +51,9 @@ public class KidUpdateRepository(IServiceScopeFactory serviceScopeFactory) : IKi
         var existingKids = await CommonRepository.GetKidsByPeopleIds(
                 db,
                 kids.Select(p => p.PeopleId!.Value)
-                    .ToImmutableList())
-            .ConfigureAwait(continueOnCapturedContext: false);
+                    .ToImmutableList());
 
-        return await UpdateKids(db, existingKids, kids, families)
-            .ConfigureAwait(continueOnCapturedContext: false);
+        return await UpdateKids(db, existingKids, kids, families);
     }
 
     public async Task<IImmutableList<Family>> InsertFamilies(
@@ -68,9 +64,9 @@ public class KidUpdateRepository(IServiceScopeFactory serviceScopeFactory) : IKi
         await using var db = CommonRepository.GetDatabase(serviceScopeFactory);
 
         var families = newHouseholdIds.Select(h => MapFamily(h, peoples));
-        await db.AddRangeAsync(families).ConfigureAwait(continueOnCapturedContext: false);
-        await db.SaveChangesAsync().ConfigureAwait(continueOnCapturedContext: false);
-        return await GetExistingFamilies(newHouseholdIds).ConfigureAwait(continueOnCapturedContext: false);
+        await db.AddRangeAsync(families);
+        await db.SaveChangesAsync();
+        return await GetExistingFamilies(newHouseholdIds);
     }
 
     public async Task<IImmutableList<Family>> GetExistingFamilies(
@@ -80,10 +76,9 @@ public class KidUpdateRepository(IServiceScopeFactory serviceScopeFactory) : IKi
         await using var db = CommonRepository.GetDatabase(serviceScopeFactory);
 
         var families = await db.Families.Where(
-                f => f.HouseholdId.HasValue
-                    && householdIds.Contains(f.HouseholdId.Value))
-            .ToListAsync()
-            .ConfigureAwait(continueOnCapturedContext: false);
+                    f => f.HouseholdId.HasValue
+                        && householdIds.Contains(f.HouseholdId.Value))
+                .ToListAsync();
 
         return families.Select(MapFamily).ToImmutableList();
     }
@@ -143,6 +138,6 @@ public class KidUpdateRepository(IServiceScopeFactory serviceScopeFactory) : IKi
                 p.UpdateDate = updateDate;
             });
 
-        return await db.SaveChangesAsync().ConfigureAwait(continueOnCapturedContext: false);
+        return await db.SaveChangesAsync();
     }
 }

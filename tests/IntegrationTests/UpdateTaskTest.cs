@@ -26,7 +26,7 @@ public class UpdateTaskTest
     [TearDown]
     public async Task TearDown()
     {
-        await TestHelper.CleanDatabase(serviceProvider).ConfigureAwait(continueOnCapturedContext: false);
+        await TestHelper.CleanDatabase(serviceProvider);
     }
 
     [Test]
@@ -35,7 +35,7 @@ public class UpdateTaskTest
         serviceProvider = TestHelper.SetupServiceProviderWithBackgroundTasksDi();
 
         var updateTask = serviceProvider.GetService<AttendanceUpdateTask>();
-        await RunTask(updateTask!, minExecutionCount: 2).ConfigureAwait(continueOnCapturedContext: false);
+        await RunTask(updateTask!, minExecutionCount: 2);
 
         Assert.That(updateTask!.GetExecutionCount(), Is.GreaterThan(expected: 1));
     }
@@ -44,31 +44,30 @@ public class UpdateTaskTest
     public async Task UpdateMockData()
     {
         serviceProvider = TestHelper.SetupServiceProviderWithBackgroundTasksDiAndMockedPlanningCenterClient();
-        await TestHelper.CleanDatabase(serviceProvider).ConfigureAwait(continueOnCapturedContext: false);
+        await TestHelper.CleanDatabase(serviceProvider);
 
         var attendanceUpdateTask = serviceProvider.GetService<AttendanceUpdateTask>();
-        await RunTask(attendanceUpdateTask!).ConfigureAwait(continueOnCapturedContext: false);
+        await RunTask(attendanceUpdateTask!);
 
         var kidUpdateTask = serviceProvider.GetService<KidUpdateTask>();
-        await RunTask(kidUpdateTask!).ConfigureAwait(continueOnCapturedContext: false);
+        await RunTask(kidUpdateTask!);
 
         var adultUpdateTask = serviceProvider.GetService<AdultUpdateTask>();
-        await RunTask(adultUpdateTask!).ConfigureAwait(continueOnCapturedContext: false);
+        await RunTask(adultUpdateTask!);
 
-        await AssertUpdateTask().ConfigureAwait(continueOnCapturedContext: false);
+        await AssertUpdateTask();
     }
 
     private static async Task RunTask(BackgroundTask backgroundTask, int minExecutionCount = 1)
     {
         backgroundTask.ActivateTask();
 
-        var task = backgroundTask.StartAsync(CancellationToken.None)
-            .ConfigureAwait(continueOnCapturedContext: false);
+        var task = backgroundTask.StartAsync(CancellationToken.None);
 
         var watch = Stopwatch.StartNew();
         while (minExecutionCount > backgroundTask.GetExecutionCount() && watch.ElapsedMilliseconds < 60000)
         {
-            await Task.Delay(millisecondsDelay: 100).ConfigureAwait(continueOnCapturedContext: false);
+            await Task.Delay(millisecondsDelay: 100);
         }
 
         backgroundTask.DeactivateTask();
@@ -95,7 +94,7 @@ public class UpdateTaskTest
     private async Task AssertUpdateTask()
     {
         var expectedData = GetExpectedData();
-        var actualData = await GetActualData().ConfigureAwait(continueOnCapturedContext: false);
+        var actualData = await GetActualData();
 
         (expectedData as ImmutableList<Data>)?.ForEach(
             e => AssertAttendance(

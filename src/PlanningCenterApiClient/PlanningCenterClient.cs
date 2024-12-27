@@ -35,19 +35,19 @@ public class PlanningCenterClient(IConfiguration configuration) : IPlanningCente
     {
         var dateString = DateTime.Today.AddDays(-daysLookBack).ToString("yyyy-MM-ddT00:00:00Z");
         var endPoint = $"check-ins/v2/check_ins?include=event,locations,person&order=created_at&per_page=100&where[created_at][gte]={dateString}";
-        return await FetchData<CheckIns>(endPoint).ConfigureAwait(continueOnCapturedContext: false);
+        return await FetchData<CheckIns>(endPoint);
     }
 
     public async Task<IImmutableList<People>> GetPeopleUpdates(IImmutableList<long> peopleIds)
     {
         var endPoint = $"people/v2/people?include=households,field_data,phone_numbers&per_page=100&where[id]={string.Join(separator: ',', peopleIds)}";
-        return await FetchData<People>(endPoint).ConfigureAwait(continueOnCapturedContext: false);
+        return await FetchData<People>(endPoint);
     }
 
     public async Task<Household?> GetHousehold(long householdId)
     {
         var endPoint = $"people/v2/households/{householdId}?include=people";
-        var households = await FetchData<Household>(endPoint).ConfigureAwait(continueOnCapturedContext: false);
+        var households = await FetchData<Household>(endPoint);
         return households.SingleOrDefault();
     }
 
@@ -130,7 +130,7 @@ public class PlanningCenterClient(IConfiguration configuration) : IPlanningCente
         var response = await Client.GetAsync(endPoint);
         var responseString = await response.Content.ReadAsStringAsync();
 
-        await CheckRateLimitation(response).ConfigureAwait(continueOnCapturedContext: false);
+        await CheckRateLimitation(response);
 
         var responseBody = JsonConvert.DeserializeObject<T>(responseString);
 
@@ -165,7 +165,7 @@ public class PlanningCenterClient(IConfiguration configuration) : IPlanningCente
 
         if (count >= limit - 5)
         {
-            await Task.Delay(period * 250).ConfigureAwait(continueOnCapturedContext: false);
+            await Task.Delay(period * 250);
         }
     }
 

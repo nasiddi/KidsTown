@@ -108,9 +108,9 @@ public abstract class BackgroundTask(
         DateTime? activationTime = null;
         while (!cancellationToken.IsCancellationRequested)
         {
-            activationTime = await WaitForActivation(activationTime, cancellationToken).ConfigureAwait(continueOnCapturedContext: false);
-            await RunTask(logger).ConfigureAwait(continueOnCapturedContext: false);
-            await Sleep(cancellationToken).ConfigureAwait(continueOnCapturedContext: false);
+            activationTime = await WaitForActivation(activationTime, cancellationToken);
+            await RunTask(logger);
+            await Sleep(cancellationToken);
 
             if (activationTime < DateTime.UtcNow.Date.AddHours(value: 1))
             {
@@ -124,7 +124,7 @@ public abstract class BackgroundTask(
         try
         {
             lastExecution = DateTime.UtcNow;
-            var updateCount = await ExecuteRun().ConfigureAwait(continueOnCapturedContext: false);
+            var updateCount = await ExecuteRun();
             successCount++;
 
             if (!taskRunsSuccessfully)
@@ -189,7 +189,7 @@ public abstract class BackgroundTask(
             {
                 while (!taskIsActive)
                 {
-                    await Task.Delay(millisecondsDelay: 1000, cancellationToken).ConfigureAwait(continueOnCapturedContext: false);
+                    await Task.Delay(millisecondsDelay: 1000, cancellationToken);
                 }
             },
             cancellationToken);
@@ -201,8 +201,7 @@ public abstract class BackgroundTask(
 
     private async Task Sleep(CancellationToken cancellationToken)
     {
-        await Task.Delay(Interval, cancellationToken)
-            .ConfigureAwait(continueOnCapturedContext: false);
+        await Task.Delay(Interval, cancellationToken);
     }
 
     private void LogTaskRun(bool success, int updateCount, string environment)
@@ -225,7 +224,7 @@ public abstract class BackgroundTask(
                 From = new MailAddress("kidstown@gvc.ch", "KidsTown")
             };
 
-            message.To.Add(item: new MailAddress("nadinasiddiqui@msn.com", "Nadina Siddiqui"));
+            message.To.Add(new MailAddress("nadinasiddiqui@msn.com", "Nadina Siddiqui"));
             var username = configuration.GetValue<string>("MailAccount:Username");
             var password = configuration.GetValue<string>("MailAccount:Password");
 

@@ -15,9 +15,8 @@ public class ConfigurationRepository(IServiceScopeFactory serviceScopeFactory) :
         await using var db = CommonRepository.GetDatabase(serviceScopeFactory);
 
         var locations = await db.LocationGroups
-            .Where(l => l.IsEnabled)
-            .ToListAsync()
-            .ConfigureAwait(continueOnCapturedContext: false);
+                .Where(l => l.IsEnabled)
+                .ToListAsync();
 
         return locations.Select(l => new LocationGroup(l.Id, l.Name))
             .ToImmutableList();
@@ -28,9 +27,8 @@ public class ConfigurationRepository(IServiceScopeFactory serviceScopeFactory) :
         await using var db = CommonRepository.GetDatabase(serviceScopeFactory);
 
         var locations = await db.Locations
-            .Where(l => l.EventId == eventId)
-            .ToListAsync()
-            .ConfigureAwait(continueOnCapturedContext: false);
+                .Where(l => l.EventId == eventId)
+                .ToListAsync();
 
         return locations.Select(MapLocation)
             .ToImmutableList();

@@ -16,10 +16,9 @@ public class OverviewService(IOverviewRepository overviewRepository, IPeopleRepo
         DateTime date)
     {
         var attendees = await overviewRepository.GetActiveAttendees(
-                selectedLocationGroups,
-                eventId,
-                date)
-            .ConfigureAwait(continueOnCapturedContext: false);
+            selectedLocationGroups,
+            eventId,
+            date);
 
         var familyIds = attendees.Where(a => a.FamilyId.HasValue)
             .Select(a => a.FamilyId!.Value)
@@ -69,8 +68,7 @@ public class OverviewService(IOverviewRepository overviewRepository, IPeopleRepo
                 selectedLocations: selectedLocations,
                 eventId: eventId,
                 startDate: startDate,
-                endDate: endDate)
-            .ConfigureAwait(continueOnCapturedContext: false);
+                endDate: endDate);
 
         return attendees.GroupBy(a => a.InsertDate.Date)
             .Select(MapDailyStatistic)
@@ -88,8 +86,7 @@ public class OverviewService(IOverviewRepository overviewRepository, IPeopleRepo
                 selectedLocationGroups: selectedLocationGroups,
                 eventId: eventId,
                 startDate: startDate,
-                endDate: endDate)
-            .ConfigureAwait(continueOnCapturedContext: false);
+                endDate: endDate);
 
         return attendees.GroupBy(a => a.Location)
             .OrderBy(g => g.First().LocationGroupId)

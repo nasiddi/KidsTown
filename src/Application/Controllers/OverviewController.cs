@@ -21,8 +21,7 @@ public class OverviewController(IOverviewService overviewService) : ControllerBa
         [FromBody] IImmutableList<int> selectedLocationGroups)
     {
         var parsedDate = DateTime.Parse(date);
-        var attendeesByLocation = await overviewService.GetActiveAttendees(eventId, selectedLocationGroups, parsedDate)
-            .ConfigureAwait(continueOnCapturedContext: false);
+        var attendeesByLocation = await overviewService.GetActiveAttendees(eventId, selectedLocationGroups, parsedDate);
 
         return attendeesByLocation.OrderBy(a => a.LocationGroupId).ThenBy(a => a.Location).ToImmutableList();
     }
@@ -40,8 +39,7 @@ public class OverviewController(IOverviewService overviewService) : ControllerBa
                 eventId,
                 selectedLocationGroups,
                 parsedDate,
-                parsedDate)
-            .ConfigureAwait(continueOnCapturedContext: false);
+                parsedDate);
 
         return headCounts;
     }
@@ -59,7 +57,6 @@ public class OverviewController(IOverviewService overviewService) : ControllerBa
                 eventId,
                 selectedLocations,
                 startDate,
-                endDate)
-            .ConfigureAwait(continueOnCapturedContext: false);
+                endDate);
     }
 }

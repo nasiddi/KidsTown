@@ -21,9 +21,8 @@ public class AttendanceUpdateRepository(IServiceScopeFactory serviceScopeFactory
     {
         await using var db = CommonRepository.GetDatabase(serviceScopeFactory);
         var existingCheckInsIds = await db.Attendances.Where(i => checkinsIds.Contains(i.CheckInsId))
-            .Select(i => i.CheckInsId)
-            .ToListAsync()
-            .ConfigureAwait(continueOnCapturedContext: false);
+                .Select(i => i.CheckInsId)
+                .ToListAsync();
 
         return existingCheckInsIds.ToImmutableList();
     }
@@ -33,11 +32,10 @@ public class AttendanceUpdateRepository(IServiceScopeFactory serviceScopeFactory
         await using var db = CommonRepository.GetDatabase(serviceScopeFactory);
 
         var guests = checkInsUpdates.Where(c => c.PeopleId == null).ToImmutableList();
-        var guestInsertCount = await InsertGuests(guests, db).ConfigureAwait(continueOnCapturedContext: false);
+        var guestInsertCount = await InsertGuests(guests, db);
 
         var regularPreCheckIns = checkInsUpdates.Except(guests).ToImmutableList();
-        var regularInsertCount = await InsertRegularsAndVolunteers(regularPreCheckIns, db)
-            .ConfigureAwait(continueOnCapturedContext: false);
+        var regularInsertCount = await InsertRegularsAndVolunteers(regularPreCheckIns, db);
 
         return guestInsertCount + regularInsertCount;
     }
@@ -47,15 +45,14 @@ public class AttendanceUpdateRepository(IServiceScopeFactory serviceScopeFactory
         await using var db = CommonRepository.GetDatabase(serviceScopeFactory);
 
         var volunteers = await db.Attendances
-            .Where(
-                a =>
-                    a.AttendanceTypeId == (int) AttendanceTypeId.Volunteer
-                    && a.CheckInDate == null)
-            .ToListAsync()
-            .ConfigureAwait(continueOnCapturedContext: false);
+                .Where(
+                    a =>
+                        a.AttendanceTypeId == (int) AttendanceTypeId.Volunteer
+                        && a.CheckInDate == null)
+                .ToListAsync();
 
         volunteers.ForEach(v => v.CheckInDate = DateTime.UtcNow);
-        return await db.SaveChangesAsync().ConfigureAwait(continueOnCapturedContext: false);
+        return await db.SaveChangesAsync();
     }
 
     public async Task<IImmutableList<PersistedLocation>> GetPersistedLocations()
@@ -63,8 +60,7 @@ public class AttendanceUpdateRepository(IServiceScopeFactory serviceScopeFactory
         await using var db = CommonRepository.GetDatabase(serviceScopeFactory);
 
         var locations = await db.Locations.Where(l => l.CheckInsLocationId.HasValue)
-            .ToListAsync()
-            .ConfigureAwait(continueOnCapturedContext: false);
+                .ToListAsync();
 
         return locations.Select(
                 l
@@ -77,8 +73,8 @@ public class AttendanceUpdateRepository(IServiceScopeFactory serviceScopeFactory
         await using var db = CommonRepository.GetDatabase(serviceScopeFactory);
 
         var locations = locationUpdates.Select(MapLocation);
-        await db.AddRangeAsync(locations).ConfigureAwait(continueOnCapturedContext: false);
-        return await db.SaveChangesAsync().ConfigureAwait(continueOnCapturedContext: false);
+        await db.AddRangeAsync(locations);
+        return await db.SaveChangesAsync();
     }
 
     public async Task EnableUnknownLocationGroup()
@@ -86,11 +82,10 @@ public class AttendanceUpdateRepository(IServiceScopeFactory serviceScopeFactory
         await using var db = CommonRepository.GetDatabase(serviceScopeFactory);
 
         var locationGroups = await db.LocationGroups.Where(l => l.Id == (int) LocationGroup.Unknown)
-            .ToListAsync()
-            .ConfigureAwait(continueOnCapturedContext: false);
+                .ToListAsync();
 
         locationGroups.ForEach(l => l.IsEnabled = true);
-        await db.SaveChangesAsync().ConfigureAwait(continueOnCapturedContext: false);
+        await db.SaveChangesAsync();
     }
 
     public async Task<int> AutoCheckoutEveryoneByEndOfDay()
@@ -98,19 +93,18 @@ public class AttendanceUpdateRepository(IServiceScopeFactory serviceScopeFactory
         await using var db = CommonRepository.GetDatabase(serviceScopeFactory);
 
         var attendances = await db.Attendances
-            .Where(
-                a =>
-                    a.CheckInDate != null
-                    && a.CheckOutDate == null
-                    && a.CheckInDate < DateTime.Today)
-            .ToListAsync()
-            .ConfigureAwait(continueOnCapturedContext: false);
+                .Where(
+                    a =>
+                        a.CheckInDate != null
+                        && a.CheckOutDate == null
+                        && a.CheckInDate < DateTime.Today)
+                .ToListAsync();
 
         attendances.ForEach(
             v
                 => v.CheckOutDate = v.CheckInDate!.Value.Date.AddDays(value: 1).AddSeconds(value: -1));
 
-        return await db.SaveChangesAsync().ConfigureAwait(continueOnCapturedContext: false);
+        return await db.SaveChangesAsync();
     }
 
     private static Location MapLocation(LocationUpdate locationUpdate)
@@ -139,15 +133,13 @@ public class AttendanceUpdateRepository(IServiceScopeFactory serviceScopeFactory
                 db,
                 kids.Where(p => p.PeopleId.HasValue)
                     .Select(p => p.PeopleId!.Value)
-                    .ToImmutableList())
-            .ConfigureAwait(continueOnCapturedContext: false);
+                    .ToImmutableList());
 
         var peopleUpdates = kids.Where(p => existingPeople.Select(e => e.PeopleId).Contains(p.PeopleId))
             .ToImmutableList();
 
         var kidsInserts = kids.Except(peopleUpdates).ToImmutableList();
-        var insertedPeople = await InsertPeople(db, kidsInserts)
-            .ConfigureAwait(continueOnCapturedContext: false);
+        var insertedPeople = await InsertPeople(db, kidsInserts);
 
         var checkIns = regularPreCheckIns
             .Select(
@@ -156,23 +148,22 @@ public class AttendanceUpdateRepository(IServiceScopeFactory serviceScopeFactory
                     existingPeople.Union(insertedPeople).ToImmutableList()))
             .ToImmutableList();
 
-        await db.AddRangeAsync(checkIns).ConfigureAwait(continueOnCapturedContext: false);
-        return await db.SaveChangesAsync().ConfigureAwait(continueOnCapturedContext: false);
+        await db.AddRangeAsync(checkIns);
+        return await db.SaveChangesAsync();
     }
 
     private async Task<int> InsertGuests(IImmutableList<CheckInsUpdate> guests, DbContext db)
     {
         var existingCheckInsIds =
-            await GetPersistedCheckInsIds(guests.Select(g => g.CheckInsId).ToImmutableList())
-                .ConfigureAwait(continueOnCapturedContext: false);
+                await GetPersistedCheckInsIds(guests.Select(g => g.CheckInsId).ToImmutableList());
 
         var newGuests = guests.Where(g => !existingCheckInsIds.Contains(g.CheckInsId))
             .ToImmutableList();
 
         var guestAttendances = newGuests.Select(MapGuestAttendance).ToImmutableList();
 
-        await db.AddRangeAsync(guestAttendances).ConfigureAwait(continueOnCapturedContext: false);
-        return await db.SaveChangesAsync().ConfigureAwait(continueOnCapturedContext: false);
+        await db.AddRangeAsync(guestAttendances);
+        return await db.SaveChangesAsync();
     }
 
     private static async Task<List<Person>> InsertPeople(
@@ -181,13 +172,12 @@ public class AttendanceUpdateRepository(IServiceScopeFactory serviceScopeFactory
     )
     {
         var people = peopleToInsert.Select(MapPerson).ToImmutableList();
-        await db.AddRangeAsync(people).ConfigureAwait(continueOnCapturedContext: false);
-        await db.SaveChangesAsync().ConfigureAwait(continueOnCapturedContext: false);
+        await db.AddRangeAsync(people);
+        await db.SaveChangesAsync();
 
         var insertedPeople = await db.People
-            .Where(p => peopleToInsert.Select(i => i.PeopleId).Contains(p.PeopleId))
-            .ToListAsync()
-            .ConfigureAwait(continueOnCapturedContext: false);
+                .Where(p => peopleToInsert.Select(i => i.PeopleId).Contains(p.PeopleId))
+                .ToListAsync();
 
         return insertedPeople;
     }

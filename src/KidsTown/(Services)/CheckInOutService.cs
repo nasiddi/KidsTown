@@ -15,15 +15,15 @@ public class CheckInOutService(
 {
     public async Task<IImmutableList<Kid>> SearchForPeople(PeopleSearchParameters searchParameters)
     {
-        return await checkInOutRepository.GetPeople(searchParameters).ConfigureAwait(continueOnCapturedContext: false);
+        return await checkInOutRepository.GetPeople(searchParameters);
     }
 
     public async Task<bool> CheckInOutPeople(CheckType checkType, IImmutableList<int> attendanceIds)
     {
         return checkType switch
         {
-            CheckType.CheckIn => await CheckInPeople(attendanceIds).ConfigureAwait(continueOnCapturedContext: false),
-            CheckType.CheckOut => await CheckOutPeople(attendanceIds).ConfigureAwait(continueOnCapturedContext: false),
+            CheckType.CheckIn => await CheckInPeople(attendanceIds),
+            CheckType.CheckOut => await CheckOutPeople(attendanceIds),
             CheckType.GuestCheckIn => throw new ArgumentException($"Unexpected CheckType: {checkType}", nameof(checkType)),
             _ => throw new ArgumentException($"CheckType unknown: {checkType}", nameof(checkType))
         };
@@ -36,8 +36,7 @@ public class CheckInOutService(
 
     public async Task<int?> CreateGuest(int locationId, string securityCode, string firstName, string lastName)
     {
-        var securityCodeExists = await checkInOutRepository.SecurityCodeExists(securityCode)
-            .ConfigureAwait(continueOnCapturedContext: false);
+        var securityCodeExists = await checkInOutRepository.SecurityCodeExists(securityCode);
 
         if (securityCodeExists)
         {
@@ -48,8 +47,7 @@ public class CheckInOutService(
                 locationId,
                 securityCode,
                 firstName,
-                lastName)
-            .ConfigureAwait(continueOnCapturedContext: false);
+                lastName);
     }
 
     public async Task CreateUnregisteredGuest(
@@ -75,18 +73,17 @@ public class CheckInOutService(
 
     public async Task<bool> UpdateLocationAndCheckIn(int attendanceId, int locationId)
     {
-        return await checkInOutRepository.UpdateLocationAndCheckIn(attendanceId, locationId)
-            .ConfigureAwait(continueOnCapturedContext: false);
+        return await checkInOutRepository.UpdateLocationAndCheckIn(attendanceId, locationId);
     }
 
     private async Task<bool> CheckInPeople(IImmutableList<int> attendanceIds)
     {
-        return await checkInOutRepository.CheckInPeople(attendanceIds).ConfigureAwait(continueOnCapturedContext: false);
+        return await checkInOutRepository.CheckInPeople(attendanceIds);
     }
 
     private async Task<bool> CheckOutPeople(IImmutableList<int> attendanceIds)
     {
-        return await checkInOutRepository.CheckOutPeople(attendanceIds).ConfigureAwait(continueOnCapturedContext: false);
+        return await checkInOutRepository.CheckOutPeople(attendanceIds);
     }
 
     private static Location? TryMapUnregisteredGuestSecurityCodeToLocationId(string securityCode, IImmutableList<Location> locations)

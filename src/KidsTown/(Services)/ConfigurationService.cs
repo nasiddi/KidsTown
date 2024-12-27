@@ -16,7 +16,7 @@ public class ConfigurationService(
 {
     public async Task<IImmutableList<LocationGroup>> GetActiveLocationGroups()
     {
-        return await configurationRepository.GetActiveLocationGroups().ConfigureAwait(continueOnCapturedContext: false);
+        return await configurationRepository.GetActiveLocationGroups();
     }
 
     public long GetDefaultEventId()
@@ -26,7 +26,7 @@ public class ConfigurationService(
 
     public async Task<IImmutableList<CheckInsEvent>> GetAvailableEvents()
     {
-        var activeEvents = await planningCenterClient.GetActiveEvents().ConfigureAwait(continueOnCapturedContext: false);
+        var activeEvents = await planningCenterClient.GetActiveEvents();
         return activeEvents?.Data?.Select(MapCheckInsEvent).ToImmutableList() ?? ImmutableList<CheckInsEvent>.Empty;
     }
 

@@ -20,7 +20,6 @@ public class AttendanceUpdateTask(
 
     protected override async Task<int> ExecuteRun()
     {
-        return await attendanceUpdateService.UpdateAttendance(DaysLookBack)
-            .ConfigureAwait(continueOnCapturedContext: false);
+        return await attendanceUpdateService.UpdateAttendance(DaysLookBack);
     }
 }

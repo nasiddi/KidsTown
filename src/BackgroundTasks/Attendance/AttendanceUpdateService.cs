@@ -15,37 +15,32 @@ public class AttendanceUpdateService(
 {
     public async Task<int> UpdateAttendance(int daysLookBack)
     {
-        var checkIns = await planningCenterClient.GetCheckedInPeople(daysLookBack)
-            .ConfigureAwait(continueOnCapturedContext: false);
+        var checkIns = await planningCenterClient.GetCheckedInPeople(daysLookBack);
 
-        var locationUpdateCount = await UpdateLocations(checkIns).ConfigureAwait(continueOnCapturedContext: false);
+        var locationUpdateCount = await UpdateLocations(checkIns);
 
-        var checkInsUpdates = await MapCheckInsUpdates(checkIns)
-            .ConfigureAwait(continueOnCapturedContext: false);
+        var checkInsUpdates = await MapCheckInsUpdates(checkIns);
 
-        var insertCount = await InsertNewPreCheckIns(checkInsUpdates).ConfigureAwait(continueOnCapturedContext: false);
+        var insertCount = await InsertNewPreCheckIns(checkInsUpdates);
 
-        var volunteerCheckCount = await attendanceUpdateRepository.AutoCheckInVolunteers().ConfigureAwait(continueOnCapturedContext: false);
+        var volunteerCheckCount = await attendanceUpdateRepository.AutoCheckInVolunteers();
 
         return locationUpdateCount + insertCount + volunteerCheckCount;
     }
 
     private async Task<int> InsertNewPreCheckIns(IImmutableList<CheckInsUpdate> preCheckIns)
     {
-        var existingChecksInIds = await attendanceUpdateRepository.GetPersistedCheckInsIds(preCheckIns.Select(i => i.CheckInsId).ToImmutableList())
-            .ConfigureAwait(continueOnCapturedContext: false);
+        var existingChecksInIds = await attendanceUpdateRepository.GetPersistedCheckInsIds(preCheckIns.Select(i => i.CheckInsId).ToImmutableList());
 
         var newCheckins = preCheckIns.Where(p => !existingChecksInIds.Contains(p.CheckInsId))
             .ToImmutableList();
 
-        return await attendanceUpdateRepository.InsertAttendances(newCheckins)
-            .ConfigureAwait(continueOnCapturedContext: false);
+        return await attendanceUpdateRepository.InsertAttendances(newCheckins);
     }
 
     private async Task<IImmutableList<CheckInsUpdate>> MapCheckInsUpdates(IImmutableList<CheckIns> checkIns)
     {
-        var persistedLocations = await attendanceUpdateRepository.GetPersistedLocations()
-            .ConfigureAwait(continueOnCapturedContext: false);
+        var persistedLocations = await attendanceUpdateRepository.GetPersistedLocations();
 
         var locationIdsByCheckInsLocationId =
             persistedLocations.ToImmutableDictionary(
@@ -99,8 +94,7 @@ public class AttendanceUpdateService(
             c
                 => c.Included?.Where(i => i.Type == IncludeType.Location).ToImmutableList() ?? ImmutableList<Included>.Empty);
 
-        var persistedLocations = await attendanceUpdateRepository.GetPersistedLocations()
-            .ConfigureAwait(continueOnCapturedContext: false);
+        var persistedLocations = await attendanceUpdateRepository.GetPersistedLocations();
 
         var newLocations = locations
             .Where(l => IsNewLocation(persistedLocations, l))
@@ -119,10 +113,9 @@ public class AttendanceUpdateService(
                                 checkIns.Where(c => c.Attendees != null)
                                     .SelectMany(c => c.Attendees!)
                                     .ToImmutableList()))
-                    .ToImmutableList())
-            .ConfigureAwait(continueOnCapturedContext: false);
+                    .ToImmutableList());
 
-        await attendanceUpdateRepository.EnableUnknownLocationGroup().ConfigureAwait(continueOnCapturedContext: false);
+        await attendanceUpdateRepository.EnableUnknownLocationGroup();
 
         return locationUpdateCount;
     }

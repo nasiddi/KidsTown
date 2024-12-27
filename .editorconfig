@@ -51,7 +51,7 @@ dotnet_naming_symbols.private_static_fields_symbols.applicable_kinds = field
 dotnet_naming_symbols.private_static_fields_symbols.required_modifiers = static
 dotnet_naming_symbols.private_static_readonly_symbols.applicable_accessibilities = private
 dotnet_naming_symbols.private_static_readonly_symbols.applicable_kinds = field
-dotnet_naming_symbols.private_static_readonly_symbols.required_modifiers = static,readonly
+dotnet_naming_symbols.private_static_readonly_symbols.required_modifiers = static, readonly
 
 # ReSharper properties
 resharper_annotation_redundancy_in_hierarchy_highlighting = do_not_show
@@ -177,7 +177,7 @@ dotnet_diagnostic.S2094.severity = suggestion
 # Disabled style cop rules #
 ##########
 # Rule CA1019: Define accessors for attribute arguments
-dotnet_diagnostic.CA1019.severity=none
+dotnet_diagnostic.CA1019.severity = none
 
 ##########
 # IDE Rules #
@@ -270,7 +270,6 @@ dotnet_diagnostic.SA1512.severity = none
 
 # Rule SA1024: Colon should be followed by a space
 dotnet_diagnostic.SA1024.severity = none
-
 
 
 # other rules (see https://github.com/DotNetAnalyzers/StyleCopAnalyzers/tree/master/documentation)
@@ -532,7 +531,6 @@ dotnet_diagnostic.SA1303.severity = none
 dotnet_diagnostic.SA1512.severity = none
 
 
-
 #########
 # Razor #
 #########
@@ -603,7 +601,7 @@ indent_size = 2
 # Kafka Models
 [{**/Kafka/(Model)/**, **/Kafka/**/Model/**}]
 generated_code = true
-dotnet_diagnostic.CS0162.severity = none;
+dotnet_diagnostic.CS0162.severity = none ;
 
 # Db migrations
 [**/Migrations/**]

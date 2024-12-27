@@ -8,6 +8,7 @@ using KidsTown.KidsTown;
 using KidsTown.KidsTown.Models;
 using KidsTown.Shared;
 using Microsoft.AspNetCore.Mvc;
+using Org.BouncyCastle.Crypto.Digests;
 
 namespace KidsTown.Application.Controllers;
 
@@ -119,7 +120,7 @@ public class CheckInOutController(
             request.SelectedLocationGroupIds,
             request.FilterLocations);
 
-        var people = await checkInOutService.SearchForPeople(peopleSearchParameters).ConfigureAwait(continueOnCapturedContext: false);
+        var people = await checkInOutService.SearchForPeople(peopleSearchParameters);
 
         await searchLoggingService.LogSearch(
             peopleSearchParameters,
@@ -159,8 +160,7 @@ public class CheckInOutController(
             && (!peopleReadyForProcessing.Any(p => !p.MayLeaveAlone || p.HasPeopleWithoutPickupPermission)
                 || request.CheckType == CheckType.CheckIn))
         {
-            var kid = await TryFastCheckInOut(peopleReadyForProcessing, request.CheckType)
-                .ConfigureAwait(continueOnCapturedContext: false);
+            var kid = await TryFastCheckInOut(peopleReadyForProcessing, request.CheckType);
 
             if (kid != null)
             {
@@ -338,10 +338,9 @@ public class CheckInOutController(
         }
 
         var success = await checkInOutService
-            .CheckInOutPeople(
-                checkType,
-                people.Select(p => p.AttendanceId).ToImmutableList())
-            .ConfigureAwait(continueOnCapturedContext: false);
+                .CheckInOutPeople(
+                    checkType,
+                    people.Select(p => p.AttendanceId).ToImmutableList());
 
         return success ? people.Single() : null;
     }

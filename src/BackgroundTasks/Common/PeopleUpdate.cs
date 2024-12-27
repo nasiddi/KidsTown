@@ -12,12 +12,15 @@ public record PeopleUpdate(
     public static PeopleUpdate CreateSimple(
         long? peopleId,
         string firstName,
-        string lastName) => new(
-        PeopleId: peopleId,
-        HouseholdId: null,
-        FirstName: firstName,
-        LastName: lastName,
-        HouseholdName: null,
-        MayLeaveAlone: true,
-        HasPeopleWithoutPickupPermission: false);
+        string lastName)
+    {
+        return new PeopleUpdate(
+            peopleId,
+            HouseholdId: null,
+            firstName,
+            lastName,
+            HouseholdName: null,
+            MayLeaveAlone: true,
+            HasPeopleWithoutPickupPermission: false);
+    }
 }

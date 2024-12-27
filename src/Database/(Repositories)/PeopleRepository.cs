@@ -24,7 +24,7 @@ public class PeopleRepository(IServiceScopeFactory serviceScopeFactory) : IPeopl
             .Distinct()
             .ToListAsync();
 
-        return await GetAdults(familyIds.ToImmutableList()).ConfigureAwait(continueOnCapturedContext: false);
+        return await GetAdults(familyIds.ToImmutableList());
     }
 
     public async Task<IImmutableList<Adult>> GetAdults(IImmutableList<int> familyIds)
@@ -32,12 +32,11 @@ public class PeopleRepository(IServiceScopeFactory serviceScopeFactory) : IPeopl
         await using var db = CommonRepository.GetDatabase(serviceScopeFactory);
 
         var adults = await (from a in db.Adults
-                join p in db.People
-                    on a.PersonId equals p.Id
-                where p.FamilyId.HasValue && familyIds.Contains(p.FamilyId.Value)
-                select MapAdult(p, a))
-            .ToListAsync()
-            .ConfigureAwait(continueOnCapturedContext: false);
+                    join p in db.People
+                        on a.PersonId equals p.Id
+                    where p.FamilyId.HasValue && familyIds.Contains(p.FamilyId.Value)
+                    select MapAdult(p, a))
+                .ToListAsync();
 
         return adults.OrderByDescending(a => a.IsPrimaryContact).ToImmutableList();
     }
@@ -46,10 +45,9 @@ public class PeopleRepository(IServiceScopeFactory serviceScopeFactory) : IPeopl
     {
         await using var db = CommonRepository.GetDatabase(serviceScopeFactory);
         var persistedAdults = await db.Adults
-            .Include(a => a.Person)
-            .Where(a => adults.Select(ad => ad.PersonId).Contains(a.PersonId))
-            .ToListAsync()
-            .ConfigureAwait(continueOnCapturedContext: false);
+                .Include(a => a.Person)
+                .Where(a => adults.Select(ad => ad.PersonId).Contains(a.PersonId))
+                .ToListAsync();
 
         persistedAdults.ForEach(
             a =>

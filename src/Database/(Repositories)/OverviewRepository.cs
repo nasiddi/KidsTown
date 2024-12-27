@@ -22,18 +22,17 @@ public class OverviewRepository(IServiceScopeFactory serviceScopeFactory) : IOve
         await using var db = CommonRepository.GetDatabase(serviceScopeFactory);
 
         var people = await (from a in db.Attendances
-                join p in db.People
-                    on a.PersonId equals p.Id
-                join at in db.AttendanceTypes
-                    on a.AttendanceTypeId equals at.Id
-                join l in db.Locations
-                    on a.LocationId equals l.Id
-                where a.InsertDate.Date == date.Date
-                    && selectedLocationGroups.Contains(l.LocationGroupId)
-                    && l.EventId == eventId
-                select MapAttendee(a, p, at, l))
-            .ToListAsync()
-            .ConfigureAwait(continueOnCapturedContext: false);
+                    join p in db.People
+                        on a.PersonId equals p.Id
+                    join at in db.AttendanceTypes
+                        on a.AttendanceTypeId equals at.Id
+                    join l in db.Locations
+                        on a.LocationId equals l.Id
+                    where a.InsertDate.Date == date.Date
+                        && selectedLocationGroups.Contains(l.LocationGroupId)
+                        && l.EventId == eventId
+                    select MapAttendee(a, p, at, l))
+                .ToListAsync();
 
         return people.OrderBy(a => a.LastName).ToImmutableList();
     }
@@ -49,8 +48,7 @@ public class OverviewRepository(IServiceScopeFactory serviceScopeFactory) : IOve
                 eventId,
                 startDate,
                 endDate,
-                selectedLocations)
-            .ConfigureAwait(continueOnCapturedContext: false);
+                selectedLocations);
     }
 
     public async Task<IImmutableList<Attendee>> GetAttendanceHistoryByLocationGroups(
@@ -64,8 +62,7 @@ public class OverviewRepository(IServiceScopeFactory serviceScopeFactory) : IOve
                 eventId,
                 startDate,
                 endDate,
-                selectedLocationGroups: selectedLocationGroups)
-            .ConfigureAwait(continueOnCapturedContext: false);
+                selectedLocationGroups: selectedLocationGroups);
     }
 
     private async Task<IImmutableList<Attendee>> GetAttendanceHistory(
@@ -77,20 +74,19 @@ public class OverviewRepository(IServiceScopeFactory serviceScopeFactory) : IOve
     {
         await using var db = serviceScopeFactory.CreateScope().ServiceProvider.GetRequiredService<KidsTownContext>();
         var attendees = await (from a in db.Attendances
-                join p in db.People
-                    on a.PersonId equals p.Id
-                join at in db.AttendanceTypes
-                    on a.AttendanceTypeId equals at.Id
-                join l in db.Locations
-                    on a.LocationId equals l.Id
-                where ((selectedLocations != null && selectedLocations.Contains(l.Id))
-                        || (selectedLocationGroups != null && selectedLocationGroups.Contains(l.LocationGroupId)))
-                    && l.EventId == eventId
-                    && a.InsertDate.Date >= startDate.Date
-                    && a.InsertDate.Date <= endDate.Date
-                select MapAttendee(a, p, at, l))
-            .ToListAsync()
-            .ConfigureAwait(continueOnCapturedContext: false);
+                    join p in db.People
+                        on a.PersonId equals p.Id
+                    join at in db.AttendanceTypes
+                        on a.AttendanceTypeId equals at.Id
+                    join l in db.Locations
+                        on a.LocationId equals l.Id
+                    where ((selectedLocations != null && selectedLocations.Contains(l.Id))
+                            || (selectedLocationGroups != null && selectedLocationGroups.Contains(l.LocationGroupId)))
+                        && l.EventId == eventId
+                        && a.InsertDate.Date >= startDate.Date
+                        && a.InsertDate.Date <= endDate.Date
+                    select MapAttendee(a, p, at, l))
+                .ToListAsync();
 
         return attendees.ToImmutableList();
     }

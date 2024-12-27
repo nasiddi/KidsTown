@@ -24,15 +24,15 @@ public class CheckInOutControllerTest
     [TearDown]
     public async Task TearDown()
     {
-        await Task.Delay(millisecondsDelay: 1000).ConfigureAwait(continueOnCapturedContext: false);
-        await CleanDatabase().ConfigureAwait(continueOnCapturedContext: false);
+        await Task.Delay(millisecondsDelay: 1000);
+        await CleanDatabase();
     }
 
     [Test]
     public async Task GetPeople_ExistingData_AllFound()
     {
         // Arrange
-        var controller = await SetupTestEnvironment().ConfigureAwait(continueOnCapturedContext: false);
+        var controller = await SetupTestEnvironment();
         var testData = TestDataFactory.GetTestData();
 
         // Act & Assert
@@ -43,8 +43,7 @@ public class CheckInOutControllerTest
                         t.SecurityCode,
                         ImmutableList.Create(t.LocationGroupId),
                         isFastCheckInOut: false,
-                        controller)
-                    .ConfigureAwait(continueOnCapturedContext: false);
+                        controller);
 
                 var candidates = checkInOutResult.CheckInOutCandidates.Select(c => c.Name).ToArray<object>();
                 Assert.That(
@@ -57,7 +56,7 @@ public class CheckInOutControllerTest
     public async Task GetPeople_NoLocationGroupSet_NothingFound()
     {
         // Arrange
-        var controller = await SetupTestEnvironment().ConfigureAwait(continueOnCapturedContext: false);
+        var controller = await SetupTestEnvironment();
         var testData = TestDataFactory.GetTestData();
 
         // Act & Assert
@@ -68,8 +67,7 @@ public class CheckInOutControllerTest
                         t.SecurityCode,
                         ImmutableList<int>.Empty,
                         isFastCheckInOut: false,
-                        controller)
-                    .ConfigureAwait(continueOnCapturedContext: false);
+                        controller);
 
                 Assert.That(checkInOutResult.AlertLevel, Is.EqualTo(AlertLevel.Error));
             });
@@ -80,7 +78,7 @@ public class CheckInOutControllerTest
     {
         // Arrange
         _serviceProvider = TestHelper.SetupServiceProviderWithKidsTownDi();
-        await CleanDatabase().ConfigureAwait(continueOnCapturedContext: false);
+        await CleanDatabase();
 
         var testData = TestDataFactory.GetTestData().GroupBy(t => t.SecurityCode).ToImmutableList();
         var filteredTestData = testData.Where(t => t.Count() == 1)
@@ -105,8 +103,7 @@ public class CheckInOutControllerTest
                         t.SecurityCode,
                         ImmutableList.Create(t.LocationGroupId),
                         isFastCheckInOut: true,
-                        controller)
-                    .ConfigureAwait(continueOnCapturedContext: false);
+                        controller);
 
                 Assert.That(checkInOutResult.AlertLevel, Is.EqualTo(AlertLevel.Success));
                 Assert.That(checkInOutResult.SuccessfulFastCheckout, Is.True);
@@ -115,8 +112,7 @@ public class CheckInOutControllerTest
         // Assert
         var actualData = await GetActualData(
                 filteredTestData.Select(t => t.CheckInsId)
-                    .ToImmutableList())
-            .ConfigureAwait(continueOnCapturedContext: false);
+                    .ToImmutableList());
 
         Assert.That(actualData.Count(a => a.CheckInDate == null), Is.Zero);
         Assert.That(actualData.Count, Is.EqualTo(filteredTestData.Count));
@@ -149,8 +145,8 @@ public class CheckInOutControllerTest
     private async Task<CheckInOutController> SetupTestEnvironment()
     {
         _serviceProvider = TestHelper.SetupServiceProviderWithKidsTownDi();
-        await CleanDatabase().ConfigureAwait(continueOnCapturedContext: false);
-        await TestHelper.InsertDefaultTestData(_serviceProvider).ConfigureAwait(continueOnCapturedContext: false);
+        await CleanDatabase();
+        await TestHelper.InsertDefaultTestData(_serviceProvider);
 
         var checkInOutService = _serviceProvider.GetService<ICheckInOutService>();
         var taskManagementServiceMock = new Mock<ITaskManagementService>();
@@ -165,7 +161,7 @@ public class CheckInOutControllerTest
 
     private async Task<IImmutableList<Data>> GetActualData(IImmutableList<long> checkInsIds)
     {
-        await Task.Delay(millisecondsDelay: 500).ConfigureAwait(continueOnCapturedContext: false);
+        await Task.Delay(millisecondsDelay: 500);
 
         var serviceScopeFactory = _serviceProvider.GetService<IServiceScopeFactory>();
 
@@ -174,10 +170,9 @@ public class CheckInOutControllerTest
             .GetRequiredService<KidsTownContext>();
 
         var attendances = await (from a in db.Attendances
-                where a.CheckInsId < 100 && checkInsIds.Contains(a.CheckInsId)
-                select MapData(a))
-            .ToListAsync()
-            .ConfigureAwait(continueOnCapturedContext: false);
+                    where a.CheckInsId < 100 && checkInsIds.Contains(a.CheckInsId)
+                    select MapData(a))
+                .ToListAsync();
 
         return attendances.ToImmutableList();
     }
@@ -192,8 +187,5 @@ public class CheckInOutControllerTest
         await TestHelper.CleanDatabase(_serviceProvider);
     }
 
-    private class Data(DateTime? checkInDate)
-    {
-        public readonly DateTime? CheckInDate = checkInDate;
-    }
+    private record Data(DateTime? CheckInDate);
 }

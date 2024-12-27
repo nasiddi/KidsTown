@@ -30,15 +30,14 @@ public class BackgroundTaskRepository(IServiceScopeFactory serviceScopeFactory) 
             var toBeDeleted = taskExecutionCount - 99;
 
             var taskExecutionsToDelete = await db.TaskExecutions.OrderBy(t => t.Id)
-                .Where(t => t.TaskName == taskName)
-                .Take(toBeDeleted)
-                .ToListAsync()
-                .ConfigureAwait(continueOnCapturedContext: false);
+                    .Where(t => t.TaskName == taskName)
+                    .Take(toBeDeleted)
+                    .ToListAsync();
 
             db.RemoveRange(taskExecutionsToDelete);
         }
 
-        await db.AddAsync(taskExecution).ConfigureAwait(continueOnCapturedContext: false);
-        await db.SaveChangesAsync().ConfigureAwait(continueOnCapturedContext: false);
+        await db.AddAsync(taskExecution);
+        await db.SaveChangesAsync();
     }
 }

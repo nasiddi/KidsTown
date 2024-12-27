@@ -13,7 +13,9 @@ namespace KidsTown.Application.Controllers;
 [ApiController]
 [AuthenticateUser]
 [Route("[controller]")]
-public class ConfigurationController(IConfigurationService configurationService, ITaskManagementService taskManagementService)
+public class ConfigurationController(
+        IConfigurationService configurationService,
+        ITaskManagementService taskManagementService)
     : ControllerBase
 {
     [HttpGet]
@@ -22,7 +24,7 @@ public class ConfigurationController(IConfigurationService configurationService,
     public async Task<IImmutableList<SelectOption>> GetLocationGroups()
     {
         taskManagementService.ActivateBackgroundTasks();
-        var locations = await configurationService.GetActiveLocationGroups().ConfigureAwait(continueOnCapturedContext: false);
+        var locations = await configurationService.GetActiveLocationGroups();
         return locations.Select(MapOptions).ToImmutableList();
     }
 
@@ -31,8 +33,7 @@ public class ConfigurationController(IConfigurationService configurationService,
     [Produces("application/json")]
     public async Task<IImmutableList<GroupedSelectOptions>> GetLocationsByLocationGroups([FromRoute] long eventId)
     {
-        var locations = await configurationService.GetLocations(eventId)
-            .ConfigureAwait(continueOnCapturedContext: false);
+        var locations = await configurationService.GetLocations(eventId);
 
         return locations.GroupBy(l => l.LocationGroupId)
             .Select(
@@ -49,7 +50,7 @@ public class ConfigurationController(IConfigurationService configurationService,
     [Produces("application/json")]
     public async Task<IImmutableList<CheckInsEvent>> GetAvailableEvents()
     {
-        return await configurationService.GetAvailableEvents().ConfigureAwait(continueOnCapturedContext: false);
+        return await configurationService.GetAvailableEvents();
     }
 
     [HttpGet]

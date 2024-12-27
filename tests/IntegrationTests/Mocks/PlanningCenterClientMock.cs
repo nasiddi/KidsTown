@@ -270,7 +270,7 @@ public class PlanningCenterClientMock : IPlanningCenterClient
     {
         return new List<PlanningCenterApiClient.Models.CheckInsResult.Included>
         {
-            new PlanningCenterApiClient.Models.CheckInsResult.Included
+            new()
             {
                 Type = IncludeType.Location,
                 Id = (long) TestLocationIds.Haesli,
@@ -279,7 +279,7 @@ public class PlanningCenterClientMock : IPlanningCenterClient
                     Name = "Häsli Test"
                 }
             },
-            new PlanningCenterApiClient.Models.CheckInsResult.Included
+            new()
             {
                 Type = IncludeType.Location,
                 Id = (long) TestLocationIds.Schoefli,
@@ -288,7 +288,7 @@ public class PlanningCenterClientMock : IPlanningCenterClient
                     Name = "Schöfli Test"
                 }
             },
-            new PlanningCenterApiClient.Models.CheckInsResult.Included
+            new()
             {
                 Type = IncludeType.Location,
                 Id = (long) TestLocationIds.Fuechsli,
@@ -297,7 +297,7 @@ public class PlanningCenterClientMock : IPlanningCenterClient
                     Name = "Füchsli Test"
                 }
             },
-            new PlanningCenterApiClient.Models.CheckInsResult.Included
+            new()
             {
                 Type = IncludeType.Location,
                 Id = (long) TestLocationIds.KidsChurch1St,
@@ -306,7 +306,7 @@ public class PlanningCenterClientMock : IPlanningCenterClient
                     Name = "Kids Church 1. Klasse Test"
                 }
             },
-            new PlanningCenterApiClient.Models.CheckInsResult.Included
+            new()
             {
                 Type = IncludeType.Location,
                 Id = (long) TestLocationIds.KidsChurch2Nd,
@@ -315,7 +315,7 @@ public class PlanningCenterClientMock : IPlanningCenterClient
                     Name = "Kids Church 2. Klasse Test"
                 }
             },
-            new PlanningCenterApiClient.Models.CheckInsResult.Included
+            new()
             {
                 Type = IncludeType.Location,
                 Id = (long) TestLocationIds.KidsChurch3Rd,
@@ -324,7 +324,7 @@ public class PlanningCenterClientMock : IPlanningCenterClient
                     Name = "Kids Church 3. Klasse Test"
                 }
             },
-            new PlanningCenterApiClient.Models.CheckInsResult.Included
+            new()
             {
                 Type = IncludeType.Location,
                 Id = (long) TestLocationIds.KidsChurch4Th,
@@ -333,7 +333,7 @@ public class PlanningCenterClientMock : IPlanningCenterClient
                     Name = "Kids Church 4. Klasse Test"
                 }
             },
-            new PlanningCenterApiClient.Models.CheckInsResult.Included
+            new()
             {
                 Type = IncludeType.Location,
                 Id = (long) TestLocationIds.KidsChurch5Th,

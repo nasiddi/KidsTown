@@ -25,7 +25,7 @@ public static class TestHelper
     public static async Task CleanDatabase(IServiceProvider serviceProvider)
     {
         await using var db = serviceProvider.GetRequiredService<KidsTownContext>();
-        await EstablishConnectionToDatabase(db).ConfigureAwait(continueOnCapturedContext: false);
+        await EstablishConnectionToDatabase(db);
 
         var attendances = await db.Attendances.Where(a => 0 < a.CheckInsId && a.CheckInsId < 100).ToListAsync();
         var people = await db.People.Where(
@@ -49,21 +49,20 @@ public static class TestHelper
     {
         while (!await db.Database.CanConnectAsync())
         {
-            await Task.Delay(millisecondsDelay: 100).ConfigureAwait(continueOnCapturedContext: false);
+            await Task.Delay(millisecondsDelay: 100);
         }
     }
 
     public static async Task InsertDefaultTestData(ServiceProvider serviceProvider)
     {
         var testData = TestDataFactory.GetTestData();
-        await InsertTestData(serviceProvider, testData)
-            .ConfigureAwait(continueOnCapturedContext: false);
+        await InsertTestData(serviceProvider, testData);
     }
 
     public static async Task InsertTestData(ServiceProvider serviceProvider, IImmutableList<TestData.TestData> testData)
     {
         await using var db = serviceProvider.GetRequiredService<KidsTownContext>();
-        await EstablishConnectionToDatabase(db).ConfigureAwait(continueOnCapturedContext: false);
+        await EstablishConnectionToDatabase(db);
 
         var locations = await db.Locations.ToListAsync();
 
@@ -72,8 +71,8 @@ public static class TestHelper
             .Select(d => MapPerson(d, locations.ToImmutableList()))
             .ToImmutableList();
 
-        await db.AddRangeAsync(people).ConfigureAwait(continueOnCapturedContext: false);
-        await db.SaveChangesAsync().ConfigureAwait(continueOnCapturedContext: false);
+        await db.AddRangeAsync(people);
+        await db.SaveChangesAsync();
     }
 
     private static Attendance MapAttendance(TestData.TestData data, IImmutableList<Location> locations)

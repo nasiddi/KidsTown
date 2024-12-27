@@ -19,20 +19,18 @@ public class AdultUpdateRepository(IServiceScopeFactory serviceScopeFactory) : I
         await using var db = CommonRepository.GetDatabase(serviceScopeFactory);
 
         var personIds = await db.Attendances.Where(
-                a
-                    => a.InsertDate >= DateTime.Today.AddDays(-daysLookBack)
-                    && a.AttendanceTypeId == (int) AttendanceTypeId.Regular)
-            .Select(a => a.PersonId)
-            .Distinct()
-            .ToListAsync()
-            .ConfigureAwait(continueOnCapturedContext: false);
+                    a
+                        => a.InsertDate >= DateTime.Today.AddDays(-daysLookBack)
+                        && a.AttendanceTypeId == (int) AttendanceTypeId.Regular)
+                .Select(a => a.PersonId)
+                .Distinct()
+                .ToListAsync();
 
         var familyIds = await db.People
-            .Where(p => p.FamilyId.HasValue && personIds.Contains(p.Id))
-            .Select(p => p.FamilyId)
-            .Distinct()
-            .ToListAsync()
-            .ConfigureAwait(continueOnCapturedContext: false);
+                .Where(p => p.FamilyId.HasValue && personIds.Contains(p.Id))
+                .Select(p => p.FamilyId)
+                .Distinct()
+                .ToListAsync();
 
         var families = await db.Families
             .Include(f => f.People)
@@ -51,13 +49,12 @@ public class AdultUpdateRepository(IServiceScopeFactory serviceScopeFactory) : I
         await using var db = CommonRepository.GetDatabase(serviceScopeFactory);
 
         var personIds = await db.Attendances.Where(
-                a
-                    => a.InsertDate >= DateTime.Today.AddDays(-daysLookBack)
-                    && a.AttendanceTypeId == (int) AttendanceTypeId.Volunteer)
-            .Select(a => a.PersonId)
-            .Distinct()
-            .ToListAsync()
-            .ConfigureAwait(continueOnCapturedContext: false);
+                    a
+                        => a.InsertDate >= DateTime.Today.AddDays(-daysLookBack)
+                        && a.AttendanceTypeId == (int) AttendanceTypeId.Volunteer)
+                .Select(a => a.PersonId)
+                .Distinct()
+                .ToListAsync();
 
         return (await db.People
                 .Where(p => !p.FamilyId.HasValue && personIds.Contains(p.Id) && p.PeopleId != null)
@@ -65,8 +62,7 @@ public class AdultUpdateRepository(IServiceScopeFactory serviceScopeFactory) : I
                 .Select(p => p.PeopleId!.Value)
                 .Distinct()
                 .Take(take)
-                .ToListAsync()
-                .ConfigureAwait(continueOnCapturedContext: false))
+                .ToListAsync())
             .ToImmutableList();
     }
 
@@ -101,7 +97,7 @@ public class AdultUpdateRepository(IServiceScopeFactory serviceScopeFactory) : I
         await using var db = CommonRepository.GetDatabase(serviceScopeFactory);
 
         var peopleIds = parentUpdates.Select(p => p.PeopleId).ToImmutableList();
-        var existingParents = await GetExistingParents(peopleIds, db).ConfigureAwait(continueOnCapturedContext: false);
+        var existingParents = await GetExistingParents(peopleIds, db);
 
         var updates = parentUpdates.Where(p => existingParents.Select(e => e.PeopleId).Contains(p.PeopleId))
             .ToImmutableList();
@@ -123,8 +119,7 @@ public class AdultUpdateRepository(IServiceScopeFactory serviceScopeFactory) : I
         await using var db = CommonRepository.GetDatabase(serviceScopeFactory);
 
         var people = await db.People.Where(p => p.PeopleId.HasValue && peopleIds.Contains(p.PeopleId.Value))
-            .ToListAsync()
-            .ConfigureAwait(continueOnCapturedContext: false);
+                .ToListAsync();
 
         people.ForEach(p => p.FamilyId = null);
         return await db.SaveChangesAsync();
@@ -135,9 +130,8 @@ public class AdultUpdateRepository(IServiceScopeFactory serviceScopeFactory) : I
         await using var db = CommonRepository.GetDatabase(serviceScopeFactory);
 
         var persistedFamilies = await db.Families
-            .Where(f => families.Select(e => e.FamilyId).Contains(f.Id))
-            .ToListAsync()
-            .ConfigureAwait(continueOnCapturedContext: false);
+                .Where(f => families.Select(e=> e.FamilyId).Contains(f.Id))
+                .ToListAsync();
 
         var updateDate = DateTime.UtcNow;
         persistedFamilies.ForEach(f => f.UpdateDate = updateDate);
@@ -151,11 +145,10 @@ public class AdultUpdateRepository(IServiceScopeFactory serviceScopeFactory) : I
     )
     {
         var parents = await db.People
-            .Where(p => p.PeopleId != null && peopleIds.Contains(p.PeopleId.Value))
-            .Include(p => p.Adult)
-            .Include(p => p.Family)
-            .ToListAsync()
-            .ConfigureAwait(continueOnCapturedContext: false);
+                .Where(p => p.PeopleId != null && peopleIds.Contains(p.PeopleId.Value))
+                .Include(p => p.Adult)
+                .Include(p => p.Family)
+                .ToListAsync();
 
         return parents.ToImmutableList();
     }
@@ -211,7 +204,7 @@ public class AdultUpdateRepository(IServiceScopeFactory serviceScopeFactory) : I
     private static Family MapFamily(EfCore.Family family)
     {
         var members = family.People.Where(p => p.PeopleId != null)
-            .Select(p => new BackgroundTasks.Adult.Person(p.PeopleId!.Value, null))
+            .Select(p => new BackgroundTasks.Adult.Person(p.PeopleId!.Value, IsChild: null))
             .ToImmutableList();
 
         return new Family(

@@ -18,7 +18,7 @@ public class AdultUpdateService(
     {
         var families = await adultUpdateRepository.GetFamiliesToUpdate(daysLookBack, batchSize);
 
-        var households = await GetHouseholds(families).ConfigureAwait(continueOnCapturedContext: false);
+        var households = await GetHouseholds(families);
 
         var adultPeopleIds = households.SelectMany(
                 h => h.Members.Where(m => m.IsChild != null && !m.IsChild.Value)
@@ -63,8 +63,7 @@ public class AdultUpdateService(
 
         foreach (var family in families)
         {
-            var household = await planningCenterClient.GetHousehold(family.HouseholdId)
-                .ConfigureAwait(continueOnCapturedContext: false);
+            var household = await planningCenterClient.GetHousehold(family.HouseholdId);
 
             if (household == null)
             {

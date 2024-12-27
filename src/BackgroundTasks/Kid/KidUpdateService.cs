@@ -15,19 +15,17 @@ public class KidUpdateService(IPlanningCenterClient planningCenterClient, IKidUp
 {
     public async Task<int> UpdateKids(int daysLookBack, int batchSize)
     {
-        var kidsPeopleIds = await kidUpdateRepository.GetKidsPeopleIdToUpdate(daysLookBack, batchSize)
-            .ConfigureAwait(continueOnCapturedContext: false);
+        var kidsPeopleIds = await kidUpdateRepository.GetKidsPeopleIdToUpdate(daysLookBack, batchSize);
 
         if (kidsPeopleIds.Count == 0)
         {
             return 0;
         }
 
-        var kidsUpdate = await FetchKids(kidsPeopleIds).ConfigureAwait(continueOnCapturedContext: false);
-        var families = await GetNewAnPersistedFamilies(kidsUpdate).ConfigureAwait(continueOnCapturedContext: false);
+        var kidsUpdate = await FetchKids(kidsPeopleIds);
+        var families = await GetNewAnPersistedFamilies(kidsUpdate);
 
-        return await kidUpdateRepository.UpdateKids(kidsUpdate, families)
-            .ConfigureAwait(continueOnCapturedContext: false);
+        return await kidUpdateRepository.UpdateKids(kidsUpdate, families);
     }
 
     private async Task<ImmutableList<Family>> GetNewAnPersistedFamilies(IImmutableList<PeopleUpdate> kidsUpdate)
@@ -51,8 +49,7 @@ public class KidUpdateService(IPlanningCenterClient planningCenterClient, IKidUp
 
     private async Task<IImmutableList<PeopleUpdate>> FetchKids(ImmutableList<long> kidsPeopleIds)
     {
-        var kids = await planningCenterClient.GetPeopleUpdates(kidsPeopleIds)
-            .ConfigureAwait(continueOnCapturedContext: false);
+        var kids = await planningCenterClient.GetPeopleUpdates(kidsPeopleIds);
 
         var kidsUpdate = MapKidsUpdates(kids);
         return kidsUpdate;
