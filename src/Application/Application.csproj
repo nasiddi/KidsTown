@@ -4,8 +4,6 @@
         <TargetFramework>net9.0</TargetFramework>
         <RootNamespace>KidsTown.Application</RootNamespace>
         <IsPackable>false</IsPackable>
-        <SpaRoot>ClientApp\kidstown</SpaRoot>
-        <DefaultItemExcludes>$(DefaultItemExcludes);$(SpaRoot)node_modules\**</DefaultItemExcludes>
         <Nullable>enable</Nullable>
     </PropertyGroup>
 
