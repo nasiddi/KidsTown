@@ -10,32 +10,30 @@ public static class TestDataFactory
     {
         var testData = ImmutableList.Create(
             new TestData(
-                checkInsFirstName: "Hanna",
-                checkInsLastName: "Hase",
-                peopleFirstName: "Hanna",
-                peopleLastName: "Osterhase",
+                "Hanna",
+                "Hase",
+                "Hanna",
+                "Osterhase",
                 checkInsId: 1,
                 peopleId: 1,
-                attendanceType: AttendeeType.Regular,
-                testLocation: TestLocationIds.Haesli,
-                fieldData: ImmutableList<TestFieldData>.Empty,
+                AttendeeType.Regular,
+                TestLocationIds.Haesli,
+                ImmutableList<TestFieldData>.Empty,
                 expectedMayLeaveAlone: true,
                 expectedHasPeopleWithoutPickupPermission: false,
                 householdId: 1,
-                householdName: "Hase Household"
-            ),
+                "Hase Household"),
             new TestData(
-                checkInsFirstName: "Sarah",
-                checkInsLastName: "Schaf",
+                "Sarah",
+                "Schaf",
                 checkInsId: 2,
                 peopleId: null,
-                attendanceType: AttendeeType.Guest,
-                testLocation: TestLocationIds.Schoefli,
-                securityCode: "2S2S"
-            ),
+                AttendeeType.Guest,
+                TestLocationIds.Schoefli,
+                "2S2S"),
             new TestData(
-                checkInsFirstName: "Frida",
-                checkInsLastName: "Fuchs",
+                "Frida",
+                "Fuchs",
                 checkInsId: 3,
                 peopleId: 3,
                 attendanceType: AttendeeType.Volunteer,
@@ -43,18 +41,17 @@ public static class TestDataFactory
                 peopleFirstName: "Frida",
                 peopleLastName: "Fuchser",
                 fieldData: ImmutableList.Create(
-                    item: new TestFieldData(
-                        fieldDefinitionId: PeopleFieldId.NeedsToBePickedUp,
-                        fieldOptionId: 3,
-                        value: "false")),
+                    new TestFieldData(
+                        PeopleFieldId.NeedsToBePickedUp,
+                        FieldOptionId: 3,
+                        "false")),
                 expectedMayLeaveAlone: true,
                 expectedHasPeopleWithoutPickupPermission: false,
                 householdId: 3,
-                householdName: "Fuchs Household"
-            ),
+                householdName: "Fuchs Household"),
             new TestData(
-                checkInsFirstName: "Hans",
-                checkInsLastName: "Hase",
+                "Hans",
+                "Hase",
                 checkInsId: 4,
                 peopleId: 4,
                 attendanceType: AttendeeType.Regular,
@@ -62,18 +59,17 @@ public static class TestDataFactory
                 peopleFirstName: "Hans",
                 peopleLastName: "Hase",
                 fieldData: ImmutableList.Create(
-                    item: new TestFieldData(
-                        fieldDefinitionId: PeopleFieldId.NeedsToBePickedUp,
-                        fieldOptionId: 4,
-                        value: "true")),
+                    new TestFieldData(
+                        PeopleFieldId.NeedsToBePickedUp,
+                        FieldOptionId: 4,
+                        "true")),
                 expectedMayLeaveAlone: false,
                 expectedHasPeopleWithoutPickupPermission: false,
                 householdId: 1,
-                householdName: "Hase Household"
-            ),
+                householdName: "Hase Household"),
             new TestData(
-                checkInsFirstName: "Sandro",
-                checkInsLastName: "Schaf",
+                "Sandro",
+                "Schaf",
                 checkInsId: 5,
                 peopleId: 5,
                 attendanceType: AttendeeType.Regular,
@@ -81,19 +77,18 @@ public static class TestDataFactory
                 peopleFirstName: "Sandro",
                 peopleLastName: "Schaf",
                 fieldData: ImmutableList.Create(
-                    item: new TestFieldData(
-                        fieldDefinitionId: PeopleFieldId.Kab,
-                        fieldOptionId: 5,
-                        value: "true")),
+                    new TestFieldData(
+                        PeopleFieldId.Kab,
+                        FieldOptionId: 5,
+                        "true")),
                 expectedMayLeaveAlone: true,
                 expectedHasPeopleWithoutPickupPermission: true,
                 securityCode: "2S2S",
                 householdId: 2,
-                householdName: "Schaf Household"
-            ),
+                householdName: "Schaf Household"),
             new TestData(
-                checkInsFirstName: "Franz",
-                checkInsLastName: "Fox",
+                "Franz",
+                "Fox",
                 checkInsId: 6,
                 peopleId: 6,
                 attendanceType: AttendeeType.Regular,
@@ -102,21 +97,20 @@ public static class TestDataFactory
                 peopleLastName: "Fox",
                 fieldData: ImmutableList.Create(
                     new TestFieldData(
-                        fieldDefinitionId: PeopleFieldId.Kab,
-                        fieldOptionId: 6,
-                        value: "true"),
+                        PeopleFieldId.Kab,
+                        FieldOptionId: 6,
+                        "true"),
                     new TestFieldData(
-                        fieldDefinitionId: PeopleFieldId.NeedsToBePickedUp,
-                        fieldOptionId: 7,
-                        value: "false")),
+                        PeopleFieldId.NeedsToBePickedUp,
+                        FieldOptionId: 7,
+                        "false")),
                 expectedMayLeaveAlone: true,
                 expectedHasPeopleWithoutPickupPermission: true,
                 householdId: 3,
-                householdName: "Fuchs Household"
-            ),
+                householdName: "Fuchs Household"),
             new TestData(
-                checkInsFirstName: "Henry",
-                checkInsLastName: "Hasenfuss",
+                "Henry",
+                "Hasenfuss",
                 checkInsId: 7,
                 peopleId: 7,
                 attendanceType: AttendeeType.Regular,
@@ -125,22 +119,21 @@ public static class TestDataFactory
                 peopleLastName: "Hasenfuss",
                 fieldData: ImmutableList.Create(
                     new TestFieldData(
-                        fieldDefinitionId: PeopleFieldId.Kab,
-                        fieldOptionId: 8,
-                        value: null),
+                        PeopleFieldId.Kab,
+                        FieldOptionId: 8,
+                        Value: null),
                     new TestFieldData(
-                        fieldDefinitionId: PeopleFieldId.NeedsToBePickedUp,
-                        fieldOptionId: 9,
-                        value: null)),
+                        PeopleFieldId.NeedsToBePickedUp,
+                        FieldOptionId: 9,
+                        Value: null)),
                 expectedMayLeaveAlone: true,
                 expectedHasPeopleWithoutPickupPermission: false,
                 householdId: 1,
                 householdName: "Hase Household",
-                securityCode: "1H1H"
-            ),
+                securityCode: "1H1H"),
             new TestData(
-                checkInsFirstName: "Henry",
-                checkInsLastName: "Hasenfuss",
+                "Henry",
+                "Hasenfuss",
                 checkInsId: 8,
                 peopleId: 7,
                 attendanceType: AttendeeType.Regular,
@@ -149,37 +142,35 @@ public static class TestDataFactory
                 peopleLastName: "Hasenfuss",
                 fieldData: ImmutableList.Create(
                     new TestFieldData(
-                        fieldDefinitionId: PeopleFieldId.Kab,
-                        fieldOptionId: 8,
-                        value: null),
+                        PeopleFieldId.Kab,
+                        FieldOptionId: 8,
+                        Value: null),
                     new TestFieldData(
-                        fieldDefinitionId: PeopleFieldId.NeedsToBePickedUp,
-                        fieldOptionId: 9,
-                        value: null)),
+                        PeopleFieldId.NeedsToBePickedUp,
+                        FieldOptionId: 9,
+                        Value: null)),
                 expectedMayLeaveAlone: true,
                 expectedHasPeopleWithoutPickupPermission: false,
                 householdId: 1,
                 householdName: "Hase Household",
-                securityCode: "1H1H"
-            ),
+                securityCode: "1H1H"),
             new TestData(
-                checkInsFirstName: "Ernst",
-                checkInsLastName: "Erster",
+                "Ernst",
+                "Erster",
                 checkInsId: 9,
                 peopleId: 9,
                 attendanceType: AttendeeType.Regular,
                 testLocation: TestLocationIds.KidsChurch1St,
                 peopleFirstName: "Ernst",
                 peopleLastName: "Erster",
-                fieldData: ImmutableList<TestFieldData>.Empty, 
+                fieldData: ImmutableList<TestFieldData>.Empty,
                 expectedMayLeaveAlone: true,
                 expectedHasPeopleWithoutPickupPermission: false,
                 householdId: 4,
-                householdName: "KidsChurch Household"
-            ),
+                householdName: "KidsChurch Household"),
             new TestData(
-                checkInsFirstName: "Zara",
-                checkInsLastName: "Zweiter",
+                "Zara",
+                "Zweiter",
                 checkInsId: 10,
                 peopleId: 10,
                 attendanceType: AttendeeType.Regular,
@@ -190,11 +181,10 @@ public static class TestDataFactory
                 expectedMayLeaveAlone: true,
                 expectedHasPeopleWithoutPickupPermission: false,
                 householdId: 4,
-                householdName: "KidsChurch Household"
-            ),
+                householdName: "KidsChurch Household"),
             new TestData(
-                checkInsFirstName: "Daniel",
-                checkInsLastName: "Dritter",
+                "Daniel",
+                "Dritter",
                 checkInsId: 11,
                 peopleId: 11,
                 attendanceType: AttendeeType.Regular,
@@ -205,11 +195,10 @@ public static class TestDataFactory
                 expectedMayLeaveAlone: true,
                 expectedHasPeopleWithoutPickupPermission: false,
                 householdId: 4,
-                householdName: "KidsChurch Household"
-            ),
+                householdName: "KidsChurch Household"),
             new TestData(
-                checkInsFirstName: "Vreni",
-                checkInsLastName: "Vierter",
+                "Vreni",
+                "Vierter",
                 checkInsId: 12,
                 peopleId: 12,
                 attendanceType: AttendeeType.Regular,
@@ -220,11 +209,10 @@ public static class TestDataFactory
                 expectedMayLeaveAlone: true,
                 expectedHasPeopleWithoutPickupPermission: false,
                 householdId: 4,
-                householdName: "KidsChurch Household"
-            ),
+                householdName: "KidsChurch Household"),
             new TestData(
-                checkInsFirstName: "Freddie",
-                checkInsLastName: "Fünfter",
+                "Freddie",
+                "Fünfter",
                 checkInsId: 13,
                 peopleId: 13,
                 attendanceType: AttendeeType.Regular,
@@ -235,9 +223,7 @@ public static class TestDataFactory
                 expectedMayLeaveAlone: true,
                 expectedHasPeopleWithoutPickupPermission: false,
                 householdId: 4,
-                householdName: "KidsChurch Household"
-            )
-        );
+                householdName: "KidsChurch Household"));
 
         return testData;
     }

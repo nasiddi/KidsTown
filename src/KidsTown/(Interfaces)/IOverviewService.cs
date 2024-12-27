@@ -8,11 +8,12 @@ namespace KidsTown.KidsTown;
 public interface IOverviewService
 {
     Task<IImmutableList<AttendeesByLocation>> GetActiveAttendees(
-        long eventId, 
+        long eventId,
         IImmutableList<int> selectedLocationGroups,
         DateTime date);
 
-    Task<IImmutableList<HeadCounts>> GetSummedUpHeadCounts(long eventId,
+    Task<IImmutableList<HeadCounts>> GetSummedUpHeadCounts(
+        long eventId,
         IImmutableList<int> selectedLocations,
         DateTime startDate,
         DateTime endDate);

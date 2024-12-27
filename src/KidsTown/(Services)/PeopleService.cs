@@ -5,20 +5,14 @@ using KidsTown.PlanningCenterApiClient;
 
 namespace KidsTown.KidsTown;
 
-public class PeopleService : IPeopleService
+public class PeopleService(IPeopleRepository peopleRepository, IPlanningCenterClient planningCenterClient)
+    : IPeopleService
 {
-    private readonly IPeopleRepository _peopleRepository;
-    private readonly IPlanningCenterClient _planningCenterClient;
-    public PeopleService(IPeopleRepository peopleRepository, IPlanningCenterClient planningCenterClient)
-    {
-        _peopleRepository = peopleRepository;
-        _planningCenterClient = planningCenterClient;
-    }
-
     public async Task<IImmutableList<Adult>> GetParents(IImmutableList<int> attendanceIds)
     {
-        return await _peopleRepository.GetParents(attendanceIds: attendanceIds);
+        return await peopleRepository.GetParents(attendanceIds);
     }
+
     public async Task UpdateAdults(IImmutableList<Adult> adults, bool updatePhoneNumber)
     {
         if (updatePhoneNumber)
@@ -32,18 +26,20 @@ public class PeopleService : IPeopleService
 
                 if (adult.PhoneNumberId.HasValue)
                 {
-                    await _planningCenterClient.PatchPhoneNumber(
-                        peopleId: adult.PeopleId.Value, 
-                        phoneNumberId: adult.PhoneNumberId.Value, 
-                        phoneNumber: adult.PhoneNumber);
+                    await planningCenterClient.PatchPhoneNumber(
+                        adult.PeopleId.Value,
+                        adult.PhoneNumberId.Value,
+                        adult.PhoneNumber);
+
                     continue;
                 }
 
-                await _planningCenterClient.PostPhoneNumber(
-                    peopleId: adult.PeopleId.Value,
-                    phoneNumber: adult.PhoneNumber);
+                await planningCenterClient.PostPhoneNumber(
+                    adult.PeopleId.Value,
+                    adult.PhoneNumber);
             }
         }
-        await _peopleRepository.UpdateAdults(adults: adults);
+
+        await peopleRepository.UpdateAdults(adults);
     }
 }

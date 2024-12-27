@@ -10,25 +10,18 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace KidsTown.Database;
 
-public class DocumentationRepository : IDocumentationRepository
+public class DocumentationRepository(IServiceScopeFactory serviceScopeFactory) : IDocumentationRepository
 {
-    private readonly IServiceScopeFactory _serviceScopeFactory;
-
-    public DocumentationRepository(IServiceScopeFactory serviceScopeFactory)
-    {
-        _serviceScopeFactory = serviceScopeFactory;
-    }
-    
     public async Task<IImmutableSet<string>> GetAllImageFileIds()
     {
-        await using var db = CommonRepository.GetDatabase(serviceScopeFactory: _serviceScopeFactory);
+        await using var db = CommonRepository.GetDatabase(serviceScopeFactory);
         var images = await db.DocImages.ToListAsync();
         return images.Select(e => e.FileId).ToImmutableHashSet();
     }
 
     public async Task<IImmutableSet<DocumentationElement>> LoadDocumentation(Section section)
     {
-        await using var db = CommonRepository.GetDatabase(serviceScopeFactory: _serviceScopeFactory);
+        await using var db = CommonRepository.GetDatabase(serviceScopeFactory);
 
         var elements = await db.Set<DocElement>()
             .Where(e => e.SectionId == (int) section)
@@ -40,51 +33,15 @@ public class DocumentationRepository : IDocumentationRepository
         return elements.Select(MapDocumentationElement).ToImmutableHashSet();
     }
 
-    private static DocumentationElement MapDocumentationElement(DocElement element)
-    {
-        return new DocumentationElement(
-            Id: element.Id,
-            PreviousId: element.PreviousId ?? 0,
-            SectionId: element.SectionId,
-            Title: MapTitle(element.DocTitle),
-            Paragraphs: element.DocParagraphs.Select(MapParagraph).ToImmutableList(),
-            Images: element.DocImages.Select(MapImage).ToImmutableList(),
-            UpdateDate: element.UpdateDate);
-    }
-
-    private static Image MapImage(DocImage image)
-    {
-        return new Image(
-            image.FileId,
-            Id: image.Id,
-            PreviousId: image.PreviousId ?? 0);
-    }
-
-    private static Paragraph MapParagraph(DocParagraph paragraph)
-    {
-        return new Paragraph(
-            Id: paragraph.Id,
-            PreviousId: paragraph.PreviousId ?? 0,
-            Text: paragraph.Content,
-            Icon: (ParagraphIcon?) paragraph.ParagraphIconId);
-    }
-
-    private static Title MapTitle(DocTitle? title)
-    {
-        return title is null
-            ? new Title()
-            : new Title(title.Content, title.Size);
-    }
-
     public async Task<UpdateResult> UpdateDocumentation(IImmutableSet<DocumentationElement> allElements)
     {
         var elements = allElements.Where(
                 e => e.Title.Text.Length > 0
-                     || e.Images.Count > 0
-                     || e.Paragraphs.Any(p => p.Text.Length > 0))
+                    || e.Images.Count > 0
+                    || e.Paragraphs.Any(p => p.Text.Length > 0))
             .ToImmutableList();
 
-        await using var context = CommonRepository.GetDatabase(serviceScopeFactory: _serviceScopeFactory);
+        await using var context = CommonRepository.GetDatabase(serviceScopeFactory);
         var existingDocElements = await context.DocElements.ToListAsync();
         var updateDate = DateTime.UtcNow;
 
@@ -143,9 +100,10 @@ public class DocumentationRepository : IDocumentationRepository
         imagesToDelete.AddRange(existingDocImages);
         var existingDocParagraphs = await context.DocParagraphs.ToListAsync();
 
-        foreach (var docParagraph in elements.SelectMany(e => e.Paragraphs
-                     .Where(p => p.Text.Length > 0)
-                     .Select(i => MapDocParagraph(i, e.Id))))
+        foreach (var docParagraph in elements.SelectMany(
+                     e => e.Paragraphs
+                         .Where(p => p.Text.Length > 0)
+                         .Select(i => MapDocParagraph(i, e.Id))))
         {
             var existingDocParagraph = existingDocParagraphs.SingleOrDefault(dp => dp.Id == docParagraph.Id);
 
@@ -196,7 +154,7 @@ public class DocumentationRepository : IDocumentationRepository
         var docElements = await context.DocElements
             .Where(e => elements.Select(d => d.Id).Contains(e.Id))
             .ToListAsync();
-        
+
         foreach (var docElement in docElements)
         {
             var previousId = elements.Single(e => e.Id == docElement.Id).PreviousId;
@@ -204,32 +162,68 @@ public class DocumentationRepository : IDocumentationRepository
         }
 
         var images = elements.SelectMany(d => d.Images).ToImmutableList();
-        
+
         var docImages = await context.DocImages
             .Where(e => images.Select(i => i.Id).Contains(e.Id))
             .ToListAsync();
-        
+
         foreach (var docImage in docImages)
         {
             var previousId = images.Single(e => e.Id == docImage.Id).PreviousId;
             docImage.PreviousId = previousId == 0 ? null : previousId;
         }
-        
+
         var paragraphs = elements.SelectMany(d => d.Paragraphs).ToImmutableList();
 
         var docParagraphs = await context.DocParagraphs
             .Where(e => paragraphs.Select(d => d.Id).Contains(e.Id))
             .ToListAsync();
-        
+
         foreach (var docParagraph in docParagraphs)
         {
             var previousId = paragraphs.Single(e => e.Id == docParagraph.Id).PreviousId;
             docParagraph.PreviousId = previousId == 0 ? null : previousId;
         }
-        
+
         await context.SaveChangesAsync();
 
         return UpdateResult.Success;
+    }
+
+    private static DocumentationElement MapDocumentationElement(DocElement element)
+    {
+        return new DocumentationElement(
+            element.Id,
+            element.PreviousId ?? 0,
+            element.SectionId,
+            MapTitle(element.DocTitle),
+            element.DocParagraphs.Select(MapParagraph).ToImmutableList(),
+            element.DocImages.Select(MapImage).ToImmutableList(),
+            element.UpdateDate);
+    }
+
+    private static Image MapImage(DocImage image)
+    {
+        return new Image(
+            image.FileId,
+            image.Id,
+            image.PreviousId ?? 0);
+    }
+
+    private static Paragraph MapParagraph(DocParagraph paragraph)
+    {
+        return new Paragraph(
+            paragraph.Id,
+            paragraph.PreviousId ?? 0,
+            paragraph.Content,
+            (ParagraphIcon?) paragraph.ParagraphIconId);
+    }
+
+    private static Title MapTitle(DocTitle? title)
+    {
+        return title is null
+            ? new Title()
+            : new Title(title.Content, title.Size);
     }
 
     private static DocElement MapDocElement(DocumentationElement element)
@@ -250,7 +244,7 @@ public class DocumentationRepository : IDocumentationRepository
             Id = image.Id,
             PreviousId = null,
             ElementId = elementId,
-            FileId = image.FileId,
+            FileId = image.FileId
         };
     }
 
@@ -262,7 +256,7 @@ public class DocumentationRepository : IDocumentationRepository
             PreviousId = null,
             ElementId = elementId,
             Content = paragraph.Text.Trim(),
-            ParagraphIconId = (int?) paragraph.Icon,
+            ParagraphIconId = (int?) paragraph.Icon
         };
     }
 

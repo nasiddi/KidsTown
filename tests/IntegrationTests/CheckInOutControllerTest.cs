@@ -36,19 +36,21 @@ public class CheckInOutControllerTest
         var testData = TestDataFactory.GetTestData();
 
         // Act & Assert
-        (testData as ImmutableList<TestData.TestData>)?.ForEach(action: async t =>
-        {
-            var checkInOutResult = await SendRequest(
-                    securityCode: t.SecurityCode,
-                    selectedLocationIds: ImmutableList.Create(item: t.LocationGroupId),
-                    isFastCheckInOut: false,
-                    controller: controller)
-                .ConfigureAwait(continueOnCapturedContext: false);
-                
-            var candidates = checkInOutResult.CheckInOutCandidates.Select(selector: c => c.Name).ToArray<object>();
-            Assert.That(actual: $"{t.PeopleFirstName ?? t.CheckInsFirstName} {t.PeopleLastName ?? t.CheckInsLastName}", 
-                expression: Is.AnyOf(expected: candidates));
-        });
+        (testData as ImmutableList<TestData.TestData>)?.ForEach(
+            async t =>
+            {
+                var checkInOutResult = await SendRequest(
+                        t.SecurityCode,
+                        ImmutableList.Create(t.LocationGroupId),
+                        isFastCheckInOut: false,
+                        controller)
+                    .ConfigureAwait(continueOnCapturedContext: false);
+
+                var candidates = checkInOutResult.CheckInOutCandidates.Select(c => c.Name).ToArray<object>();
+                Assert.That(
+                    $"{t.PeopleFirstName ?? t.CheckInsFirstName} {t.PeopleLastName ?? t.CheckInsLastName}",
+                    Is.AnyOf(candidates));
+            });
     }
 
     [Test]
@@ -57,19 +59,20 @@ public class CheckInOutControllerTest
         // Arrange
         var controller = await SetupTestEnvironment().ConfigureAwait(continueOnCapturedContext: false);
         var testData = TestDataFactory.GetTestData();
-            
-        // Act & Assert
-        (testData as ImmutableList<TestData.TestData>)?.ForEach(action: async t =>
-        {
-            var checkInOutResult = await SendRequest(
-                    securityCode: t.SecurityCode,
-                    selectedLocationIds: ImmutableList<int>.Empty,
-                    isFastCheckInOut: false,
-                    controller: controller)
-                .ConfigureAwait(continueOnCapturedContext: false);
 
-            Assert.That(actual: checkInOutResult.AlertLevel, expression: Is.EqualTo(expected: AlertLevel.Error));
-        });
+        // Act & Assert
+        (testData as ImmutableList<TestData.TestData>)?.ForEach(
+            async t =>
+            {
+                var checkInOutResult = await SendRequest(
+                        t.SecurityCode,
+                        ImmutableList<int>.Empty,
+                        isFastCheckInOut: false,
+                        controller)
+                    .ConfigureAwait(continueOnCapturedContext: false);
+
+                Assert.That(checkInOutResult.AlertLevel, Is.EqualTo(AlertLevel.Error));
+            });
     }
 
     [Test]
@@ -78,42 +81,45 @@ public class CheckInOutControllerTest
         // Arrange
         _serviceProvider = TestHelper.SetupServiceProviderWithKidsTownDi();
         await CleanDatabase().ConfigureAwait(continueOnCapturedContext: false);
-            
-        var testData = TestDataFactory.GetTestData().GroupBy(keySelector: t => t.SecurityCode).ToImmutableList();
-        var filteredTestData = testData.Where(predicate: t => t.Count() == 1)
-            .SelectMany(selector: g => g.ToImmutableList())
-            .Where(predicate: a => a.PeopleId == 1)
+
+        var testData = TestDataFactory.GetTestData().GroupBy(t => t.SecurityCode).ToImmutableList();
+        var filteredTestData = testData.Where(t => t.Count() == 1)
+            .SelectMany(g => g.ToImmutableList())
+            .Where(a => a.PeopleId == 1)
             .ToImmutableList();
-            
-        await TestHelper.InsertTestData(serviceProvider: _serviceProvider, testData: filteredTestData);
+
+        await TestHelper.InsertTestData(_serviceProvider, filteredTestData);
         var checkInOutService = _serviceProvider.GetService<ICheckInOutService>();
         var taskManagementServiceMock = new Mock<ITaskManagementService>();
         var searchLoggingServiceMock = new Mock<ISearchLoggingService>();
         var controller = new CheckInOutController(
-            checkInOutService: checkInOutService!,
-            taskManagementService: taskManagementServiceMock.Object,
-            searchLoggingService: searchLoggingServiceMock.Object);
-            
-        // Act
-        filteredTestData.ForEach(action: async t =>
-        {
-            var checkInOutResult = await SendRequest(
-                    securityCode: t.SecurityCode,
-                    selectedLocationIds: ImmutableList.Create(item: t.LocationGroupId),
-                    isFastCheckInOut: true,
-                    controller: controller)
-                .ConfigureAwait(continueOnCapturedContext: false);
+            checkInOutService!,
+            taskManagementServiceMock.Object,
+            searchLoggingServiceMock.Object);
 
-            Assert.That(actual: checkInOutResult.AlertLevel, expression: Is.EqualTo(expected: AlertLevel.Success));
-            Assert.That(actual: checkInOutResult.SuccessfulFastCheckout, expression: Is.True);
-        });
+        // Act
+        filteredTestData.ForEach(
+            async t =>
+            {
+                var checkInOutResult = await SendRequest(
+                        t.SecurityCode,
+                        ImmutableList.Create(t.LocationGroupId),
+                        isFastCheckInOut: true,
+                        controller)
+                    .ConfigureAwait(continueOnCapturedContext: false);
+
+                Assert.That(checkInOutResult.AlertLevel, Is.EqualTo(AlertLevel.Success));
+                Assert.That(checkInOutResult.SuccessfulFastCheckout, Is.True);
+            });
 
         // Assert
-        var actualData = await GetActualData(checkInsIds: filteredTestData.Select(selector: t => t.CheckInsId)
-                .ToImmutableList())
+        var actualData = await GetActualData(
+                filteredTestData.Select(t => t.CheckInsId)
+                    .ToImmutableList())
             .ConfigureAwait(continueOnCapturedContext: false);
-        Assert.That(actual: actualData.Count(predicate: a => a.CheckInDate == null), expression: Is.Zero);
-        Assert.That(actual: actualData.Count, expression: Is.EqualTo(expected: filteredTestData.Count));
+
+        Assert.That(actualData.Count(a => a.CheckInDate == null), Is.Zero);
+        Assert.That(actualData.Count, Is.EqualTo(filteredTestData.Count));
     }
 
     private static async Task<CheckInOutResult> SendRequest(
@@ -134,7 +140,7 @@ public class CheckInOutControllerTest
             FilterLocations = true
         };
 
-        var actionResult = await controller.GetPeople(request: request);
+        var actionResult = await controller.GetPeople(request);
         var okResult = actionResult as OkObjectResult;
         var checkInOutResult = okResult!.Value as CheckInOutResult;
         return checkInOutResult!;
@@ -144,49 +150,50 @@ public class CheckInOutControllerTest
     {
         _serviceProvider = TestHelper.SetupServiceProviderWithKidsTownDi();
         await CleanDatabase().ConfigureAwait(continueOnCapturedContext: false);
-        await TestHelper.InsertDefaultTestData(serviceProvider: _serviceProvider).ConfigureAwait(continueOnCapturedContext: false);
+        await TestHelper.InsertDefaultTestData(_serviceProvider).ConfigureAwait(continueOnCapturedContext: false);
 
         var checkInOutService = _serviceProvider.GetService<ICheckInOutService>();
         var taskManagementServiceMock = new Mock<ITaskManagementService>();
         var searchLoggingServiceMock = new Mock<ISearchLoggingService>();
         var controller = new CheckInOutController(
-            checkInOutService: checkInOutService!, 
-            taskManagementService: taskManagementServiceMock.Object,
-            searchLoggingService: searchLoggingServiceMock.Object);
-            
+            checkInOutService!,
+            taskManagementServiceMock.Object,
+            searchLoggingServiceMock.Object);
+
         return controller;
     }
 
     private async Task<IImmutableList<Data>> GetActualData(IImmutableList<long> checkInsIds)
     {
         await Task.Delay(millisecondsDelay: 500).ConfigureAwait(continueOnCapturedContext: false);
-            
+
         var serviceScopeFactory = _serviceProvider.GetService<IServiceScopeFactory>();
 
-        await using var db = serviceScopeFactory!.CreateScope().ServiceProvider
+        await using var db = serviceScopeFactory!.CreateScope()
+            .ServiceProvider
             .GetRequiredService<KidsTownContext>();
+
         var attendances = await (from a in db.Attendances
                 where a.CheckInsId < 100 && checkInsIds.Contains(a.CheckInsId)
                 select MapData(a))
-            .ToListAsync().ConfigureAwait(continueOnCapturedContext: false);
+            .ToListAsync()
+            .ConfigureAwait(continueOnCapturedContext: false);
 
         return attendances.ToImmutableList();
     }
 
-    private static Data MapData(Attendance attendance) => new(checkInDate: attendance.CheckInDate);
-
-    private class Data
+    private static Data MapData(Attendance attendance)
     {
-        public readonly DateTime? CheckInDate;
-
-        public Data(DateTime? checkInDate)
-        {
-            CheckInDate = checkInDate;
-        }
+        return new Data(attendance.CheckInDate);
     }
-        
+
     private async Task CleanDatabase()
     {
-        await TestHelper.CleanDatabase(serviceProvider: _serviceProvider);
+        await TestHelper.CleanDatabase(_serviceProvider);
+    }
+
+    private class Data(DateTime? checkInDate)
+    {
+        public readonly DateTime? CheckInDate = checkInDate;
     }
 }

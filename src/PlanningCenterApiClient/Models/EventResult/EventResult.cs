@@ -11,8 +11,7 @@ public class Event
     //     [JsonProperty(propertyName: "links")]
     //     public Links? Links { get; set; }
 
-    [JsonProperty(propertyName: "data")]
-    public List<Datum>? Data { get; set; }
+    [JsonProperty("data")] public List<Datum>? Data { get; set; }
 
     //     [JsonProperty(propertyName: "included")]
     //     public List<object>? Included { get; set; }
@@ -26,12 +25,11 @@ public class Datum
     //     [JsonProperty(propertyName: "type")]
     //     public string? Type { get; set; }
 
-    [JsonProperty(propertyName: "id")]
-    [JsonConverter(converterType: typeof(ParseStringConverter))]
+    [JsonProperty("id")]
+    [JsonConverter(typeof(ParseStringConverter))]
     public long Id { get; set; }
 
-    [JsonProperty(propertyName: "attributes")]
-    public Attributes? Attributes { get; set; }
+    [JsonProperty("attributes")] public Attributes? Attributes { get; set; }
 
     //     [JsonProperty(propertyName: "links")]
     //     public Links? Links { get; set; }
@@ -57,8 +55,7 @@ public class Attributes
     //     [JsonProperty(propertyName: "location_times_enabled")]
     //     public bool LocationTimesEnabled { get; set; }
 
-    [JsonProperty(propertyName: "name")]
-    public string? Name { get; set; }
+    [JsonProperty("name")] public string? Name { get; set; }
 
     //     [JsonProperty(propertyName: "pre_select_enabled")]
     //     public bool PreSelectEnabled { get; set; }
@@ -120,7 +117,7 @@ public static class Serialize
     // ReSharper disable once UnusedMember.Global
     // public static string ToJson(this Welcome self) => JsonConvert.SerializeObject(value: self, settings: Converter.Settings);
 }
-    
+
 // ReSharper disable once UnusedType.Global
 internal static class Converter
 {
@@ -131,37 +128,46 @@ internal static class Converter
         DateParseHandling = DateParseHandling.None,
         Converters =
         {
-            new IsoDateTimeConverter { DateTimeStyles = DateTimeStyles.AssumeUniversal }
+            new IsoDateTimeConverter {DateTimeStyles = DateTimeStyles.AssumeUniversal}
         }
     };
 }
-    
+
 internal class ParseStringConverter : JsonConverter
 {
-    public override bool CanConvert(Type t) => t == typeof(long) || t == typeof(long?);
-    
+    // ReSharper disable once UnusedMember.Global
+    public static readonly ParseStringConverter Singleton = new();
+
+    public override bool CanConvert(Type t)
+    {
+        return t == typeof(long) || t == typeof(long?);
+    }
+
     public override object? ReadJson(JsonReader reader, Type t, object? existingValue, JsonSerializer serializer)
     {
-        if (reader.TokenType == JsonToken.Null) return null;
-        var value = serializer.Deserialize<string>(reader: reader);
-        if (long.TryParse(s: value, result: out var l))
+        if (reader.TokenType == JsonToken.Null)
+        {
+            return null;
+        }
+
+        var value = serializer.Deserialize<string>(reader);
+        if (long.TryParse(value, out var l))
         {
             return l;
         }
-        throw new(message: "Cannot unmarshal type long");
+
+        throw new Exception("Cannot unmarshal type long");
     }
-    
+
     public override void WriteJson(JsonWriter writer, object? untypedValue, JsonSerializer serializer)
     {
         if (untypedValue == null)
         {
-            serializer.Serialize(jsonWriter: writer, value: null);
+            serializer.Serialize(writer, value: null);
             return;
         }
-        var value = (long)untypedValue;
-        serializer.Serialize(jsonWriter: writer, value: value.ToString());
+
+        var value = (long) untypedValue;
+        serializer.Serialize(writer, value.ToString());
     }
-    
-    // ReSharper disable once UnusedMember.Global
-    public static readonly ParseStringConverter Singleton = new();
 }

@@ -6,21 +6,21 @@ namespace KidsTown.IntegrationTests.TestData;
 
 public class TestData
 {
-    public readonly string CheckInsFirstName;
-    public readonly string CheckInsLastName;
-    public readonly string? PeopleFirstName;
-    public readonly string? PeopleLastName;
-    public readonly long CheckInsId;
-    public readonly long? PeopleId;
     public readonly AttendeeType AttendanceType;
-    public readonly TestLocationIds TestLocation;
-    public readonly IImmutableList<TestFieldData> FieldData;
-    public readonly bool? ExpectedMayLeaveAlone;
+    public readonly string CheckInsFirstName;
+    public readonly long CheckInsId;
+    public readonly string CheckInsLastName;
     public readonly bool? ExpectedHasPeopleWithoutPickupPermission;
-    public readonly string SecurityCode;
-    public readonly int LocationGroupId;
+    public readonly bool? ExpectedMayLeaveAlone;
+    public readonly IImmutableList<TestFieldData> FieldData;
     public readonly long? HouseholdId;
     public readonly string? HouseholdName;
+    public readonly int LocationGroupId;
+    public readonly string? PeopleFirstName;
+    public readonly long? PeopleId;
+    public readonly string? PeopleLastName;
+    public readonly string SecurityCode;
+    public readonly TestLocationIds TestLocation;
 
     public TestData(
         string checkInsFirstName,
@@ -53,9 +53,9 @@ public class TestData
 
         HouseholdId = householdId;
         HouseholdName = householdName;
-            
-        SecurityCode = SetSecurityCode(securityCode: securityCode);
-        LocationGroupId = GetLocationGroup(testLocationId: testLocation);
+
+        SecurityCode = SetSecurityCode(securityCode);
+        LocationGroupId = GetLocationGroup(testLocation);
     }
 
     public TestData(
@@ -74,16 +74,15 @@ public class TestData
         PeopleId = peopleId;
         AttendanceType = attendanceType;
         TestLocation = testLocation;
-        SecurityCode = SetSecurityCode(securityCode: securityCode);
+        SecurityCode = SetSecurityCode(securityCode);
         FieldData = ImmutableList<TestFieldData>.Empty;
 
-        LocationGroupId = GetLocationGroup(testLocationId: testLocation);
+        LocationGroupId = GetLocationGroup(testLocation);
     }
 
     private string SetSecurityCode(string? securityCode)
     {
-        return securityCode ??
-            $"{TestLocation.ToString()[..1]}{CheckInsId}{AttendanceType.ToString()[..1]}{PeopleId ?? 0}";
+        return securityCode ?? $"{TestLocation.ToString()[..1]}{CheckInsId}{AttendanceType.ToString()[..1]}{PeopleId ?? 0}";
     }
 
     private static int GetLocationGroup(TestLocationIds testLocationId)
@@ -98,8 +97,10 @@ public class TestData
             TestLocationIds.KidsChurch3Rd => 4,
             TestLocationIds.KidsChurch4Th => 4,
             TestLocationIds.KidsChurch5Th => 4,
-            _ => throw new ArgumentOutOfRangeException(paramName: nameof(testLocationId),
-                actualValue: testLocationId, message: null)
+            _ => throw new ArgumentOutOfRangeException(
+                nameof(testLocationId),
+                testLocationId,
+                message: null)
         };
     }
 }

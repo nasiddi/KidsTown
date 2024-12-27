@@ -6,86 +6,80 @@ using System.Threading.Tasks;
 using KidsTown.Database.EfCore;
 using KidsTown.KidsTown;
 using KidsTown.KidsTown.Models;
+using KidsTown.Shared;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using KidsTown.Shared;
-using Kid = KidsTown.Database.EfCore.Kid;
+using Kid = KidsTown.KidsTown.Models.Kid;
 
 namespace KidsTown.Database;
 
-public class CheckInOutRepository : ICheckInOutRepository
+public class CheckInOutRepository(IServiceScopeFactory serviceScopeFactory) : ICheckInOutRepository
 {
-    private readonly IServiceScopeFactory _serviceScopeFactory;
-
-    public CheckInOutRepository(IServiceScopeFactory serviceScopeFactory)
-    {
-        _serviceScopeFactory = serviceScopeFactory;
-    }
-        
-    public async Task<IImmutableList<KidsTown.Models.Kid>> GetPeople(
+    public async Task<IImmutableList<Kid>> GetPeople(
         PeopleSearchParameters peopleSearchParameters)
     {
-        await using var db = CommonRepository.GetDatabase(serviceScopeFactory: _serviceScopeFactory);
+        await using var db = CommonRepository.GetDatabase(serviceScopeFactory);
 
         var attendances = await db.Attendances
-            .Include(navigationPropertyPath: a => a.Person)
-            .ThenInclude(navigationPropertyPath: p => p.Kid)
-            .Include(navigationPropertyPath: a => a.Location)
-            .Where(predicate: a => a.SecurityCode == peopleSearchParameters.SecurityCode
-                && (peopleSearchParameters.LocationGroups.Contains(a.Location.LocationGroupId) 
-                    || !peopleSearchParameters.UseFilterLocationGroups)
-                && a.InsertDate >= DateTime.Today
-                && a.Location.EventId == peopleSearchParameters.EventId)
+            .Include(a => a.Person)
+            .ThenInclude(p => p.Kid)
+            .Include(a => a.Location)
+            .Where(
+                a => a.SecurityCode == peopleSearchParameters.SecurityCode
+                    && (peopleSearchParameters.LocationGroups.Contains(a.Location.LocationGroupId)
+                        || !peopleSearchParameters.UseFilterLocationGroups)
+                    && a.InsertDate >= DateTime.Today
+                    && a.Location.EventId == peopleSearchParameters.EventId)
             .ToListAsync();
 
-        return attendances.Select(selector: MapKid).ToImmutableList();
+        return attendances.Select(MapKid).ToImmutableList();
     }
 
     public async Task<bool> CheckInPeople(IImmutableList<int> attendanceIds)
     {
-        await using var db = CommonRepository.GetDatabase(serviceScopeFactory: _serviceScopeFactory);
-            
-        var attendances = await GetAttendances(attendanceIds: attendanceIds, db: db).ConfigureAwait(continueOnCapturedContext: false);
-        attendances.ForEach(action: a => a.CheckInDate = DateTime.UtcNow);
+        await using var db = CommonRepository.GetDatabase(serviceScopeFactory);
+
+        var attendances = await GetAttendances(attendanceIds, db).ConfigureAwait(continueOnCapturedContext: false);
+        attendances.ForEach(a => a.CheckInDate = DateTime.UtcNow);
         var result = await db.SaveChangesAsync();
         return result > 0;
     }
-        
+
     public async Task<bool> CheckOutPeople(IImmutableList<int> attendanceIds)
     {
-        await using var db = CommonRepository.GetDatabase(serviceScopeFactory: _serviceScopeFactory);
-            
-        var attendances = await GetAttendances(attendanceIds: attendanceIds, db: db).ConfigureAwait(continueOnCapturedContext: false);
-        attendances.ForEach(action: a => a.CheckOutDate = DateTime.UtcNow);
+        await using var db = CommonRepository.GetDatabase(serviceScopeFactory);
+
+        var attendances = await GetAttendances(attendanceIds, db).ConfigureAwait(continueOnCapturedContext: false);
+        attendances.ForEach(a => a.CheckOutDate = DateTime.UtcNow);
         var result = await db.SaveChangesAsync();
         return result > 0;
     }
 
     public async Task<bool> SetCheckState(CheckState revertedCheckState, IImmutableList<int> attendanceIds)
     {
-        await using var db = CommonRepository.GetDatabase(serviceScopeFactory: _serviceScopeFactory);
-            
-        var attendances = await GetAttendances(attendanceIds: attendanceIds, db: db).ConfigureAwait(continueOnCapturedContext: false);
+        await using var db = CommonRepository.GetDatabase(serviceScopeFactory);
+
+        var attendances = await GetAttendances(attendanceIds, db).ConfigureAwait(continueOnCapturedContext: false);
 
         switch (revertedCheckState)
         {
             case CheckState.None:
-                var people = await db.People.Where(predicate: p => attendances.Select(a => a.PersonId).Contains(p.Id)).ToListAsync();
-                var kids = await db.Kids.Where(predicate: k => people.Select(p => p.Id).Contains(k.PersonId)).ToListAsync();
-                db.RemoveRange(entities: attendances);
-                db.RemoveRange(entities: kids);
-                db.RemoveRange(entities: people);
+                var people = await db.People.Where(p => attendances.Select(a => a.PersonId).Contains(p.Id)).ToListAsync();
+                var kids = await db.Kids.Where(k => people.Select(p => p.Id).Contains(k.PersonId)).ToListAsync();
+                db.RemoveRange(attendances);
+                db.RemoveRange(kids);
+                db.RemoveRange(people);
                 break;
             case CheckState.PreCheckedIn:
-                attendances.ForEach(action: c => c.CheckInDate = null);
+                attendances.ForEach(c => c.CheckInDate = null);
                 break;
             case CheckState.CheckedIn:
-                attendances.ForEach(action: c => c.CheckOutDate = null);
+                attendances.ForEach(c => c.CheckOutDate = null);
                 break;
             case CheckState.CheckedOut:
                 break;
             default:
-                throw new ArgumentOutOfRangeException(paramName: nameof(revertedCheckState), actualValue: revertedCheckState, message: null);
+                throw new ArgumentOutOfRangeException(nameof(revertedCheckState), revertedCheckState, message: null);
         }
 
         var result = await db.SaveChangesAsync();
@@ -94,9 +88,9 @@ public class CheckInOutRepository : ICheckInOutRepository
 
     public async Task<int> CreateGuest(int locationId, string securityCode, string firstName, string lastName)
     {
-        await using var db = CommonRepository.GetDatabase(serviceScopeFactory: _serviceScopeFactory);
-            
-        var kid = new Kid
+        await using var db = CommonRepository.GetDatabase(serviceScopeFactory);
+
+        var kid = new EfCore.Kid
         {
             MayLeaveAlone = true,
             HasPeopleWithoutPickupPermission = false
@@ -109,37 +103,40 @@ public class CheckInOutRepository : ICheckInOutRepository
             UpdateDate = DateTime.UtcNow,
             Kid = kid
         };
-                
+
         var attendance = new Attendance
         {
             CheckInsId = 0,
             LocationId = locationId,
-            SecurityCode = securityCode, 
+            SecurityCode = securityCode,
             AttendanceTypeId = (int) AttendanceTypeId.Guest,
             InsertDate = DateTime.UtcNow,
             Person = person
         };
 
-        var entry = await db.AddAsync(entity: attendance);
+        var entry = await db.AddAsync(attendance);
         await db.SaveChangesAsync();
         return entry.Entity.Id;
     }
 
     public async Task<bool> SecurityCodeExists(string securityCode)
     {
-        await using var db = CommonRepository.GetDatabase(serviceScopeFactory: _serviceScopeFactory);
-            
+        await using var db = CommonRepository.GetDatabase(serviceScopeFactory);
+
         var attendanceCount = await db.Attendances
-            .Where(predicate: a => a.SecurityCode == securityCode
-                && a. InsertDate > DateTime.Today).CountAsync();
+            .Where(
+                a => a.SecurityCode == securityCode
+                    && a.InsertDate > DateTime.Today)
+            .CountAsync();
+
         return attendanceCount > 0;
     }
 
     public async Task<bool> UpdateLocationAndCheckIn(int attendanceId, int locationId)
     {
-        await using var db = CommonRepository.GetDatabase(serviceScopeFactory: _serviceScopeFactory);
-            
-        var attendance = (await GetAttendances(attendanceIds: ImmutableList.Create(attendanceId), db: db)
+        await using var db = CommonRepository.GetDatabase(serviceScopeFactory);
+
+        var attendance = (await GetAttendances(ImmutableList.Create(attendanceId), db)
                 .ConfigureAwait(continueOnCapturedContext: false))
             .Single();
 
@@ -154,18 +151,22 @@ public class CheckInOutRepository : ICheckInOutRepository
         IImmutableList<int> attendanceIds,
         KidsTownContext db)
     {
-        var attendances = await db.Attendances.Where(predicate: a => 
-            attendanceIds.Contains(a.Id)).ToListAsync().ConfigureAwait(continueOnCapturedContext: false);
+        var attendances = await db.Attendances.Where(
+                a =>
+                    attendanceIds.Contains(a.Id))
+            .ToListAsync()
+            .ConfigureAwait(continueOnCapturedContext: false);
+
         return attendances;
     }
 
-    private static KidsTown.Models.Kid MapKid(
+    private static Kid MapKid(
         Attendance attendance
     )
     {
-        var checkState = MappingService.GetCheckState(attendance: attendance);
+        var checkState = MappingService.GetCheckState(attendance);
 
-        return new()
+        return new Kid
         {
             AttendanceId = attendance.Id,
             LocationGroupId = attendance.Location.LocationGroupId,

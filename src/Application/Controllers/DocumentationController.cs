@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using System.Threading.Tasks;
-using Google.Apis.Drive.v3;
 using KidsTown.KidsTown;
 using KidsTown.KidsTown.Models;
 using Microsoft.AspNetCore.Mvc;
@@ -11,29 +10,23 @@ using Microsoft.AspNetCore.Mvc;
 namespace KidsTown.Application.Controllers;
 
 [ApiController]
-[Route(template: "[controller]")]
-public class DocumentationController : ControllerBase
+[Route("[controller]")]
+public class DocumentationController(IDocumentationService documentationService) : ControllerBase
 {
-    private readonly IDocumentationService _documentationService;
-
-    public DocumentationController(IDocumentationService documentationService)
-    {
-        _documentationService = documentationService;
-    }
-    
     [HttpGet]
-    [Produces(contentType: "application/json")]
+    [Produces("application/json")]
     [Route("{sectionId}")]
-    public async Task<IImmutableSet<DocumentationElement>> GetDocumentation([FromRoute]int sectionId)
+    public async Task<IImmutableSet<DocumentationElement>> GetDocumentation([FromRoute] int sectionId)
     {
-        return await _documentationService.GetDocumentation((Section) sectionId);
+        return await documentationService.GetDocumentation((Section) sectionId);
     }
-    
+
     [HttpPost]
-    [Produces(contentType: "application/json")]
-    public async Task<IActionResult> SaveDocumentation([FromBody]IImmutableSet<DocumentationElement> documentationElements)
+    [AuthenticateUser]
+    [Produces("application/json")]
+    public async Task<IActionResult> SaveDocumentation([FromBody] IImmutableSet<DocumentationElement> documentationElements)
     {
-        var result = await _documentationService.UpdateDocumentation(documentationElements);
+        var result = await documentationService.UpdateDocumentation(documentationElements);
 
         try
         {
@@ -51,35 +44,36 @@ public class DocumentationController : ControllerBase
         }
         finally
         {
-            Response.OnCompleted(async () =>
-            {
-                if (result == UpdateResult.Success)
+            Response.OnCompleted(
+                async () =>
                 {
-                    await _documentationService.CleanupImages();
-                }
-            });
+                    if (result == UpdateResult.Success)
+                    {
+                        await documentationService.CleanupImages();
+                    }
+                });
         }
     }
 
     [HttpPost]
-    [Produces(contentType: "application/json")]
+    [AuthenticateUser]
+    [Produces("application/json")]
     [Route("{elementId}/image-upload")]
-    public async Task<ImmutableList<string>> SaveImages(int elementId, [FromQuery]int? previousImageId = default)
+    public async Task<ImmutableList<string>> SaveImages(int elementId, [FromQuery] int? previousImageId = default)
     {
         var files = Request.Form.Files.ToList();
-        
+
         var fileIds = new List<string>();
-        
+
         foreach (var file in files)
         {
             if (file.Length > 0)
             {
-                var uploadedFileId = await _documentationService.SaveImage(file.OpenReadStream(), file.FileName);
+                var uploadedFileId = await documentationService.SaveImage(file.OpenReadStream(), file.FileName);
                 fileIds.Add(uploadedFileId);
             }
         }
-        
+
         return fileIds.ToImmutableList();
     }
 }
-

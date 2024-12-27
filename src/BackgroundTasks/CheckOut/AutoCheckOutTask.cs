@@ -6,28 +6,24 @@ using Microsoft.Extensions.Logging;
 
 namespace KidsTown.BackgroundTasks.CheckOut;
 
-public class AutoCheckOutTask : BackgroundTask
-{
-    private readonly IAttendanceUpdateRepository _attendanceUpdateRepository;
-
-    public AutoCheckOutTask(
+public class AutoCheckOutTask(
         IAttendanceUpdateRepository attendanceUpdateRepository,
         IBackgroundTaskRepository backgroundTaskRepository,
         ILoggerFactory loggerFactory,
-        IConfiguration configuration
-    ) : base(backgroundTaskRepository: backgroundTaskRepository,
-        loggerFactory: loggerFactory,
-        configuration: configuration)
-    {
-        _attendanceUpdateRepository = attendanceUpdateRepository;
-    }
-
+        IConfiguration configuration)
+    : BackgroundTask(
+        backgroundTaskRepository,
+        loggerFactory,
+        configuration)
+{
     protected override BackgroundTaskType BackgroundTaskType => BackgroundTaskType.AutoCheckOutTask;
+
     protected override int Interval => 2700000;
+
     protected override int LogFrequency => 1;
 
     protected override Task<int> ExecuteRun()
     {
-        return _attendanceUpdateRepository.AutoCheckoutEveryoneByEndOfDay();
+        return attendanceUpdateRepository.AutoCheckoutEveryoneByEndOfDay();
     }
 }

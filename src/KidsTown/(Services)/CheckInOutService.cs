@@ -7,59 +7,48 @@ using KidsTown.Shared;
 
 namespace KidsTown.KidsTown;
 
-public class CheckInOutService : ICheckInOutService
-{
-    private readonly ICheckInOutRepository _checkInOutRepository;
-    private readonly IConfigurationRepository _configurationRepository;
-    private readonly IPeopleRepository _peopleRepository;
-
-    public CheckInOutService(
+public class CheckInOutService(
         ICheckInOutRepository checkInOutRepository,
         IConfigurationRepository configurationRepository,
-        IPeopleRepository peopleRepository
-    )
-    {
-        _checkInOutRepository = checkInOutRepository;
-        _configurationRepository = configurationRepository;
-        _peopleRepository = peopleRepository;
-    }
-        
+        IPeopleRepository peopleRepository)
+    : ICheckInOutService
+{
     public async Task<IImmutableList<Kid>> SearchForPeople(PeopleSearchParameters searchParameters)
     {
-        return await _checkInOutRepository.GetPeople(peopleSearchParameters: searchParameters).ConfigureAwait(continueOnCapturedContext: false);
+        return await checkInOutRepository.GetPeople(searchParameters).ConfigureAwait(continueOnCapturedContext: false);
     }
 
     public async Task<bool> CheckInOutPeople(CheckType checkType, IImmutableList<int> attendanceIds)
     {
         return checkType switch
         {
-            CheckType.CheckIn => await CheckInPeople(attendanceIds: attendanceIds).ConfigureAwait(continueOnCapturedContext: false),
-            CheckType.CheckOut => await CheckOutPeople(attendanceIds: attendanceIds).ConfigureAwait(continueOnCapturedContext: false),
-            CheckType.GuestCheckIn => throw new ArgumentException(message: $"Unexpected CheckType: {checkType}", paramName: nameof(checkType)),
-            _ => throw new ArgumentException(message: $"CheckType unknown: {checkType}", paramName: nameof(checkType))
-        };   
+            CheckType.CheckIn => await CheckInPeople(attendanceIds).ConfigureAwait(continueOnCapturedContext: false),
+            CheckType.CheckOut => await CheckOutPeople(attendanceIds).ConfigureAwait(continueOnCapturedContext: false),
+            CheckType.GuestCheckIn => throw new ArgumentException($"Unexpected CheckType: {checkType}", nameof(checkType)),
+            _ => throw new ArgumentException($"CheckType unknown: {checkType}", nameof(checkType))
+        };
     }
 
     public Task<bool> UndoAction(CheckState revertedCheckState, IImmutableList<int> attendanceIds)
     {
-        return _checkInOutRepository.SetCheckState(revertedCheckState: revertedCheckState, attendanceIds: attendanceIds);
+        return checkInOutRepository.SetCheckState(revertedCheckState, attendanceIds);
     }
 
     public async Task<int?> CreateGuest(int locationId, string securityCode, string firstName, string lastName)
     {
-        var securityCodeExists = await _checkInOutRepository.SecurityCodeExists(securityCode: securityCode)
+        var securityCodeExists = await checkInOutRepository.SecurityCodeExists(securityCode)
             .ConfigureAwait(continueOnCapturedContext: false);
 
         if (securityCodeExists)
         {
             return null;
         }
-            
-        return await _checkInOutRepository.CreateGuest(
-                locationId: locationId,
-                securityCode: securityCode,
-                firstName: firstName,
-                lastName: lastName)
+
+        return await checkInOutRepository.CreateGuest(
+                locationId,
+                securityCode,
+                firstName,
+                lastName)
             .ConfigureAwait(continueOnCapturedContext: false);
     }
 
@@ -69,41 +58,41 @@ public class CheckInOutService : ICheckInOutService
         IImmutableList<int> selectedLocationGroupIds
     )
     {
-        var locations = await _configurationRepository.GetLocations(eventId: eventId);
-        var location = TryMapUnregisteredGuestSecurityCodeToLocationId(securityCode: securityCode, locations: locations);
+        var locations = await configurationRepository.GetLocations(eventId);
+        var location = TryMapUnregisteredGuestSecurityCodeToLocationId(securityCode, locations);
         if (location == null)
         {
             return;
         }
 
-        if (!selectedLocationGroupIds.Contains(value: location.LocationGroupId))
+        if (!selectedLocationGroupIds.Contains(location.LocationGroupId))
         {
             return;
         }
 
-        await _peopleRepository.InsertUnregisteredGuest(securityCode: securityCode, locationId: location.Id);
+        await peopleRepository.InsertUnregisteredGuest(securityCode, location.Id);
     }
 
     public async Task<bool> UpdateLocationAndCheckIn(int attendanceId, int locationId)
     {
-        return await _checkInOutRepository.UpdateLocationAndCheckIn(attendanceId: attendanceId, locationId: locationId)
+        return await checkInOutRepository.UpdateLocationAndCheckIn(attendanceId, locationId)
             .ConfigureAwait(continueOnCapturedContext: false);
     }
 
     private async Task<bool> CheckInPeople(IImmutableList<int> attendanceIds)
     {
-        return await _checkInOutRepository.CheckInPeople(attendanceIds: attendanceIds).ConfigureAwait(continueOnCapturedContext: false);
+        return await checkInOutRepository.CheckInPeople(attendanceIds).ConfigureAwait(continueOnCapturedContext: false);
     }
 
     private async Task<bool> CheckOutPeople(IImmutableList<int> attendanceIds)
     {
-        return await _checkInOutRepository.CheckOutPeople(attendanceIds: attendanceIds).ConfigureAwait(continueOnCapturedContext: false);
+        return await checkInOutRepository.CheckOutPeople(attendanceIds).ConfigureAwait(continueOnCapturedContext: false);
     }
 
     private static Location? TryMapUnregisteredGuestSecurityCodeToLocationId(string securityCode, IImmutableList<Location> locations)
     {
         var locationString = securityCode.Substring(startIndex: 1, length: 1);
-        var matchingLocations = locations.Where(predicate: l => l.Name.Contains(value: locationString)).ToList();
+        var matchingLocations = locations.Where(l => l.Name.Contains(locationString)).ToList();
         return matchingLocations.Count == 1 ? matchingLocations.Single() : null;
     }
 }

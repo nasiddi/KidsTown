@@ -1,53 +1,46 @@
 using System.Collections.Immutable;
 using System.Linq;
 using System.Threading.Tasks;
-using KidsTown.Database.EfCore;
 using KidsTown.KidsTown;
+using KidsTown.KidsTown.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace KidsTown.Database;
 
-public class ConfigurationRepository : IConfigurationRepository
+public class ConfigurationRepository(IServiceScopeFactory serviceScopeFactory) : IConfigurationRepository
 {
-    private readonly IServiceScopeFactory _serviceScopeFactory;
+    public async Task<IImmutableList<LocationGroup>> GetActiveLocationGroups()
+    {
+        await using var db = CommonRepository.GetDatabase(serviceScopeFactory);
 
-    public ConfigurationRepository(IServiceScopeFactory serviceScopeFactory)
-    {
-        _serviceScopeFactory = serviceScopeFactory;
-    }
-        
-    public async Task<IImmutableList<KidsTown.Models.LocationGroup>> GetActiveLocationGroups()
-    {
-        await using var db = CommonRepository.GetDatabase(serviceScopeFactory: _serviceScopeFactory);
-            
         var locations = await db.LocationGroups
-            .Where(predicate: l => l.IsEnabled)
+            .Where(l => l.IsEnabled)
             .ToListAsync()
             .ConfigureAwait(continueOnCapturedContext: false);
-                
-        return locations.Select(selector: l => new KidsTown.Models.LocationGroup(id: l.Id, name: l.Name))
+
+        return locations.Select(l => new LocationGroup(l.Id, l.Name))
             .ToImmutableList();
     }
 
-    public async Task<IImmutableList<KidsTown.Models.Location>> GetLocations(long eventId)
+    public async Task<IImmutableList<Location>> GetLocations(long eventId)
     {
-        await using var db = CommonRepository.GetDatabase(serviceScopeFactory: _serviceScopeFactory);
-            
+        await using var db = CommonRepository.GetDatabase(serviceScopeFactory);
+
         var locations = await db.Locations
-            .Where(predicate: l => l.EventId == eventId)
+            .Where(l => l.EventId == eventId)
             .ToListAsync()
             .ConfigureAwait(continueOnCapturedContext: false);
-                
-        return locations.Select(selector: MapLocation)
+
+        return locations.Select(MapLocation)
             .ToImmutableList();
     }
 
-    private static KidsTown.Models.Location MapLocation(Location location)
+    private static Location MapLocation(EfCore.Location location)
     {
-        return new(
-            id: location.Id,
-            name: location.Name,
-            locationGroupId: location.LocationGroupId);
+        return new Location(
+            location.Id,
+            location.Name,
+            location.LocationGroupId);
     }
 }

@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 using KidsTown.PlanningCenterApiClient.Models.CheckInsResult;
 using KidsTown.PlanningCenterApiClient.Models.EventResult;
 using KidsTown.PlanningCenterApiClient.Models.HouseholdResult;
-using People = KidsTown.PlanningCenterApiClient.Models.PeopleResult.People;
+using KidsTown.PlanningCenterApiClient.Models.PeopleResult;
 
 namespace KidsTown.PlanningCenterApiClient;
 
@@ -15,5 +15,4 @@ public interface IPlanningCenterClient
     Task<Event?> GetActiveEvents();
     Task PatchPhoneNumber(long peopleId, long phoneNumberId, string phoneNumber);
     Task PostPhoneNumber(long peopleId, string phoneNumber);
-
 }

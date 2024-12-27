@@ -1,18 +1,17 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 
-namespace KidsTown.Database.EfCore
+namespace KidsTown.Database.EfCore;
+
+public class AttendanceType
 {
-    public partial class AttendanceType
+    public AttendanceType()
     {
-        public AttendanceType()
-        {
-            Attendances = new HashSet<Attendance>();
-        }
-
-        public int Id { get; set; }
-        public string Name { get; set; } = null!;
-
-        public virtual ICollection<Attendance> Attendances { get; set; }
+        Attendances = new HashSet<Attendance>();
     }
+
+    public int Id { get; set; }
+
+    public string Name { get; set; } = null!;
+
+    public virtual ICollection<Attendance> Attendances { get; set; }
 }

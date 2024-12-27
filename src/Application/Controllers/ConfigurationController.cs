@@ -11,86 +11,81 @@ using Microsoft.AspNetCore.Mvc;
 namespace KidsTown.Application.Controllers;
 
 [ApiController]
-[Route(template: "[controller]")]
-public class ConfigurationController : ControllerBase
+[AuthenticateUser]
+[Route("[controller]")]
+public class ConfigurationController(IConfigurationService configurationService, ITaskManagementService taskManagementService)
+    : ControllerBase
 {
-    private readonly IConfigurationService _configurationService;
-    private readonly ITaskManagementService _taskManagementService;
-
-    public ConfigurationController(IConfigurationService configurationService, ITaskManagementService taskManagementService)
-    {
-        _configurationService = configurationService;
-        _taskManagementService = taskManagementService;
-    }
-
     [HttpGet]
-    [Route(template: "location-groups")]
-    [Produces(contentType: "application/json")]
+    [Route("location-groups")]
+    [Produces("application/json")]
     public async Task<IImmutableList<SelectOption>> GetLocationGroups()
     {
-        _taskManagementService.ActivateBackgroundTasks();
-        var locations = await _configurationService.GetActiveLocationGroups().ConfigureAwait(continueOnCapturedContext: false);
-        return locations.Select(selector: MapOptions).ToImmutableList();
+        taskManagementService.ActivateBackgroundTasks();
+        var locations = await configurationService.GetActiveLocationGroups().ConfigureAwait(continueOnCapturedContext: false);
+        return locations.Select(MapOptions).ToImmutableList();
     }
-        
-    [HttpPost]
-    [Route(template: "events/{eventId:long}/location-groups/locations")]
-    [Produces(contentType: "application/json")]
+
+    [HttpGet]
+    [Route("events/{eventId:long}/location-groups/locations")]
+    [Produces("application/json")]
     public async Task<IImmutableList<GroupedSelectOptions>> GetLocationsByLocationGroups([FromRoute] long eventId)
     {
-        var locations = await _configurationService.GetLocations(eventId: eventId)
+        var locations = await configurationService.GetLocations(eventId)
             .ConfigureAwait(continueOnCapturedContext: false);
 
-        return locations.GroupBy(keySelector: l => l.LocationGroupId)
-            .Select(selector: g => new GroupedSelectOptions
-            {
-                GroupId = g.Key,
-                Options = g.Select(selector: MapOptions).ToImmutableList(),
-            }).ToImmutableList();
+        return locations.GroupBy(l => l.LocationGroupId)
+            .Select(
+                g => new GroupedSelectOptions
+                {
+                    GroupId = g.Key,
+                    Options = g.Select(MapOptions).ToImmutableList()
+                })
+            .ToImmutableList();
     }
 
     [HttpGet]
-    [Route(template: "events")]
-    [Produces(contentType: "application/json")]
+    [Route("events")]
+    [Produces("application/json")]
     public async Task<IImmutableList<CheckInsEvent>> GetAvailableEvents()
     {
-        return await _configurationService.GetAvailableEvents().ConfigureAwait(continueOnCapturedContext: false);
+        return await configurationService.GetAvailableEvents().ConfigureAwait(continueOnCapturedContext: false);
     }
 
     [HttpGet]
-    [Route(template: "events/default")]
-    [Produces(contentType: "application/json")]
+    [Route("events/default")]
+    [Produces("application/json")]
     public Dictionary<string, long> GetDefaultEvent()
     {
-        return new()
+        return new Dictionary<string, long>
         {
-            {"eventId", _configurationService.GetDefaultEventId()}
+            {"eventId", configurationService.GetDefaultEventId()}
         };
     }
-        
+
     private static SelectOption MapOptions(LocationGroup locationGroup)
     {
-        return new()
+        return new SelectOption
         {
             Value = locationGroup.Id,
             Label = locationGroup.Name
         };
     }
-        
+
     private static SelectOption MapOptions(Location location)
     {
-        return new()
+        return new SelectOption
         {
             Value = location.Id,
             Label = location.Name
         };
     }
-        
+
     [HttpGet]
-    [Route(template: "tasks")]
-    [Produces(contentType: "application/json")]
+    [Route("tasks")]
+    [Produces("application/json")]
     public IImmutableList<TaskOverview> GetBackgroundTasks()
     {
-        return _taskManagementService.GetTaskOverviews();
+        return taskManagementService.GetTaskOverviews();
     }
 }

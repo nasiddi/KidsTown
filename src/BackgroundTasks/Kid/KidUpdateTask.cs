@@ -5,28 +5,24 @@ using Microsoft.Extensions.Logging;
 
 namespace KidsTown.BackgroundTasks.Kid;
 
-public class KidUpdateTask: BackgroundTask
-{
-    private readonly IKidUpdateService _kidUpdateService;
-
-    public KidUpdateTask(
+public class KidUpdateTask(
         IKidUpdateService kidUpdateService,
         IBackgroundTaskRepository backgroundTaskRepository,
         ILoggerFactory loggerFactory,
-        IConfiguration configuration
-    ) : base(backgroundTaskRepository: backgroundTaskRepository,
-        loggerFactory: loggerFactory,
-        configuration: configuration)
-    {
-        _kidUpdateService = kidUpdateService;
-    }
-
+        IConfiguration configuration)
+    : BackgroundTask(
+        backgroundTaskRepository,
+        loggerFactory,
+        configuration)
+{
     protected override BackgroundTaskType BackgroundTaskType => BackgroundTaskType.KidUpdateTask;
+
     protected override int Interval => 30000;
+
     protected override int LogFrequency => 15;
 
     protected override Task<int> ExecuteRun()
     {
-        return _kidUpdateService.UpdateKids(daysLookBack: DaysLookBack, batchSize: 100);
+        return kidUpdateService.UpdateKids(DaysLookBack, batchSize: 100);
     }
 }

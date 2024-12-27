@@ -5,27 +5,22 @@ using Microsoft.Extensions.Logging;
 
 namespace KidsTown.BackgroundTasks.Attendance;
 
-public class AttendanceUpdateTask : BackgroundTask
-{
-    protected override BackgroundTaskType BackgroundTaskType => BackgroundTaskType.AttendanceUpdateTask;
-    protected override int Interval => 5000;
-    protected override int LogFrequency => 36;
-
-    private readonly IAttendanceUpdateService _attendanceUpdateService;
-
-    public AttendanceUpdateTask(
+public class AttendanceUpdateTask(
         IAttendanceUpdateService attendanceUpdateService,
         IBackgroundTaskRepository backgroundTaskRepository,
         ILoggerFactory loggerFactory,
-        IConfiguration configuration
-    ) : base(backgroundTaskRepository: backgroundTaskRepository, loggerFactory: loggerFactory, configuration: configuration)
-    {
-        _attendanceUpdateService = attendanceUpdateService;
-    }
+        IConfiguration configuration)
+    : BackgroundTask(backgroundTaskRepository, loggerFactory, configuration)
+{
+    protected override BackgroundTaskType BackgroundTaskType => BackgroundTaskType.AttendanceUpdateTask;
+
+    protected override int Interval => 5000;
+
+    protected override int LogFrequency => 36;
 
     protected override async Task<int> ExecuteRun()
     {
-        return await _attendanceUpdateService.UpdateAttendance(daysLookBack: DaysLookBack)
+        return await attendanceUpdateService.UpdateAttendance(DaysLookBack)
             .ConfigureAwait(continueOnCapturedContext: false);
     }
 }

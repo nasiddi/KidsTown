@@ -7,70 +7,67 @@ using KidsTown.KidsTown;
 using KidsTown.Shared;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Adult = KidsTown.KidsTown.Models.Adult;
 
 namespace KidsTown.Database;
 
-public class PeopleRepository : IPeopleRepository
+public class PeopleRepository(IServiceScopeFactory serviceScopeFactory) : IPeopleRepository
 {
-    private readonly IServiceScopeFactory _serviceScopeFactory;
-    public PeopleRepository(IServiceScopeFactory serviceScopeFactory)
+    public async Task<IImmutableList<Adult>> GetParents(IImmutableList<int> attendanceIds)
     {
-        _serviceScopeFactory = serviceScopeFactory;
-    }
-
-    public async Task<IImmutableList<KidsTown.Models.Adult>> GetParents(IImmutableList<int> attendanceIds)
-    {
-        await using var db = CommonRepository.GetDatabase(serviceScopeFactory: _serviceScopeFactory);
+        await using var db = CommonRepository.GetDatabase(serviceScopeFactory);
 
         var familyIds = await db.Attendances
-            .Include(navigationPropertyPath: a => a.Person)
-            .Where(predicate: a => attendanceIds.Contains(a.Id) && a.Person.FamilyId != null)
-            .Select(selector: a => a.Person.FamilyId!.Value)
+            .Include(a => a.Person)
+            .Where(a => attendanceIds.Contains(a.Id) && a.Person.FamilyId != null)
+            .Select(a => a.Person.FamilyId!.Value)
             .Distinct()
             .ToListAsync();
 
-        return await GetAdults(familyIds: familyIds.ToImmutableList()).ConfigureAwait(continueOnCapturedContext: false);
+        return await GetAdults(familyIds.ToImmutableList()).ConfigureAwait(continueOnCapturedContext: false);
     }
-        
-    public async Task<IImmutableList<KidsTown.Models.Adult>> GetAdults(IImmutableList<int> familyIds)
+
+    public async Task<IImmutableList<Adult>> GetAdults(IImmutableList<int> familyIds)
     {
-        await using var db = CommonRepository.GetDatabase(serviceScopeFactory: _serviceScopeFactory);
-            
+        await using var db = CommonRepository.GetDatabase(serviceScopeFactory);
+
         var adults = await (from a in db.Adults
                 join p in db.People
                     on a.PersonId equals p.Id
                 where p.FamilyId.HasValue && familyIds.Contains(p.FamilyId.Value)
                 select MapAdult(p, a))
-            .ToListAsync().ConfigureAwait(continueOnCapturedContext: false);
-                
-        return adults.OrderByDescending(keySelector: a => a.IsPrimaryContact).ToImmutableList();
-    }
-    public async Task UpdateAdults(IImmutableList<KidsTown.Models.Adult> adults)
-    {
-        await using var db = CommonRepository.GetDatabase(serviceScopeFactory: _serviceScopeFactory);
-        var persistedAdults = await db.Adults
-            .Include(navigationPropertyPath: a => a.Person)
-            .Where(predicate: a => adults.Select(ad => ad.PersonId).Contains(a.PersonId))
             .ToListAsync()
             .ConfigureAwait(continueOnCapturedContext: false);
-            
-        persistedAdults.ForEach(action: a =>
-        {
-            var update = adults.Single(predicate: u => u.PersonId == a.PersonId);
 
-            a.IsPrimaryContact = update.IsPrimaryContact;
-            a.PhoneNumber = update.PhoneNumber;
-        });
+        return adults.OrderByDescending(a => a.IsPrimaryContact).ToImmutableList();
+    }
+
+    public async Task UpdateAdults(IImmutableList<Adult> adults)
+    {
+        await using var db = CommonRepository.GetDatabase(serviceScopeFactory);
+        var persistedAdults = await db.Adults
+            .Include(a => a.Person)
+            .Where(a => adults.Select(ad => ad.PersonId).Contains(a.PersonId))
+            .ToListAsync()
+            .ConfigureAwait(continueOnCapturedContext: false);
+
+        persistedAdults.ForEach(
+            a =>
+            {
+                var update = adults.Single(u => u.PersonId == a.PersonId);
+
+                a.IsPrimaryContact = update.IsPrimaryContact;
+                a.PhoneNumber = update.PhoneNumber;
+            });
 
         await db.SaveChangesAsync();
     }
 
     public async Task InsertUnregisteredGuest(string securityCode, int locationId)
     {
-        await using var db = CommonRepository.GetDatabase(serviceScopeFactory: _serviceScopeFactory);
+        await using var db = CommonRepository.GetDatabase(serviceScopeFactory);
 
-        var attendanceCount = await db.Attendances.
-            CountAsync(predicate: a => a.SecurityCode == securityCode && a.InsertDate >= DateTime.Today);
+        var attendanceCount = await db.Attendances.CountAsync(a => a.SecurityCode == securityCode && a.InsertDate >= DateTime.Today);
 
         if (attendanceCount > 0)
         {
@@ -86,13 +83,13 @@ public class PeopleRepository : IPeopleRepository
             InsertDate = DateTime.UtcNow
         };
 
-        db.Add(entity: attendance);
+        db.Add(attendance);
         await db.SaveChangesAsync();
     }
 
-    private static KidsTown.Models.Adult MapAdult(Person person, Adult adult)
+    private static Adult MapAdult(Person person, EfCore.Adult adult)
     {
-        return new()
+        return new Adult
         {
             PeopleId = person.PeopleId,
             FamilyId = person.FamilyId!.Value,

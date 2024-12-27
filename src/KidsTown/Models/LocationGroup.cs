@@ -1,13 +1,7 @@
 namespace KidsTown.KidsTown.Models;
 
-public class LocationGroup
+public class LocationGroup(int id, string name)
 {
-    public readonly int Id;
-    public readonly string Name;
-
-    public LocationGroup(int id, string name)
-    {
-        Id = id;
-        Name = name;
-    }
+    public readonly int Id = id;
+    public readonly string Name = name;
 }

@@ -8,18 +8,11 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace KidsTown.Database;
 
-public class BackgroundTaskRepository : IBackgroundTaskRepository
+public class BackgroundTaskRepository(IServiceScopeFactory serviceScopeFactory) : IBackgroundTaskRepository
 {
-    private readonly IServiceScopeFactory _serviceScopeFactory;
-
-    public BackgroundTaskRepository(IServiceScopeFactory serviceScopeFactory)
-    {
-        _serviceScopeFactory = serviceScopeFactory;
-    }
-
     public async Task LogTaskRun(bool success, int updateCount, string environment, string taskName)
     {
-        await using var db = CommonRepository.GetDatabase(serviceScopeFactory: _serviceScopeFactory);
+        await using var db = CommonRepository.GetDatabase(serviceScopeFactory);
 
         var taskExecution = new TaskExecution
         {
@@ -30,21 +23,22 @@ public class BackgroundTaskRepository : IBackgroundTaskRepository
             TaskName = taskName
         };
 
-        var taskExecutionCount = await db.TaskExecutions.Where(predicate: t => t.TaskName == taskName && t.Environment == environment).CountAsync();
+        var taskExecutionCount = await db.TaskExecutions.Where(t => t.TaskName == taskName && t.Environment == environment).CountAsync();
 
         if (taskExecutionCount >= 100)
         {
             var toBeDeleted = taskExecutionCount - 99;
 
-            var taskExecutionsToDelete = await db.TaskExecutions.OrderBy(keySelector: t => t.Id)
-                .Where(predicate: t => t.TaskName == taskName)
-                .Take(count: toBeDeleted).ToListAsync()
+            var taskExecutionsToDelete = await db.TaskExecutions.OrderBy(t => t.Id)
+                .Where(t => t.TaskName == taskName)
+                .Take(toBeDeleted)
+                .ToListAsync()
                 .ConfigureAwait(continueOnCapturedContext: false);
 
-            db.RemoveRange(entities: taskExecutionsToDelete);
+            db.RemoveRange(taskExecutionsToDelete);
         }
 
-        await db.AddAsync(entity: taskExecution).ConfigureAwait(continueOnCapturedContext: false);
+        await db.AddAsync(taskExecution).ConfigureAwait(continueOnCapturedContext: false);
         await db.SaveChangesAsync().ConfigureAwait(continueOnCapturedContext: false);
     }
 }

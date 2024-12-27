@@ -5,29 +5,24 @@ using Microsoft.Extensions.Logging;
 
 namespace KidsTown.BackgroundTasks.Cleanup;
 
-public class OldLogCleanupTask : BackgroundTask
-{
-    private readonly ISearchLogCleanupRepository _searchLogCleanupRepository;
-
-    public OldLogCleanupTask(
+public class OldLogCleanupTask(
         IBackgroundTaskRepository backgroundTaskRepository,
         ILoggerFactory loggerFactory,
         IConfiguration configuration,
-        ISearchLogCleanupRepository searchLogCleanupRepository
-    )
-        : base(
-            backgroundTaskRepository: backgroundTaskRepository,
-            loggerFactory: loggerFactory,
-            configuration: configuration)
-    {
-        _searchLogCleanupRepository = searchLogCleanupRepository;
-    }
-
+        ISearchLogCleanupRepository searchLogCleanupRepository)
+    : BackgroundTask(
+        backgroundTaskRepository,
+        loggerFactory,
+        configuration)
+{
     protected override BackgroundTaskType BackgroundTaskType => BackgroundTaskType.OldLogCleanupTask;
+
     protected override int Interval => 2700000;
+
     protected override int LogFrequency => 1;
+
     protected override async Task<int> ExecuteRun()
     {
-        return await _searchLogCleanupRepository.ClearOldLogs();
+        return await searchLogCleanupRepository.ClearOldLogs();
     }
 }

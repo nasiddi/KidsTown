@@ -6,14 +6,8 @@ using KidsTown.Shared;
 
 namespace KidsTown.KidsTown;
 
-public class SearchLoggingService : ISearchLoggingService
+public class SearchLoggingService(ISearchLoggingRepository searchLoggingRepository) : ISearchLoggingService
 {
-    private readonly ISearchLoggingRepository _searchLoggingRepository;
-
-    public SearchLoggingService(ISearchLoggingRepository searchLoggingRepository)
-    {
-        _searchLoggingRepository = searchLoggingRepository;
-    }
     public async Task LogSearch(
         PeopleSearchParameters peopleSearchParameters,
         IImmutableList<Kid> people,
@@ -24,12 +18,12 @@ public class SearchLoggingService : ISearchLoggingService
     {
         try
         {
-            await _searchLoggingRepository.LogSearch(
-                peopleSearchParameters: peopleSearchParameters,
-                people: people,
-                deviceGuid: deviceGuid,
-                checkType: checkType,
-                filterLocations: filterLocations);
+            await searchLoggingRepository.LogSearch(
+                peopleSearchParameters,
+                people,
+                deviceGuid,
+                checkType,
+                filterLocations);
         }
         catch (Exception e)
         {

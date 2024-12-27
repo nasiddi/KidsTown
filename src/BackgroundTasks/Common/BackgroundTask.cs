@@ -9,83 +9,112 @@ using Microsoft.Extensions.Logging;
 
 namespace KidsTown.BackgroundTasks.Common;
 
-public abstract class BackgroundTask : IHostedService, IBackgroundTask
+public abstract class BackgroundTask(
+        IBackgroundTaskRepository backgroundTaskRepository,
+        ILoggerFactory loggerFactory,
+        IConfiguration configuration)
+    : IHostedService, IBackgroundTask
 {
     protected const int DaysLookBack = 7;
 
-    protected abstract BackgroundTaskType BackgroundTaskType { get; }
-    protected abstract int Interval { get; }
-    protected abstract int LogFrequency { get; }
-        
-    private readonly IBackgroundTaskRepository _backgroundTaskRepository;
-    private readonly IConfiguration _configuration;
-    private readonly ILogger<BackgroundTask> _logger;
-    private readonly string _environment;
-
     private static readonly TimeSpan EmailSendPause = TimeSpan.FromHours(value: 1);
-        
-    private bool _taskIsActive;
-    private bool _taskRunsSuccessfully = true;
-        
-    private int _successCount;
-    private int _currentFailedCount;
-        
-    private DateTime _emailSent = DateTime.UnixEpoch;
-    private DateTime? _lastExecution;
+    private readonly string environment = configuration.GetValue<string>("Environment") ?? "unknown";
 
-    protected BackgroundTask(IBackgroundTaskRepository backgroundTaskRepository, ILoggerFactory loggerFactory, IConfiguration configuration)
-    {
-        _backgroundTaskRepository = backgroundTaskRepository;
-        _configuration = configuration;
-        _environment = configuration.GetValue<string>(key: "Environment") ?? "unknown";
-        _logger = loggerFactory.CreateLogger<BackgroundTask>();
-    }
-        
+    private readonly ILogger<BackgroundTask> logger = loggerFactory.CreateLogger<BackgroundTask>();
+    private int currentFailedCount;
+
+    private DateTime emailSent = DateTime.UnixEpoch;
+    private DateTime? lastExecution;
+
+    private int successCount;
+
+    private bool taskIsActive;
+    private bool taskRunsSuccessfully = true;
+
+    protected abstract BackgroundTaskType BackgroundTaskType { get; }
+
+    protected abstract int Interval { get; }
+
+    protected abstract int LogFrequency { get; }
+
     public void ActivateTask()
     {
-        _taskIsActive = true;
+        taskIsActive = true;
     }
-        
-    public bool TaskRunsSuccessfully() => _taskRunsSuccessfully;
-        
-    public void DeactivateTask() => _taskIsActive = false;
 
-    public bool IsTaskActive() => _taskIsActive;
+    public bool TaskRunsSuccessfully()
+    {
+        return taskRunsSuccessfully;
+    }
 
-    public int GetExecutionCount() => _successCount;
-    public int GetCurrentFailCount() => _currentFailedCount;
-    public BackgroundTaskType GetBackgroundTaskType() => BackgroundTaskType;
-    public int GetInterval() => Interval;
-    public int GetLogFrequency() => LogFrequency;
-    public DateTime? GetLastExecution() => _lastExecution;
-        
+    public bool IsTaskActive()
+    {
+        return taskIsActive;
+    }
+
+    public int GetExecutionCount()
+    {
+        return successCount;
+    }
+
+    public int GetCurrentFailCount()
+    {
+        return currentFailedCount;
+    }
+
+    public BackgroundTaskType GetBackgroundTaskType()
+    {
+        return BackgroundTaskType;
+    }
+
+    public int GetInterval()
+    {
+        return Interval;
+    }
+
+    public int GetLogFrequency()
+    {
+        return LogFrequency;
+    }
+
+    public DateTime? GetLastExecution()
+    {
+        return lastExecution;
+    }
+
     public Task StartAsync(CancellationToken cancellationToken)
     {
-        var task = ExecuteAsync(cancellationToken: cancellationToken);
+        var task = ExecuteAsync(cancellationToken);
         return task.IsCompleted ? task : Task.CompletedTask;
     }
 
     public Task StopAsync(CancellationToken cancellationToken)
     {
         SendEmail(
-            subject: $"{GetSubjectPrefix()} System Shutdown",
-            body: $"The StopAsync Method was called for UpdateTask at {DateTime.UtcNow}",
-            logger: _logger);
-        return Task.CompletedTask;        
+            $"{GetSubjectPrefix()} System Shutdown",
+            $"The StopAsync Method was called for UpdateTask at {DateTime.UtcNow}",
+            logger);
+
+        return Task.CompletedTask;
     }
-        
+
+    public void DeactivateTask()
+    {
+        taskIsActive = false;
+    }
+
     private async Task ExecuteAsync(CancellationToken cancellationToken)
     {
         DateTime? activationTime = null;
         while (!cancellationToken.IsCancellationRequested)
         {
-            activationTime = await WaitForActivation(activationTime: activationTime, cancellationToken: cancellationToken).ConfigureAwait(continueOnCapturedContext: false);
-            await RunTask(logger: _logger).ConfigureAwait(continueOnCapturedContext: false);
-            await Sleep(cancellationToken: cancellationToken).ConfigureAwait(continueOnCapturedContext: false);
+            activationTime = await WaitForActivation(activationTime, cancellationToken).ConfigureAwait(continueOnCapturedContext: false);
+            await RunTask(logger).ConfigureAwait(continueOnCapturedContext: false);
+            await Sleep(cancellationToken).ConfigureAwait(continueOnCapturedContext: false);
 
             if (activationTime < DateTime.UtcNow.Date.AddHours(value: 1))
             {
-                _taskIsActive = false;
+                taskIsActive = false;
             }
         }
     }
@@ -94,93 +123,97 @@ public abstract class BackgroundTask : IHostedService, IBackgroundTask
     {
         try
         {
-            _lastExecution = DateTime.UtcNow;
+            lastExecution = DateTime.UtcNow;
             var updateCount = await ExecuteRun().ConfigureAwait(continueOnCapturedContext: false);
-            _successCount++;
+            successCount++;
 
-            if (!_taskRunsSuccessfully)
+            if (!taskRunsSuccessfully)
             {
-                _taskRunsSuccessfully = true;
-                if (_currentFailedCount >= 5)
+                taskRunsSuccessfully = true;
+                if (currentFailedCount >= 5)
                 {
                     SendEmail(
-                        subject: $"{GetSubjectPrefix()} Task ran successfully",
-                        body: $"Task resumed normal operation at {DateTime.UtcNow} after {_currentFailedCount} failed executions.",
-                        logger: _logger);
+                        $"{GetSubjectPrefix()} Task ran successfully",
+                        $"Task resumed normal operation at {DateTime.UtcNow} after {currentFailedCount} failed executions.",
+                        this.logger);
                 }
             }
 
-            if (_successCount % LogFrequency == 0 || _successCount == 1)
+            if (successCount % LogFrequency == 0 || successCount == 1)
             {
-                LogTaskRun(success: true, updateCount: updateCount, environment: _environment);
+                LogTaskRun(success: true, updateCount, environment);
             }
         }
         catch (Exception e)
         {
-            LogException(logger: logger, exception: e);
+            LogException(logger, e);
         }
     }
 
     private void LogException(ILogger logger, Exception exception)
     {
-        _currentFailedCount = _taskRunsSuccessfully ? 1 : ++_currentFailedCount;
-        _taskRunsSuccessfully = false;
+        currentFailedCount = taskRunsSuccessfully ? 1 : ++currentFailedCount;
+        taskRunsSuccessfully = false;
 
-        logger.LogError(eventId: new(id: 0, name: nameof(BackgroundTask)), exception: exception,
-            message: $"{GetSubjectPrefix()} {exception.Message}");
+        logger.LogError(
+            new EventId(id: 0, nameof(BackgroundTask)),
+            exception,
+            $"{GetSubjectPrefix()} {exception.Message}");
 
-        LogTaskRun(success: false, updateCount: 0, environment: _environment);
+        LogTaskRun(success: false, updateCount: 0, environment);
 
-        if (_currentFailedCount % 5 != 0 || _emailSent >= DateTime.UtcNow - EmailSendPause)
+        if (currentFailedCount % 5 != 0 || emailSent >= DateTime.UtcNow - EmailSendPause)
         {
             return;
         }
-            
-        SendEmail(
-            subject: $"{GetSubjectPrefix()} Task failed the last {_currentFailedCount} executions.",
-            body: exception.Message + exception.StackTrace,
-            logger: _logger);
 
-        _emailSent = DateTime.UtcNow;
+        SendEmail(
+            $"{GetSubjectPrefix()} Task failed the last {currentFailedCount} executions.",
+            exception.Message + exception.StackTrace,
+            this.logger);
+
+        emailSent = DateTime.UtcNow;
     }
 
     private string GetSubjectPrefix()
     {
-        return $"{_environment}, {BackgroundTaskType.ToString()}:";
+        return $"{environment}, {BackgroundTaskType.ToString()}:";
     }
 
     protected abstract Task<int> ExecuteRun();
 
     private async Task<DateTime> WaitForActivation(DateTime? activationTime, CancellationToken cancellationToken)
     {
-        var waitTask = Task.Run(function: async () =>
-        {
-            while (!_taskIsActive)
+        var waitTask = Task.Run(
+            async () =>
             {
-                await Task.Delay(millisecondsDelay: 1000, cancellationToken: cancellationToken).ConfigureAwait(continueOnCapturedContext: false);
-            }
-        }, cancellationToken: cancellationToken);
+                while (!taskIsActive)
+                {
+                    await Task.Delay(millisecondsDelay: 1000, cancellationToken).ConfigureAwait(continueOnCapturedContext: false);
+                }
+            },
+            cancellationToken);
 
-        await Task.WhenAny(task1: waitTask, task2: Task.Delay(millisecondsDelay: -1, cancellationToken: cancellationToken));
+        await Task.WhenAny(waitTask, Task.Delay(millisecondsDelay: -1, cancellationToken));
 
         return activationTime ?? DateTime.UtcNow;
     }
 
     private async Task Sleep(CancellationToken cancellationToken)
     {
-        await Task.Delay(millisecondsDelay: Interval, cancellationToken: cancellationToken)
+        await Task.Delay(Interval, cancellationToken)
             .ConfigureAwait(continueOnCapturedContext: false);
     }
 
     private void LogTaskRun(bool success, int updateCount, string environment)
     {
-        _backgroundTaskRepository.LogTaskRun(
-            success: success,
-            updateCount: updateCount,
-            environment: environment,
-            taskName: BackgroundTaskType.ToString());
+        backgroundTaskRepository.LogTaskRun(
+            success,
+            updateCount,
+            environment,
+            BackgroundTaskType.ToString());
     }
-        
+
     private void SendEmail(string subject, string body, ILogger logger)
     {
         try
@@ -189,29 +222,29 @@ public abstract class BackgroundTask : IHostedService, IBackgroundTask
             {
                 Subject = $"{DateTime.UtcNow} {subject}",
                 Body = body,
-                From = new(address: "kidstown@gvc.ch", displayName: "KidsTown")
+                From = new MailAddress("kidstown@gvc.ch", "KidsTown")
             };
 
-            message.To.Add(item: new(address: "nadinasiddiqui@msn.com", displayName: "Nadina Siddiqui"));
-            var username = _configuration.GetValue<string>(key: "MailAccount:Username");
-            var password = _configuration.GetValue<string>(key: "MailAccount:Password");
-
+            message.To.Add(item: new MailAddress("nadinasiddiqui@msn.com", "Nadina Siddiqui"));
+            var username = configuration.GetValue<string>("MailAccount:Username");
+            var password = configuration.GetValue<string>("MailAccount:Password");
 
             SmtpClient client = new()
             {
                 Host = "smtp.office365.com",
-                Credentials = new NetworkCredential(userName: username, password: password),
+                Credentials = new NetworkCredential(username, password),
                 Port = 587,
                 EnableSsl = true
             };
-            client.Send(message: message);
+
+            client.Send(message);
         }
         catch (Exception ex)
         {
-            logger.LogError(eventId: new(
-                    id: 0, name: nameof(BackgroundTask)), 
-                exception: ex, 
-                message: $"{_environment}: Sending email failed: {ex.Message}");
+            logger.LogError(
+                new EventId(id: 0, nameof(BackgroundTask)),
+                ex,
+                $"{environment}: Sending email failed: {ex.Message}");
         }
     }
 }

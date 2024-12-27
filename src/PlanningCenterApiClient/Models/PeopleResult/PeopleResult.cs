@@ -8,14 +8,11 @@ namespace KidsTown.PlanningCenterApiClient.Models.PeopleResult;
 
 public class People : IPlanningCenterResponse
 {
-    [JsonProperty(propertyName: "links")]
-    public DatumLinks? Links { get; set; }
+    [JsonProperty("links")] public DatumLinks? Links { get; set; }
 
-    [JsonProperty(propertyName: "data")]
-    public List<Datum>? Data { get; set; }
+    [JsonProperty("data")] public List<Datum>? Data { get; set; }
 
-    [JsonProperty(propertyName: "included")]
-    public List<Included>? Included { get; set; }
+    [JsonProperty("included")] public List<Included>? Included { get; set; }
 
 //         //[JsonProperty("meta")]
 //         //public Meta Meta { get; set; }
@@ -27,15 +24,13 @@ public class Datum
 //         [JsonProperty("type")]
 //         public PeopleIncludedType PeopleIncludedType { get; set; }
 
-    [JsonProperty(propertyName: "id")]
-    [JsonConverter(converterType: typeof(ParseStringConverter))]
+    [JsonProperty("id")]
+    [JsonConverter(typeof(ParseStringConverter))]
     public long Id { get; set; }
 
-    [JsonProperty(propertyName: "attributes")]
-    public DatumAttributes? Attributes { get; set; }
+    [JsonProperty("attributes")] public DatumAttributes? Attributes { get; set; }
 
-    [JsonProperty(propertyName: "relationships")]
-    public DatumRelationships? Relationships { get; set; }
+    [JsonProperty("relationships")] public DatumRelationships? Relationships { get; set; }
 
 //         [JsonProperty("links")]
 //         public DatumLinks Links { get; set; }
@@ -67,8 +62,7 @@ public class DatumAttributes
 //         [JsonProperty("directory_status")]
 //         public string DirectoryStatus { get; set; }
 
-    [JsonProperty(propertyName: "first_name")]
-    public string? FirstName { get; set; }
+    [JsonProperty("first_name")] public string? FirstName { get; set; }
 
 //         [JsonProperty("gender")]
 //         public string Gender { get; set; }
@@ -85,8 +79,7 @@ public class DatumAttributes
 //         [JsonProperty("inactivated_at")]
 //         public object InactivatedAt { get; set; }
 
-    [JsonProperty(propertyName: "last_name")]
-    public string? LastName { get; set; }
+    [JsonProperty("last_name")] public string? LastName { get; set; }
 
 //         [JsonProperty("medical_notes")]
 //         public object MedicalNotes { get; set; }
@@ -129,10 +122,9 @@ public class DatumLinks
 {
     // [JsonProperty("self")]
     // public Uri? Self { get; set; }
-         
-    [JsonProperty(propertyName: "next")]
-    public Uri? Next { get; set; }
-         
+
+    [JsonProperty("next")] public Uri? Next { get; set; }
+
     // [JsonProperty("prev")]
     // public Uri? Prev { get; set; }
 }
@@ -142,14 +134,11 @@ public class DatumRelationships
 //         [JsonProperty("primary_campus")]
 //         public PrimaryCampus PrimaryCampus { get; set; }
 
-    [JsonProperty(propertyName: "field_data")]
-    public DatumRelationship? FieldData { get; set; }
-         
-    [JsonProperty(propertyName: "households")]
-    public DatumRelationship? Households { get; set; }
-         
-    [JsonProperty(propertyName: "phone_numbers")]
-    public DatumRelationship? PhoneNumbers { get; set; }
+    [JsonProperty("field_data")] public DatumRelationship? FieldData { get; set; }
+
+    [JsonProperty("households")] public DatumRelationship? Households { get; set; }
+
+    [JsonProperty("phone_numbers")] public DatumRelationship? PhoneNumbers { get; set; }
 }
 
 public class DatumRelationship
@@ -157,8 +146,7 @@ public class DatumRelationship
 //         [JsonProperty("links")]
 //         public FieldDataLinks Links { get; set; }
 
-    [JsonProperty(propertyName: "data")]
-    public List<Parent>? Data { get; set; }
+    [JsonProperty("data")] public List<Parent>? Data { get; set; }
 }
 
 public class Parent
@@ -166,8 +154,8 @@ public class Parent
 //         [JsonProperty("type")]
 //         public PeopleIncludedType PeopleIncludedType { get; set; }
 
-    [JsonProperty(propertyName: "id")]
-    [JsonConverter(converterType: typeof(ParseStringConverter))]
+    [JsonProperty("id")]
+    [JsonConverter(typeof(ParseStringConverter))]
     public long Id { get; set; }
 }
 
@@ -179,24 +167,20 @@ public class Parent
 
 public class Relationship
 {
-    [JsonProperty(propertyName: "data")]
-    public Parent? Data { get; set; }
+    [JsonProperty("data")] public Parent? Data { get; set; }
 }
 
 public class Included
 {
-    [JsonProperty(propertyName: "type")]
-    public PeopleIncludedType PeopleIncludedType { get; set; }
+    [JsonProperty("type")] public PeopleIncludedType PeopleIncludedType { get; set; }
 
-    [JsonProperty(propertyName: "id")]
-    [JsonConverter(converterType: typeof(ParseStringConverter))]
+    [JsonProperty("id")]
+    [JsonConverter(typeof(ParseStringConverter))]
     public long Id { get; set; }
 
-    [JsonProperty(propertyName: "attributes")]
-    public IncludedAttributes? Attributes { get; set; }
+    [JsonProperty("attributes")] public IncludedAttributes? Attributes { get; set; }
 
-    [JsonProperty(propertyName: "relationships")]
-    public IncludedRelationships? Relationships { get; set; }
+    [JsonProperty("relationships")] public IncludedRelationships? Relationships { get; set; }
 
 //         [JsonProperty("links")]
 //         public DatumLinks Links { get; set; }
@@ -216,20 +200,15 @@ public class IncludedAttributes
 //         [JsonProperty("file_size")]
 //         public long? FileSize { get; set; }
 
-    [JsonProperty(propertyName: "value")]
-    public string? Value { get; set; }
-         
-    [JsonProperty(propertyName: "name")]
-    public string? Name { get; set; }
-         
-    [JsonProperty(propertyName: "number")]
-    public string? Number { get; set; }
-         
-    [JsonProperty(propertyName: "location")]
-    public string? NumberType { get; set; }
-         
-    [JsonProperty(propertyName: "primary")]
-    public bool? Primary { get; set; }
+    [JsonProperty("value")] public string? Value { get; set; }
+
+    [JsonProperty("name")] public string? Name { get; set; }
+
+    [JsonProperty("number")] public string? Number { get; set; }
+
+    [JsonProperty("location")] public string? NumberType { get; set; }
+
+    [JsonProperty("primary")] public bool? Primary { get; set; }
 }
 
 //     public class File
@@ -240,8 +219,7 @@ public class IncludedAttributes
 
 public class IncludedRelationships
 {
-    [JsonProperty(propertyName: "field_definition")]
-    public Relationship? FieldDefinition { get; set; }
+    [JsonProperty("field_definition")] public Relationship? FieldDefinition { get; set; }
 
 //         [JsonProperty("customizable")]
 //         public PrimaryCampus Customizable { get; set; }
@@ -271,7 +249,16 @@ public class IncludedRelationships
 //         public Parent Parent { get; set; }
 //     }
 
-public enum PeopleIncludedType { FieldDatum, FieldDefinition, Organization, Person, PrimaryCampus, Household, PhoneNumber }
+public enum PeopleIncludedType
+{
+    FieldDatum,
+    FieldDefinition,
+    Organization,
+    Person,
+    PrimaryCampus,
+    Household,
+    PhoneNumber
+}
 
 // ReSharper disable once UnusedType.Global
 internal static class Converter
@@ -284,49 +271,67 @@ internal static class Converter
         Converters =
         {
             TypeEnumConverter.Singleton,
-            new IsoDateTimeConverter { DateTimeStyles = DateTimeStyles.AssumeUniversal }
+            new IsoDateTimeConverter {DateTimeStyles = DateTimeStyles.AssumeUniversal}
         }
     };
 }
 
 internal class ParseStringConverter : JsonConverter
 {
-    public override bool CanConvert(Type t) => t == typeof(long) || t == typeof(long?);
+    // ReSharper disable once UnusedMember.Global
+    public static readonly ParseStringConverter Singleton = new();
+
+    public override bool CanConvert(Type t)
+    {
+        return t == typeof(long) || t == typeof(long?);
+    }
 
     public override object? ReadJson(JsonReader reader, Type t, object? existingValue, JsonSerializer serializer)
     {
-        if (reader.TokenType == JsonToken.Null) return null;
-        var value = serializer.Deserialize<string>(reader: reader);
-        if (long.TryParse(s: value, result: out var l))
+        if (reader.TokenType == JsonToken.Null)
+        {
+            return null;
+        }
+
+        var value = serializer.Deserialize<string>(reader);
+        if (long.TryParse(value, out var l))
         {
             return l;
         }
-        throw new(message: "Cannot unmarshal type long");
+
+        throw new Exception("Cannot unmarshal type long");
     }
 
     public override void WriteJson(JsonWriter writer, object? untypedValue, JsonSerializer serializer)
     {
         if (untypedValue == null)
         {
-            serializer.Serialize(jsonWriter: writer, value: null);
+            serializer.Serialize(writer, value: null);
             return;
         }
-        var value = (long)untypedValue;
-        serializer.Serialize(jsonWriter: writer, value: value.ToString());
-    }
 
-    // ReSharper disable once UnusedMember.Global
-    public static readonly ParseStringConverter Singleton = new();
+        var value = (long) untypedValue;
+        serializer.Serialize(writer, value.ToString());
+    }
 }
 
 internal class TypeEnumConverter : JsonConverter
 {
-    public override bool CanConvert(Type t) => t == typeof(PeopleIncludedType) || t == typeof(PeopleIncludedType?);
+    public static readonly TypeEnumConverter Singleton = new();
+
+    public override bool CanConvert(Type t)
+    {
+        return t == typeof(PeopleIncludedType) || t == typeof(PeopleIncludedType?);
+    }
 
     public override object? ReadJson(JsonReader reader, Type t, object? existingValue, JsonSerializer serializer)
     {
-        if (reader.TokenType == JsonToken.Null) return null;
-        var value = serializer.Deserialize<string>(reader: reader);
+        if (reader.TokenType == JsonToken.Null)
+        {
+            return null;
+        }
+
+        var value = serializer.Deserialize<string>(reader);
         return value switch
         {
             "FieldDatum" => PeopleIncludedType.FieldDatum,
@@ -336,7 +341,7 @@ internal class TypeEnumConverter : JsonConverter
             "PrimaryCampus" => PeopleIncludedType.PrimaryCampus,
             "Household" => PeopleIncludedType.Household,
             "PhoneNumber" => PeopleIncludedType.PhoneNumber,
-            _ => throw new(message: "Cannot unmarshal type TypeEnum")
+            _ => throw new Exception("Cannot unmarshal type TypeEnum")
         };
     }
 
@@ -344,37 +349,36 @@ internal class TypeEnumConverter : JsonConverter
     {
         if (untypedValue == null)
         {
-            serializer.Serialize(jsonWriter: writer, value: null);
+            serializer.Serialize(writer, value: null);
             return;
         }
-        var value = (PeopleIncludedType)untypedValue;
+
+        var value = (PeopleIncludedType) untypedValue;
         switch (value)
         {
             case PeopleIncludedType.FieldDatum:
-                serializer.Serialize(jsonWriter: writer, value: "FieldDatum");
+                serializer.Serialize(writer, "FieldDatum");
                 return;
             case PeopleIncludedType.FieldDefinition:
-                serializer.Serialize(jsonWriter: writer, value: "FieldDefinition");
+                serializer.Serialize(writer, "FieldDefinition");
                 return;
             case PeopleIncludedType.Organization:
-                serializer.Serialize(jsonWriter: writer, value: "Organization");
+                serializer.Serialize(writer, "Organization");
                 return;
             case PeopleIncludedType.Person:
-                serializer.Serialize(jsonWriter: writer, value: "Person");
+                serializer.Serialize(writer, "Person");
                 return;
             case PeopleIncludedType.PrimaryCampus:
-                serializer.Serialize(jsonWriter: writer, value: "PrimaryCampus");
+                serializer.Serialize(writer, "PrimaryCampus");
                 return;
             case PeopleIncludedType.Household:
-                serializer.Serialize(jsonWriter: writer, value: "Household");
+                serializer.Serialize(writer, "Household");
                 return;
             case PeopleIncludedType.PhoneNumber:
-                serializer.Serialize(jsonWriter: writer, value: "PhoneNumber");
+                serializer.Serialize(writer, "PhoneNumber");
                 return;
             default:
-                throw new(message: "Cannot marshal type TypeEnum");
+                throw new Exception("Cannot marshal type TypeEnum");
         }
     }
-
-    public static readonly TypeEnumConverter Singleton = new();
 }

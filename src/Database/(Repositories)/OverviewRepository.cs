@@ -5,26 +5,22 @@ using System.Threading.Tasks;
 using KidsTown.Database.EfCore;
 using KidsTown.KidsTown;
 using KidsTown.KidsTown.Models;
+using KidsTown.Shared;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Location = KidsTown.Database.EfCore.Location;
 
 namespace KidsTown.Database;
 
-public class OverviewRepository : IOverviewRepository
+public class OverviewRepository(IServiceScopeFactory serviceScopeFactory) : IOverviewRepository
 {
-    private readonly IServiceScopeFactory _serviceScopeFactory;
-
-    public OverviewRepository(IServiceScopeFactory serviceScopeFactory)
+    public async Task<IImmutableList<Attendee>> GetActiveAttendees(
+        IImmutableList<int> selectedLocationGroups,
+        long eventId,
+        DateTime date)
     {
-        _serviceScopeFactory = serviceScopeFactory;
-    }
+        await using var db = CommonRepository.GetDatabase(serviceScopeFactory);
 
-    public async Task<IImmutableList<Attendee>> GetActiveAttendees(IImmutableList<int> selectedLocationGroups,
-        long eventId, DateTime date)
-    {
-        await using var db = CommonRepository.GetDatabase(serviceScopeFactory: _serviceScopeFactory);
-            
         var people = await (from a in db.Attendances
                 join p in db.People
                     on a.PersonId equals p.Id
@@ -32,13 +28,14 @@ public class OverviewRepository : IOverviewRepository
                     on a.AttendanceTypeId equals at.Id
                 join l in db.Locations
                     on a.LocationId equals l.Id
-                where a.InsertDate.Date == date.Date 
+                where a.InsertDate.Date == date.Date
                     && selectedLocationGroups.Contains(l.LocationGroupId)
                     && l.EventId == eventId
                 select MapAttendee(a, p, at, l))
-            .ToListAsync().ConfigureAwait(continueOnCapturedContext: false);
+            .ToListAsync()
+            .ConfigureAwait(continueOnCapturedContext: false);
 
-        return people.OrderBy(keySelector: a => a.LastName).ToImmutableList();
+        return people.OrderBy(a => a.LastName).ToImmutableList();
     }
 
     public async Task<IImmutableList<Attendee>> GetAttendanceHistoryByLocations(
@@ -49,11 +46,11 @@ public class OverviewRepository : IOverviewRepository
     )
     {
         return await GetAttendanceHistory(
-                eventId: eventId,
-                startDate: startDate,
-                endDate: endDate,
-                selectedLocations: selectedLocations)
-            .ConfigureAwait(continueOnCapturedContext: false);   
+                eventId,
+                startDate,
+                endDate,
+                selectedLocations)
+            .ConfigureAwait(continueOnCapturedContext: false);
     }
 
     public async Task<IImmutableList<Attendee>> GetAttendanceHistoryByLocationGroups(
@@ -64,9 +61,9 @@ public class OverviewRepository : IOverviewRepository
     )
     {
         return await GetAttendanceHistory(
-                eventId: eventId,
-                startDate: startDate,
-                endDate: endDate,
+                eventId,
+                startDate,
+                endDate,
                 selectedLocationGroups: selectedLocationGroups)
             .ConfigureAwait(continueOnCapturedContext: false);
     }
@@ -78,7 +75,7 @@ public class OverviewRepository : IOverviewRepository
         IImmutableList<int>? selectedLocations = null,
         IImmutableList<int>? selectedLocationGroups = null)
     {
-        await using var db = _serviceScopeFactory.CreateScope().ServiceProvider.GetRequiredService<KidsTownContext>();
+        await using var db = serviceScopeFactory.CreateScope().ServiceProvider.GetRequiredService<KidsTownContext>();
         var attendees = await (from a in db.Attendances
                 join p in db.People
                     on a.PersonId equals p.Id
@@ -86,13 +83,14 @@ public class OverviewRepository : IOverviewRepository
                     on a.AttendanceTypeId equals at.Id
                 join l in db.Locations
                     on a.LocationId equals l.Id
-                where (selectedLocations != null && selectedLocations.Contains(l.Id) 
-                        || selectedLocationGroups != null && selectedLocationGroups.Contains(l.LocationGroupId))
+                where ((selectedLocations != null && selectedLocations.Contains(l.Id))
+                        || (selectedLocationGroups != null && selectedLocationGroups.Contains(l.LocationGroupId)))
                     && l.EventId == eventId
                     && a.InsertDate.Date >= startDate.Date
                     && a.InsertDate.Date <= endDate.Date
                 select MapAttendee(a, p, at, l))
-            .ToListAsync().ConfigureAwait(continueOnCapturedContext: false);
+            .ToListAsync()
+            .ConfigureAwait(continueOnCapturedContext: false);
 
         return attendees.ToImmutableList();
     }
@@ -104,15 +102,15 @@ public class OverviewRepository : IOverviewRepository
         Location location
     )
     {
-        var checkState = MappingService.GetCheckState(attendance: attendance);
+        var checkState = MappingService.GetCheckState(attendance);
 
-        return new()
+        return new Attendee
         {
             AttendanceId = attendance.Id,
             FamilyId = person.FamilyId,
             FirstName = person.FirstName,
             LastName = person.LastName,
-            AttendanceTypeId = (Shared.AttendanceTypeId) attendanceType.Id,
+            AttendanceTypeId = (AttendanceTypeId) attendanceType.Id,
             SecurityCode = attendance.SecurityCode,
             LocationGroupId = location.LocationGroupId,
             Location = location.Name,

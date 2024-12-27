@@ -1,49 +1,64 @@
-﻿using System;
-using System.Collections.Generic;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Metadata;
+﻿using Microsoft.EntityFrameworkCore;
 
-namespace KidsTown.Database.EfCore
+namespace KidsTown.Database.EfCore;
+
+public partial class KidsTownContext : DbContext
 {
-    public partial class KidsTownContext : DbContext
+    public KidsTownContext()
     {
-        public KidsTownContext()
+    }
+
+    public KidsTownContext(DbContextOptions<KidsTownContext> options)
+        : base(options)
+    {
+    }
+
+    public virtual DbSet<Adult> Adults { get; set; } = null!;
+
+    public virtual DbSet<Attendance> Attendances { get; set; } = null!;
+
+    public virtual DbSet<AttendanceType> AttendanceTypes { get; set; } = null!;
+
+    public virtual DbSet<DocElement> DocElements { get; set; } = null!;
+
+    public virtual DbSet<DocImage> DocImages { get; set; } = null!;
+
+    public virtual DbSet<DocParagraph> DocParagraphs { get; set; } = null!;
+
+    public virtual DbSet<DocTitle> DocTitles { get; set; } = null!;
+
+    public virtual DbSet<Family> Families { get; set; } = null!;
+
+    public virtual DbSet<Kid> Kids { get; set; } = null!;
+
+    public virtual DbSet<Location> Locations { get; set; } = null!;
+
+    public virtual DbSet<LocationGroup> LocationGroups { get; set; } = null!;
+
+    public virtual DbSet<Person> People { get; set; } = null!;
+
+    public virtual DbSet<SearchLog> SearchLogs { get; set; } = null!;
+
+    public virtual DbSet<SearchLog2Attendance> SearchLog2Attendances { get; set; } = null!;
+
+    public virtual DbSet<SearchLog2LocationGroup> SearchLog2LocationGroups { get; set; } = null!;
+
+    public virtual DbSet<TaskExecution> TaskExecutions { get; set; } = null!;
+
+    public DbSet<User> Users { get; set; } = null!;
+
+    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+    {
+        if (!optionsBuilder.IsConfigured)
         {
+            optionsBuilder.UseSqlServer("Name=ConnectionStrings:Database");
         }
+    }
 
-        public KidsTownContext(DbContextOptions<KidsTownContext> options)
-            : base(options)
-        {
-        }
-
-        public virtual DbSet<Adult> Adults { get; set; } = null!;
-        public virtual DbSet<Attendance> Attendances { get; set; } = null!;
-        public virtual DbSet<AttendanceType> AttendanceTypes { get; set; } = null!;
-        public virtual DbSet<DocElement> DocElements { get; set; } = null!;
-        public virtual DbSet<DocImage> DocImages { get; set; } = null!;
-        public virtual DbSet<DocParagraph> DocParagraphs { get; set; } = null!;
-        public virtual DbSet<DocTitle> DocTitles { get; set; } = null!;
-        public virtual DbSet<Family> Families { get; set; } = null!;
-        public virtual DbSet<Kid> Kids { get; set; } = null!;
-        public virtual DbSet<Location> Locations { get; set; } = null!;
-        public virtual DbSet<LocationGroup> LocationGroups { get; set; } = null!;
-        public virtual DbSet<Person> People { get; set; } = null!;
-        public virtual DbSet<SearchLog> SearchLogs { get; set; } = null!;
-        public virtual DbSet<SearchLog2Attendance> SearchLog2Attendances { get; set; } = null!;
-        public virtual DbSet<SearchLog2LocationGroup> SearchLog2LocationGroups { get; set; } = null!;
-        public virtual DbSet<TaskExecution> TaskExecutions { get; set; } = null!;
-
-        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-        {
-            if (!optionsBuilder.IsConfigured)
-            {
-                optionsBuilder.UseSqlServer("Name=ConnectionStrings:Database");
-            }
-        }
-
-        protected override void OnModelCreating(ModelBuilder modelBuilder)
-        {
-            modelBuilder.Entity<Adult>(entity =>
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<Adult>(
+            entity =>
             {
                 entity.HasKey(e => e.PersonId);
 
@@ -57,8 +72,8 @@ namespace KidsTown.Database.EfCore
                 entity.Property(e => e.IsPrimaryContact).HasColumnName("isPrimaryContact");
 
                 entity.Property(e => e.PhoneNumber)
-                    .HasMaxLength(30)
-                    .IsUnicode(false);
+                    .HasMaxLength(maxLength: 30)
+                    .IsUnicode(unicode: false);
 
                 entity.HasOne(d => d.Person)
                     .WithOne(p => p.Adult)
@@ -67,13 +82,14 @@ namespace KidsTown.Database.EfCore
                     .HasConstraintName("FK_Adult_PersonId");
             });
 
-            modelBuilder.Entity<Attendance>(entity =>
+        modelBuilder.Entity<Attendance>(
+            entity =>
             {
                 entity.ToTable("Attendance", "kt");
 
                 entity.Property(e => e.SecurityCode)
-                    .HasMaxLength(10)
-                    .IsUnicode(false);
+                    .HasMaxLength(maxLength: 10)
+                    .IsUnicode(unicode: false);
 
                 entity.HasOne(d => d.AttendanceType)
                     .WithMany(p => p.Attendances)
@@ -94,16 +110,18 @@ namespace KidsTown.Database.EfCore
                     .HasConstraintName("FK_Attendance_PersonId");
             });
 
-            modelBuilder.Entity<AttendanceType>(entity =>
+        modelBuilder.Entity<AttendanceType>(
+            entity =>
             {
                 entity.ToTable("AttendanceType", "kt");
 
                 entity.Property(e => e.Name)
-                    .HasMaxLength(50)
-                    .IsUnicode(false);
+                    .HasMaxLength(maxLength: 50)
+                    .IsUnicode(unicode: false);
             });
 
-            modelBuilder.Entity<DocElement>(entity =>
+        modelBuilder.Entity<DocElement>(
+            entity =>
             {
                 entity.ToTable("DocElement", "kt");
 
@@ -119,7 +137,8 @@ namespace KidsTown.Database.EfCore
                     .HasConstraintName("FK_DocElement_PreviousId");
             });
 
-            modelBuilder.Entity<DocImage>(entity =>
+        modelBuilder.Entity<DocImage>(
+            entity =>
             {
                 entity.ToTable("DocImage", "kt");
 
@@ -129,7 +148,7 @@ namespace KidsTown.Database.EfCore
 
                 entity.Property(e => e.Id).ValueGeneratedNever();
 
-                entity.Property(e => e.FileId).HasMaxLength(100);
+                entity.Property(e => e.FileId).HasMaxLength(maxLength: 100);
 
                 entity.HasOne(d => d.Element)
                     .WithMany(p => p.DocImages)
@@ -143,7 +162,8 @@ namespace KidsTown.Database.EfCore
                     .HasConstraintName("FK_DocImage_PreviousId");
             });
 
-            modelBuilder.Entity<DocParagraph>(entity =>
+        modelBuilder.Entity<DocParagraph>(
+            entity =>
             {
                 entity.ToTable("DocParagraph", "kt");
 
@@ -153,7 +173,7 @@ namespace KidsTown.Database.EfCore
 
                 entity.Property(e => e.Id).ValueGeneratedNever();
 
-                entity.Property(e => e.Content).HasMaxLength(512);
+                entity.Property(e => e.Content).HasMaxLength(maxLength: 512);
 
                 entity.HasOne(d => d.Element)
                     .WithMany(p => p.DocParagraphs)
@@ -167,14 +187,15 @@ namespace KidsTown.Database.EfCore
                     .HasConstraintName("FK_DocParagraph_PreviousId");
             });
 
-            modelBuilder.Entity<DocTitle>(entity =>
+        modelBuilder.Entity<DocTitle>(
+            entity =>
             {
                 entity.ToTable("DocTitle", "kt");
 
                 entity.HasIndex(e => e.ElementId, "UQ_DocTitle_ElementId")
                     .IsUnique();
 
-                entity.Property(e => e.Content).HasMaxLength(100);
+                entity.Property(e => e.Content).HasMaxLength(maxLength: 100);
 
                 entity.HasOne(d => d.Element)
                     .WithOne(p => p.DocTitle)
@@ -183,18 +204,20 @@ namespace KidsTown.Database.EfCore
                     .HasConstraintName("FK_DocTitle_ElementId");
             });
 
-            modelBuilder.Entity<Family>(entity =>
+        modelBuilder.Entity<Family>(
+            entity =>
             {
                 entity.ToTable("Family", "kt");
 
                 entity.Property(e => e.Name)
-                    .HasMaxLength(70)
-                    .IsUnicode(false);
+                    .HasMaxLength(maxLength: 70)
+                    .IsUnicode(unicode: false);
 
                 entity.Property(e => e.UpdateDate).HasDefaultValueSql("('1980-01-01')");
             });
 
-            modelBuilder.Entity<Kid>(entity =>
+        modelBuilder.Entity<Kid>(
+            entity =>
             {
                 entity.HasKey(e => e.PersonId);
 
@@ -214,15 +237,16 @@ namespace KidsTown.Database.EfCore
                     .HasConstraintName("FK_Kid_PersonId");
             });
 
-            modelBuilder.Entity<Location>(entity =>
+        modelBuilder.Entity<Location>(
+            entity =>
             {
                 entity.ToTable("Location", "kt");
 
                 entity.Property(e => e.LocationGroupId).HasDefaultValueSql("((5))");
 
                 entity.Property(e => e.Name)
-                    .HasMaxLength(50)
-                    .IsUnicode(false);
+                    .HasMaxLength(maxLength: 50)
+                    .IsUnicode(unicode: false);
 
                 entity.HasOne(d => d.LocationGroup)
                     .WithMany(p => p.Locations)
@@ -231,26 +255,28 @@ namespace KidsTown.Database.EfCore
                     .HasConstraintName("FK_Location_LocationGroupId");
             });
 
-            modelBuilder.Entity<LocationGroup>(entity =>
+        modelBuilder.Entity<LocationGroup>(
+            entity =>
             {
                 entity.ToTable("LocationGroup", "kt");
 
                 entity.Property(e => e.Name)
-                    .HasMaxLength(50)
-                    .IsUnicode(false);
+                    .HasMaxLength(maxLength: 50)
+                    .IsUnicode(unicode: false);
             });
 
-            modelBuilder.Entity<Person>(entity =>
+        modelBuilder.Entity<Person>(
+            entity =>
             {
                 entity.ToTable("Person", "kt");
 
                 entity.Property(e => e.FirstName)
-                    .HasMaxLength(50)
-                    .IsUnicode(false);
+                    .HasMaxLength(maxLength: 50)
+                    .IsUnicode(unicode: false);
 
                 entity.Property(e => e.LastName)
-                    .HasMaxLength(50)
-                    .IsUnicode(false);
+                    .HasMaxLength(maxLength: 50)
+                    .IsUnicode(unicode: false);
 
                 entity.HasOne(d => d.Family)
                     .WithMany(p => p.People)
@@ -258,20 +284,22 @@ namespace KidsTown.Database.EfCore
                     .HasConstraintName("FK_Person_FamilyId");
             });
 
-            modelBuilder.Entity<SearchLog>(entity =>
+        modelBuilder.Entity<SearchLog>(
+            entity =>
             {
                 entity.ToTable("SearchLog", "kt");
 
                 entity.Property(e => e.DeviceGuid)
-                    .HasMaxLength(40)
-                    .IsUnicode(false);
+                    .HasMaxLength(maxLength: 40)
+                    .IsUnicode(unicode: false);
 
                 entity.Property(e => e.SecurityCode)
-                    .HasMaxLength(10)
-                    .IsUnicode(false);
+                    .HasMaxLength(maxLength: 10)
+                    .IsUnicode(unicode: false);
             });
 
-            modelBuilder.Entity<SearchLog2Attendance>(entity =>
+        modelBuilder.Entity<SearchLog2Attendance>(
+            entity =>
             {
                 entity.ToTable("SearchLog2Attendance", "kt");
 
@@ -288,7 +316,8 @@ namespace KidsTown.Database.EfCore
                     .HasConstraintName("FK_SearchLog2Attendance_SearchLogId");
             });
 
-            modelBuilder.Entity<SearchLog2LocationGroup>(entity =>
+        modelBuilder.Entity<SearchLog2LocationGroup>(
+            entity =>
             {
                 entity.ToTable("SearchLog2LocationGroup", "kt");
 
@@ -305,23 +334,25 @@ namespace KidsTown.Database.EfCore
                     .HasConstraintName("FK_SearchLog2LocationGroup_SearchLogId");
             });
 
-            modelBuilder.Entity<TaskExecution>(entity =>
+        modelBuilder.Entity<TaskExecution>(
+            entity =>
             {
                 entity.ToTable("TaskExecution", "kt");
 
                 entity.Property(e => e.Environment)
-                    .HasMaxLength(20)
-                    .IsUnicode(false);
+                    .HasMaxLength(maxLength: 20)
+                    .IsUnicode(unicode: false);
 
                 entity.Property(e => e.TaskName)
-                    .HasMaxLength(50)
-                    .IsUnicode(false)
+                    .HasMaxLength(maxLength: 50)
+                    .IsUnicode(unicode: false)
                     .HasDefaultValueSql("('UpdateTask')");
             });
 
-            OnModelCreatingPartial(modelBuilder);
-        }
+        modelBuilder.Entity<User>(entity => entity.ToTable("User", "kt"));
 
-        partial void OnModelCreatingPartial(ModelBuilder modelBuilder);
+        OnModelCreatingPartial(modelBuilder);
     }
+
+    partial void OnModelCreatingPartial(ModelBuilder modelBuilder);
 }

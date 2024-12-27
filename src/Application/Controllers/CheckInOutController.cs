@@ -12,181 +12,197 @@ using Microsoft.AspNetCore.Mvc;
 namespace KidsTown.Application.Controllers;
 
 [ApiController]
-[Route(template: "[controller]")]
-public class CheckInOutController : ControllerBase
+[AuthenticateUser]
+[Route("[controller]")]
+public class CheckInOutController(
+        ICheckInOutService checkInOutService,
+        ITaskManagementService taskManagementService,
+        ISearchLoggingService searchLoggingService)
+    : ControllerBase
 {
-    private readonly ICheckInOutService _checkInOutService;
-    private readonly ITaskManagementService _taskManagementService;
-    private readonly ISearchLoggingService _searchLoggingService;
-
-    public CheckInOutController(ICheckInOutService checkInOutService, ITaskManagementService taskManagementService, ISearchLoggingService searchLoggingService)
-    {
-        _checkInOutService = checkInOutService;
-        _taskManagementService = taskManagementService;
-        _searchLoggingService = searchLoggingService;
-    }
-
     [HttpPost]
-    [Route(template: "manual-with-location-update")]
-    [Produces(contentType: "application/json")]
+    [Route("manual-with-location-update")]
+    [Produces("application/json")]
     public async Task<IActionResult> ManualLocationUpdateAndCheckIn([FromBody] CheckInOutCandidate candidate)
     {
-        var success = await _checkInOutService.UpdateLocationAndCheckIn(
-            attendanceId: candidate.AttendanceId,
-            locationId: candidate.LocationId);
-            
+        var success = await checkInOutService.UpdateLocationAndCheckIn(
+            candidate.AttendanceId,
+            candidate.LocationId);
+
         if (success)
         {
-            return Ok(value: new CheckInOutResult
-            {
-                Text = $"{CheckType.CheckIn.ToString()} für {candidate.Name} war erfolgreich.",
-                AlertLevel = AlertLevel.Success,
-                AttendanceIds = ImmutableList.Create(candidate.AttendanceId)
-            });
+            return Ok(
+                new CheckInOutResult
+                {
+                    Text = $"{CheckType.CheckIn.ToString()} für {candidate.Name} war erfolgreich.",
+                    AlertLevel = AlertLevel.Success,
+                    AttendanceIds = ImmutableList.Create(candidate.AttendanceId)
+                });
         }
 
-        return Ok(value: new CheckInOutResult
-        {
-            Text = $"{CheckType.CheckIn.ToString()} für {candidate.Name} ist fehlgeschlagen",
-            AlertLevel = AlertLevel.Error
-        });
+        return Ok(
+            new CheckInOutResult
+            {
+                Text = $"{CheckType.CheckIn.ToString()} für {candidate.Name} ist fehlgeschlagen",
+                AlertLevel = AlertLevel.Error
+            });
     }
 
     [HttpPost]
-    [Route(template: "manual")]
-    [Produces(contentType: "application/json")]
+    [Route("manual")]
+    [Produces("application/json")]
     public async Task<IActionResult> ManualCheckIn([FromBody] CheckInOutRequest request)
     {
-        var attendanceIds = request.CheckInOutCandidates.Select(selector: c => c.AttendanceId).ToImmutableList();
-        var success = await _checkInOutService.CheckInOutPeople(checkType: request.CheckType, attendanceIds: attendanceIds);
-            
-        var names = request.CheckInOutCandidates.Select(selector: c => c.Name).ToImmutableList();
+        var attendanceIds = request.CheckInOutCandidates.Select(c => c.AttendanceId).ToImmutableList();
+        var success =
+            await checkInOutService.CheckInOutPeople(request.CheckType, attendanceIds);
+
+        var names = request.CheckInOutCandidates.Select(c => c.Name).ToImmutableList();
 
         if (success)
         {
-            return Ok(value: new CheckInOutResult
-            {
-                Text = $"{request.CheckType.ToString()} für ({request.SecurityCode}) {string.Join(separator: ", ", values: names)} war erfolgreich.",
-                AlertLevel = AlertLevel.Success,
-                AttendanceIds = attendanceIds
-            });
+            return Ok(
+                new CheckInOutResult
+                {
+                    Text =
+                        $"{request.CheckType.ToString()} für ({request.SecurityCode}) {string.Join(", ", names)} war erfolgreich.",
+                    AlertLevel = AlertLevel.Success,
+                    AttendanceIds = attendanceIds
+                });
         }
 
-        return Ok(value: new CheckInOutResult
-        {
-            Text = $"{request.CheckType.ToString()} für ({request.SecurityCode}) {string.Join(separator: ", ", values: names)} ist fehlgeschlagen",
-            AlertLevel = AlertLevel.Error
-        });
+        return Ok(
+            new CheckInOutResult
+            {
+                Text =
+                    $"{request.CheckType.ToString()} für ({request.SecurityCode}) {string.Join(", ", names)} ist fehlgeschlagen",
+                AlertLevel = AlertLevel.Error
+            });
     }
 
     [HttpPost]
-    [Route(template: "people")]
-    [Produces(contentType: "application/json")]
+    [Route("people")]
+    [Produces("application/json")]
     public async Task<IActionResult> GetPeople([FromBody] CheckInOutRequest request)
     {
-        _taskManagementService.ActivateBackgroundTasks();
+        taskManagementService.ActivateBackgroundTasks();
 
         switch (request.FilterLocations)
         {
             case false when request.CheckType != CheckType.CheckIn:
-                return Ok(value: new CheckInOutResult
-                {
-                    Text = "Suche ohne Location Filter ist nur bei CheckIn erlaubt.",
-                    AlertLevel = AlertLevel.Error
-                });
+                return Ok(
+                    new CheckInOutResult
+                    {
+                        Text = "Suche ohne Location Filter ist nur bei CheckIn erlaubt.",
+                        AlertLevel = AlertLevel.Error
+                    });
             case true when request.SelectedLocationGroupIds.Count == 0:
-                return Ok(value: new CheckInOutResult
-                {
-                    Text = "Bitte Locations auswählen.",
-                    AlertLevel = AlertLevel.Error
-                });
+                return Ok(
+                    new CheckInOutResult
+                    {
+                        Text = "Bitte Locations auswählen.",
+                        AlertLevel = AlertLevel.Error
+                    });
         }
 
         if (request.SecurityCode.StartsWith(value: '1') && request.CheckType == CheckType.CheckIn)
         {
-            await _checkInOutService.CreateUnregisteredGuest(
-                requestSecurityCode: request.SecurityCode,
-                requestEventId: request.EventId,
-                requestSelectedLocationIds: request.SelectedLocationGroupIds);
+            await checkInOutService.CreateUnregisteredGuest(
+                request.SecurityCode,
+                request.EventId,
+                request.SelectedLocationGroupIds);
         }
 
         var peopleSearchParameters = new PeopleSearchParameters(
-            securityCode: request.SecurityCode, 
-            eventId: request.EventId,
-            locationGroups: request.SelectedLocationGroupIds,
-            useFilterLocationGroups: request.FilterLocations);
-            
-        var people = await _checkInOutService.SearchForPeople(
-            searchParameters: peopleSearchParameters).ConfigureAwait(continueOnCapturedContext: false);
+            request.SecurityCode,
+            request.EventId,
+            request.SelectedLocationGroupIds,
+            request.FilterLocations);
 
-        await _searchLoggingService.LogSearch(peopleSearchParameters: peopleSearchParameters,
-            people: people,
-            deviceGuid: request.Guid,
-            checkType: request.CheckType,
-            filterLocations: request.FilterLocations);
-            
+        var people = await checkInOutService.SearchForPeople(peopleSearchParameters).ConfigureAwait(continueOnCapturedContext: false);
+
+        await searchLoggingService.LogSearch(
+            peopleSearchParameters,
+            people,
+            request.Guid,
+            request.CheckType,
+            request.FilterLocations);
+
         if (people.Count == 0)
         {
-            return Ok(value: new CheckInOutResult
-            {
-                Text = $"Es wurde niemand mit SecurityCode {request.SecurityCode} gefunden. Locations Filter überprüfen.",
-                AlertLevel = AlertLevel.Error,
-                FilteredSearchUnsuccessful = true
-            });
+            return Ok(
+                new CheckInOutResult
+                {
+                    Text =
+                        $"Es wurde niemand mit SecurityCode {request.SecurityCode} gefunden. Locations Filter überprüfen.",
+                    AlertLevel = AlertLevel.Error,
+                    FilteredSearchUnsuccessful = true
+                });
         }
-            
-        var peopleReadyForProcessing = GetPeopleInRequestedState(people: people, checkType: request.CheckType);
-            
+
+        var peopleReadyForProcessing = GetPeopleInRequestedState(people, request.CheckType);
+
         if (peopleReadyForProcessing.Count == 0)
         {
-            return Ok(value: new CheckInOutResult
-            {
-                Text = $"Niemand mit {request.SecurityCode} ist bereit für {request.CheckType.ToString()}. CheckIn/Out Einstellungen überprüfen.",
-                AlertLevel = AlertLevel.Warning,
-                FilteredSearchUnsuccessful = true
-            });
+            return Ok(
+                new CheckInOutResult
+                {
+                    Text =
+                        $"Niemand mit {request.SecurityCode} ist bereit für {request.CheckType.ToString()}. CheckIn/Out Einstellungen überprüfen.",
+                    AlertLevel = AlertLevel.Warning,
+                    FilteredSearchUnsuccessful = true
+                });
         }
-            
-        if (request.IsFastCheckInOut 
+
+        if (request.IsFastCheckInOut
             && request.FilterLocations
-            && (!peopleReadyForProcessing.Any(predicate: p => !p.MayLeaveAlone || p.HasPeopleWithoutPickupPermission) 
+            && (!peopleReadyForProcessing.Any(p => !p.MayLeaveAlone || p.HasPeopleWithoutPickupPermission)
                 || request.CheckType == CheckType.CheckIn))
         {
-            var kid = await TryFastCheckInOut(people: peopleReadyForProcessing, checkType: request.CheckType).ConfigureAwait(continueOnCapturedContext: false);
+            var kid = await TryFastCheckInOut(peopleReadyForProcessing, request.CheckType)
+                .ConfigureAwait(continueOnCapturedContext: false);
+
             if (kid != null)
             {
-                return Ok(value: new CheckInOutResult
-                {
-                    Text = $"{request.CheckType.ToString()} für ({request.SecurityCode}) {kid.FirstName} {kid.LastName} war erfolgreich.",
-                    AlertLevel = AlertLevel.Success,
-                    SuccessfulFastCheckout = true,
-                    AttendanceIds = ImmutableList.Create(item: kid.AttendanceId)
-                });
+                return Ok(
+                    new CheckInOutResult
+                    {
+                        Text =
+                            $"{request.CheckType.ToString()} für ({request.SecurityCode}) {kid.FirstName} {kid.LastName} war erfolgreich.",
+                        AlertLevel = AlertLevel.Success,
+                        SuccessfulFastCheckout = true,
+                        AttendanceIds = ImmutableList.Create(kid.AttendanceId)
+                    });
             }
         }
 
-        var checkInOutCandidates = peopleReadyForProcessing.Select(selector: p => new CheckInOutCandidate
-        {
-            AttendanceId = p.AttendanceId,
-            Name = $"{p.FirstName} {p.LastName}",
-            LocationId = p.LocationGroupId,
-            MayLeaveAlone = p.MayLeaveAlone,
-            HasPeopleWithoutPickupPermission = p.HasPeopleWithoutPickupPermission
-        }).ToImmutableList();
+        var checkInOutCandidates = peopleReadyForProcessing.Select(
+                p =>
+                    new CheckInOutCandidate(
+                        p.AttendanceId,
+                        $"{p.FirstName} {p.LastName}",
+                        p.LocationGroupId,
+                        p.MayLeaveAlone,
+                        p.HasPeopleWithoutPickupPermission))
+            .ToImmutableList();
 
-        var text = GetCandidateAlert(request: request, checkInOutCandidates: checkInOutCandidates, level: out var level);
+        var text = GetCandidateAlert(
+            request,
+            checkInOutCandidates,
+            out var level);
 
-        return Ok(value: new CheckInOutResult
-        {
-            Text = text,
-            AlertLevel = level,
-            CheckInOutCandidates = checkInOutCandidates
-        });
+        return Ok(
+            new CheckInOutResult
+            {
+                Text = text,
+                AlertLevel = level,
+                CheckInOutCandidates = checkInOutCandidates
+            });
     }
 
     [HttpPost]
-    [Route(template: "undo/{checkType}")]
-    [Produces(contentType: "application/json")]
+    [Route("undo/{checkType}")]
+    [Produces("application/json")]
     public async Task<IActionResult> Undo([FromRoute] CheckType checkType, [FromBody] IImmutableList<int> attendanceIds)
     {
         var checkState = checkType switch
@@ -194,90 +210,99 @@ public class CheckInOutController : ControllerBase
             CheckType.GuestCheckIn => CheckState.None,
             CheckType.CheckIn => CheckState.PreCheckedIn,
             CheckType.CheckOut => CheckState.CheckedIn,
-            _ => throw new ArgumentOutOfRangeException(paramName: nameof(checkType), actualValue: checkType, message: null)
+            _ => throw new ArgumentOutOfRangeException(
+                nameof(checkType),
+                checkType,
+                message: null)
         };
-               
-        var success = await _checkInOutService.UndoAction(revertedCheckState: checkState, attendanceIds: attendanceIds);
+
+        var success = await checkInOutService.UndoAction(checkState, attendanceIds);
 
         if (success)
         {
-            return Ok(value: new CheckInOutResult
-            {
-                Text = $"Der {checkType} wurde erfolgreich rückgänig gemacht.",
-                AlertLevel = AlertLevel.Info
-            });    
+            return Ok(
+                new CheckInOutResult
+                {
+                    Text = $"Der {checkType} wurde erfolgreich rückgänig gemacht.",
+                    AlertLevel = AlertLevel.Info
+                });
         }
-            
-        return Ok(value: new CheckInOutResult
-        {
-            Text = "Rückgänig machen ist fehlgeschlagen",
-            AlertLevel = AlertLevel.Error
-        }); 
-            
+
+        return Ok(
+            new CheckInOutResult
+            {
+                Text = "Rückgänig machen ist fehlgeschlagen",
+                AlertLevel = AlertLevel.Error
+            });
     }
 
     [HttpPost]
-    [Route(template: "guest/checkin")]
-    [Produces(contentType: "application/json")]
+    [Route("guest/checkin")]
+    [Produces("application/json")]
     public async Task<IActionResult> CheckInGuest([FromBody] GuestCheckInRequest request)
     {
-        var attendanceId = await _checkInOutService.CreateGuest(
-            locationId: request.LocationGroupId,
-            securityCode: request.SecurityCode,
-            firstName: request.FirstName,
-            lastName: request.LastName);
+        var attendanceId = await checkInOutService.CreateGuest(
+            request.LocationGroupId,
+            request.SecurityCode,
+            request.FirstName,
+            request.LastName);
 
         if (attendanceId == null)
         {
-            return Ok(value: new CheckInOutResult
-            {
-                Text = $"Der SecurityCode {request.SecurityCode} existiert bereits.",
-                AlertLevel = AlertLevel.Error
-            });
+            return Ok(
+                new CheckInOutResult
+                {
+                    Text = $"Der SecurityCode {request.SecurityCode} existiert bereits.",
+                    AlertLevel = AlertLevel.Error
+                });
         }
 
-        await _checkInOutService.CheckInOutPeople(
-            checkType: CheckType.CheckIn, 
-            attendanceIds: ImmutableList.Create(item: attendanceId.Value));
+        await checkInOutService.CheckInOutPeople(
+            CheckType.CheckIn,
+            ImmutableList.Create(attendanceId.Value));
 
-        return Ok(value: new CheckInOutResult
-        {
-            Text = $"CheckIn für {request.FirstName} {request.LastName} war erfolgreich.",
-            AlertLevel = AlertLevel.Success,
-            AttendanceIds = ImmutableList.Create(item: attendanceId.Value)
-        });
+        return Ok(
+            new CheckInOutResult
+            {
+                Text = $"CheckIn für {request.FirstName} {request.LastName} war erfolgreich.",
+                AlertLevel = AlertLevel.Success,
+                AttendanceIds = ImmutableList.Create(attendanceId.Value)
+            });
     }
-        
+
     [HttpPost]
-    [Route(template: "guest/create")]
-    [Produces(contentType: "application/json")]
+    [Route("guest/create")]
+    [Produces("application/json")]
     public async Task<IActionResult> CreateGuest([FromBody] GuestCheckInRequest request)
     {
-        var attendanceId = await _checkInOutService.CreateGuest(
-            locationId: request.LocationGroupId,
-            securityCode: request.SecurityCode,
-            firstName: request.FirstName,
-            lastName: request.LastName);
+        var attendanceId = await checkInOutService.CreateGuest(
+            request.LocationGroupId,
+            request.SecurityCode,
+            request.FirstName,
+            request.LastName);
 
         if (attendanceId == null)
         {
-            return Ok(value: new CheckInOutResult
-            {
-                Text = $"Der SecurityCode {request.SecurityCode} existiert bereits.",
-                AlertLevel = AlertLevel.Error
-            });
+            return Ok(
+                new CheckInOutResult
+                {
+                    Text = $"Der SecurityCode {request.SecurityCode} existiert bereits.",
+                    AlertLevel = AlertLevel.Error
+                });
         }
-            
-        return Ok(value: new CheckInOutResult
-        {
-            Text = $"Erfassen von {request.FirstName} {request.LastName} war erfolgreich.",
-            AlertLevel = AlertLevel.Success,
-            AttendanceIds = ImmutableList.Create(item: attendanceId.Value)
-        });
 
+        return Ok(
+            new CheckInOutResult
+            {
+                Text = $"Erfassen von {request.FirstName} {request.LastName} war erfolgreich.",
+                AlertLevel = AlertLevel.Success,
+                AttendanceIds = ImmutableList.Create(attendanceId.Value)
+            });
     }
-        
-    private static string GetCandidateAlert(CheckInOutRequest request, IImmutableList<CheckInOutCandidate> checkInOutCandidates,
+
+    private static string GetCandidateAlert(
+        CheckInOutRequest request,
+        IImmutableList<CheckInOutCandidate> checkInOutCandidates,
         out AlertLevel level)
     {
         var text = "";
@@ -287,18 +312,18 @@ public class CheckInOutController : ControllerBase
         {
             return text;
         }
-            
-        if (checkInOutCandidates.Any(predicate: c => !c.MayLeaveAlone))
+
+        if (checkInOutCandidates.Any(c => !c.MayLeaveAlone))
         {
             text = "Kinder mit gelbem Hintergrund dürfen nicht alleine gehen";
             level = AlertLevel.Warning;
         }
 
-        if (!checkInOutCandidates.Any(predicate: c => c.HasPeopleWithoutPickupPermission))
+        if (!checkInOutCandidates.Any(c => c.HasPeopleWithoutPickupPermission))
         {
             return text;
         }
-            
+
         text = "Bei Kindern mit rotem Hintergrund gibt es Personen, die nicht abholberechtigt sind";
         level = AlertLevel.Error;
 
@@ -311,23 +336,30 @@ public class CheckInOutController : ControllerBase
         {
             return null;
         }
-            
-        var success = await _checkInOutService
-            .CheckInOutPeople(checkType: checkType, attendanceIds: people.Select(selector: p => p.AttendanceId).ToImmutableList())
-            .ConfigureAwait(continueOnCapturedContext: false);
-                
-        return success ? people.Single() : null;
 
+        var success = await checkInOutService
+            .CheckInOutPeople(
+                checkType,
+                people.Select(p => p.AttendanceId).ToImmutableList())
+            .ConfigureAwait(continueOnCapturedContext: false);
+
+        return success ? people.Single() : null;
     }
 
     private static IImmutableList<Kid> GetPeopleInRequestedState(IImmutableList<Kid> people, CheckType checkType)
     {
         return checkType switch
         {
-            CheckType.CheckIn => people.Where(predicate: p => p.CheckState == CheckState.PreCheckedIn).ToImmutableList(),
-            CheckType.CheckOut => people.Where(predicate: p => p.CheckState == CheckState.CheckedIn).ToImmutableList(),
-            CheckType.GuestCheckIn => throw new ArgumentException(message: $"Unexpected CheckType: {checkType}", paramName: nameof(checkType)),
-            _ => throw new ArgumentOutOfRangeException(paramName: nameof(checkType), actualValue: checkType, message: null)
+            CheckType.CheckIn => people.Where(p => p.CheckState == CheckState.PreCheckedIn)
+                .ToImmutableList(),
+            CheckType.CheckOut => people.Where(p => p.CheckState == CheckState.CheckedIn).ToImmutableList(),
+            CheckType.GuestCheckIn => throw new ArgumentException(
+                $"Unexpected CheckType: {checkType}",
+                nameof(checkType)),
+            _ => throw new ArgumentOutOfRangeException(
+                nameof(checkType),
+                checkType,
+                message: null)
         };
     }
 }

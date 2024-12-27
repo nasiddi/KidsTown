@@ -25,21 +25,23 @@ public static class TestHelper
     public static async Task CleanDatabase(IServiceProvider serviceProvider)
     {
         await using var db = serviceProvider.GetRequiredService<KidsTownContext>();
-        await EstablishConnectionToDatabase(db: db).ConfigureAwait(continueOnCapturedContext: false);
-                
-        var attendances = await db.Attendances.Where(predicate: a => 0 < a.CheckInsId && a.CheckInsId < 100).ToListAsync();
-        var people = await db.People.Where(predicate: p => attendances.Select(a => a.PersonId)
-                .Contains(p.Id))
-            .Include(navigationPropertyPath: p => p.Kid)
-            .Include(navigationPropertyPath: p => p.Adult).ToListAsync();
+        await EstablishConnectionToDatabase(db).ConfigureAwait(continueOnCapturedContext: false);
 
-        var kids = people.Where(predicate: p => p.Kid != null).Select(selector: p => p.Kid);
-        var adults = people.Where(predicate: p => p.Adult != null).Select(selector: p => p.Adult);
-            
-        db.RemoveRange(entities: kids!);
-        db.RemoveRange(entities: adults!);
-        db.RemoveRange(entities: attendances);
-        db.RemoveRange(entities: people);
+        var attendances = await db.Attendances.Where(a => 0 < a.CheckInsId && a.CheckInsId < 100).ToListAsync();
+        var people = await db.People.Where(
+                p => attendances.Select(a => a.PersonId)
+                    .Contains(p.Id))
+            .Include(p => p.Kid)
+            .Include(p => p.Adult)
+            .ToListAsync();
+
+        var kids = people.Where(p => p.Kid != null).Select(p => p.Kid);
+        var adults = people.Where(p => p.Adult != null).Select(p => p.Adult);
+
+        db.RemoveRange(kids!);
+        db.RemoveRange(adults!);
+        db.RemoveRange(attendances);
+        db.RemoveRange(people);
         await db.SaveChangesAsync();
     }
 
@@ -54,31 +56,31 @@ public static class TestHelper
     public static async Task InsertDefaultTestData(ServiceProvider serviceProvider)
     {
         var testData = TestDataFactory.GetTestData();
-        await InsertTestData(serviceProvider: serviceProvider, testData: testData)
+        await InsertTestData(serviceProvider, testData)
             .ConfigureAwait(continueOnCapturedContext: false);
     }
-        
+
     public static async Task InsertTestData(ServiceProvider serviceProvider, IImmutableList<TestData.TestData> testData)
     {
         await using var db = serviceProvider.GetRequiredService<KidsTownContext>();
-        await EstablishConnectionToDatabase(db: db).ConfigureAwait(continueOnCapturedContext: false);
+        await EstablishConnectionToDatabase(db).ConfigureAwait(continueOnCapturedContext: false);
 
         var locations = await db.Locations.ToListAsync();
 
         var people = testData
-            .GroupBy(keySelector: d => d.PeopleId)
-            .Select(selector: d => MapPerson(grouping: d, locations: locations.ToImmutableList()))
+            .GroupBy(d => d.PeopleId)
+            .Select(d => MapPerson(d, locations.ToImmutableList()))
             .ToImmutableList();
 
-        await db.AddRangeAsync(entities: people).ConfigureAwait(continueOnCapturedContext: false);
+        await db.AddRangeAsync(people).ConfigureAwait(continueOnCapturedContext: false);
         await db.SaveChangesAsync().ConfigureAwait(continueOnCapturedContext: false);
     }
 
     private static Attendance MapAttendance(TestData.TestData data, IImmutableList<Location> locations)
     {
-        var location = locations.Single(predicate: l => l.CheckInsLocationId == (long) data.TestLocation);
+        var location = locations.Single(l => l.CheckInsLocationId == (long) data.TestLocation);
 
-        return new()
+        return new Attendance
         {
             CheckInsId = data.CheckInsId,
             LocationId = location.Id,
@@ -94,7 +96,7 @@ public static class TestHelper
     {
         var data = grouping.First();
 
-        var attendances = grouping.Select(selector: g => MapAttendance(data: g, locations: locations));
+        var attendances = grouping.Select(g => MapAttendance(g, locations));
 
         var kid = new Kid
         {
@@ -102,7 +104,7 @@ public static class TestHelper
             HasPeopleWithoutPickupPermission = data.ExpectedHasPeopleWithoutPickupPermission ?? false
         };
 
-        return new()
+        return new Person
         {
             PeopleId = data.PeopleId,
             FirstName = data.PeopleFirstName ?? data.CheckInsFirstName,
@@ -119,7 +121,7 @@ public static class TestHelper
             setupBackgroundTasksDi: false,
             mockPlanningCenterClient: false);
     }
-        
+
     public static ServiceProvider SetupServiceProviderWithBackgroundTasksDi()
     {
         return SetupServiceProvider(
@@ -127,7 +129,7 @@ public static class TestHelper
             setupBackgroundTasksDi: true,
             mockPlanningCenterClient: false);
     }
-        
+
     public static ServiceProvider SetupServiceProviderWithBackgroundTasksDiAndMockedPlanningCenterClient()
     {
         return SetupServiceProvider(
@@ -135,7 +137,7 @@ public static class TestHelper
             setupBackgroundTasksDi: true,
             mockPlanningCenterClient: true);
     }
-        
+
     private static ServiceProvider SetupServiceProvider(
         bool setupKidsTownDi,
         bool setupBackgroundTasksDi,
@@ -143,19 +145,19 @@ public static class TestHelper
     )
     {
         IServiceCollection services = new ServiceCollection();
-        var configuration = SetupConfigurations(services: services);
-        SetupDatabaseConnection(services: services, configuration: configuration);
+        var configuration = SetupConfigurations(services);
+        SetupDatabaseConnection(services, configuration);
 
         if (setupKidsTownDi)
         {
-            SetupKidsTownDi(services: services);
+            SetupKidsTownDi(services);
         }
 
         if (setupBackgroundTasksDi)
         {
-            SetupBackgroundTasksDi(mockPlanningCenterClient: mockPlanningCenterClient, services: services);
+            SetupBackgroundTasksDi(mockPlanningCenterClient, services);
         }
-            
+
         return services.BuildServiceProvider();
     }
 
@@ -164,7 +166,7 @@ public static class TestHelper
         services.AddDbContext<KidsTownContext>(
             contextLifetime: ServiceLifetime.Transient,
             optionsAction: o
-                => o.UseSqlServer(connectionString: configuration.GetConnectionString(name: "Database")));
+                => o.UseSqlServer(configuration.GetConnectionString("Database")));
     }
 
     private static void SetupKidsTownDi(IServiceCollection services)
@@ -176,26 +178,26 @@ public static class TestHelper
         services.AddScoped<ICheckInOutRepository, CheckInOutRepository>();
         services.AddScoped<IConfigurationRepository, ConfigurationRepository>();
         services.AddScoped<IOverviewRepository, OverviewRepository>();
-            
+
         services.AddScoped<IPeopleRepository, PeopleRepository>();
     }
-        
+
     private static IConfigurationRoot SetupConfigurations(IServiceCollection services)
     {
         var configuration = new ConfigurationBuilder()
-            .AddJsonFile(path: "appsettings.json", optional: false)
-            .AddJsonFile(path: "appsettings.Secrets.json", optional: false)
-            .AddJsonFile(path: "appsettings.DevelopementMachine.json", optional: true)
+            .AddJsonFile("appsettings.json", optional: false)
+            .AddJsonFile("appsettings.Secrets.json", optional: false)
+            .AddJsonFile("appsettings.DevelopementMachine.json", optional: true)
             .Build();
 
-        services.AddSingleton<IConfiguration>(implementationFactory: _ => configuration);
+        services.AddSingleton<IConfiguration>(_ => configuration);
         return configuration;
     }
-        
+
     private static void SetupBackgroundTasksDi(bool mockPlanningCenterClient, IServiceCollection services)
     {
         services.AddSingleton<AttendanceUpdateTask>();
-            
+
         services.AddSingleton<KidUpdateTask>();
 
         services.AddSingleton<AdultUpdateTask>();
@@ -212,12 +214,12 @@ public static class TestHelper
         services.AddSingleton<IAttendanceUpdateService, AttendanceUpdateService>();
         services.AddSingleton<IKidUpdateService, KidUpdateService>();
         services.AddSingleton<IAdultUpdateService, AdultUpdateService>();
-            
+
         services.AddSingleton<IAttendanceUpdateRepository, AttendanceUpdateRepository>();
         services.AddSingleton<IKidUpdateRepository, KidUpdateRepository>();
         services.AddSingleton<IAdultUpdateRepository, AdultUpdateRepository>();
         services.AddSingleton<IBackgroundTaskRepository, BackgroundTaskRepository>();
         services.AddSingleton<ILoggerFactory, LoggerFactory>();
-        services.AddSingleton(serviceType: typeof(ILogger), implementationType: typeof(Logger<BackgroundTask>));
+        services.AddSingleton(typeof(ILogger), typeof(Logger<BackgroundTask>));
     }
 }

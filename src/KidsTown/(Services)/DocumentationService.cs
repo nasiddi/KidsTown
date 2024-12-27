@@ -6,44 +6,36 @@ using System.Threading.Tasks;
 using Google.Apis.Drive.v3;
 using Google.Apis.Upload;
 using KidsTown.KidsTown.Models;
+using File = Google.Apis.Drive.v3.Data.File;
 
 namespace KidsTown.KidsTown;
 
-public class DocumentationService : IDocumentationService
+public class DocumentationService(IDocumentationRepository documentationRepository, DriveService driveService)
+    : IDocumentationService
 {
-    private readonly IDocumentationRepository _documentationRepository;
-    private readonly DriveService _driveService;
-
     private readonly string DriveFolderId = "1apAfvOmA3VTbRs10qHvbpAG2KxDTXz_t";
-
-
-    public DocumentationService(IDocumentationRepository documentationRepository, DriveService driveService)
-    {
-        _documentationRepository = documentationRepository;
-        _driveService = driveService;
-    }
 
     public async Task<IImmutableSet<DocumentationElement>> GetDocumentation(Section section)
     {
-        return await _documentationRepository.LoadDocumentation(section);
+        return await documentationRepository.LoadDocumentation(section);
     }
 
     public async Task<UpdateResult> UpdateDocumentation(IImmutableSet<DocumentationElement> documentation)
     {
-        return await _documentationRepository.UpdateDocumentation(documentation);
+        return await documentationRepository.UpdateDocumentation(documentation);
     }
 
     public async Task<string> SaveImage(Stream stream, string fileName)
     {
         var extension = Path.GetExtension(fileName);
 
-        var fileMetadata = new Google.Apis.Drive.v3.Data.File
+        var fileMetadata = new File
         {
             Name = $"{Guid.NewGuid().ToString()}{extension}",
             Parents = new List<string> {DriveFolderId}
         };
 
-        var request = _driveService.Files.Create(fileMetadata, stream, $"image/{extension.Substring(1)}");
+        var request = driveService.Files.Create(fileMetadata, stream, $"image/{extension.Substring(startIndex: 1)}");
         request.Fields = "*";
         var results = await request.UploadAsync();
 
@@ -58,11 +50,11 @@ public class DocumentationService : IDocumentationService
 
     public async Task CleanupImages()
     {
-        var imageFileIds = await _documentationRepository.GetAllImageFileIds();
-        var listRequest = _driveService.Files.List();
+        var imageFileIds = await documentationRepository.GetAllImageFileIds();
+        var listRequest = driveService.Files.List();
         listRequest.Q = $"'{DriveFolderId}' in parents";
         var fileList = await listRequest.ExecuteAsync();
-        
+
         foreach (var file in fileList.Files)
         {
             if (imageFileIds.Contains(file.Id))
@@ -70,7 +62,7 @@ public class DocumentationService : IDocumentationService
                 continue;
             }
 
-            await _driveService.Files.Delete(file.Id).ExecuteAsync();
+            await driveService.Files.Delete(file.Id).ExecuteAsync();
         }
     }
 }

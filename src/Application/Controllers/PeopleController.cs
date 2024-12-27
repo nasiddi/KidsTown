@@ -7,31 +7,23 @@ using Microsoft.AspNetCore.Mvc;
 namespace KidsTown.Application.Controllers;
 
 [ApiController]
-[Route(template: "[controller]/adults")]
-public class PeopleController : ControllerBase
+[AuthenticateUser]
+[Route("[controller]/adults")]
+public class PeopleController(IPeopleService peopleService) : ControllerBase
 {
-    private readonly IPeopleService _peopleService;
-
-    public PeopleController(IPeopleService peopleService)
-    {
-        _peopleService = peopleService;
-    }
-
     [HttpPost]
-    [Produces(contentType: "application/json")]
+    [Produces("application/json")]
     public async Task<IActionResult> GetAdults([FromBody] IImmutableList<int> attendanceIds)
     {
-        return Ok(value: await _peopleService.GetParents(attendanceIds: attendanceIds));
+        return Ok(await peopleService.GetParents(attendanceIds));
     }
-        
+
     [HttpPost]
-    [Route(template: "update")]
-    [Produces(contentType: "application/json")]
+    [Route("update")]
+    [Produces("application/json")]
     public async Task<IActionResult> UpdateAdults([FromBody] IImmutableList<Adult> adults, [FromQuery] bool? updatePhoneNumber)
     {
-        await _peopleService.UpdateAdults(adults: adults, updatePhoneNumber: updatePhoneNumber ?? false);
+        await peopleService.UpdateAdults(adults, updatePhoneNumber ?? false);
         return Ok();
     }
-        
-        
 }

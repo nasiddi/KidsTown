@@ -7,8 +7,10 @@ namespace KidsTown.KidsTown;
 
 public interface IOverviewRepository
 {
-    Task<IImmutableList<Attendee>> GetActiveAttendees(IImmutableList<int> selectedLocationGroups,
-        long eventId, DateTime date);
+    Task<IImmutableList<Attendee>> GetActiveAttendees(
+        IImmutableList<int> selectedLocationGroups,
+        long eventId,
+        DateTime date);
 
     Task<IImmutableList<Attendee>> GetAttendanceHistoryByLocations(
         long eventId,
