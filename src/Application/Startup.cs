@@ -124,7 +124,7 @@ public class Startup(IConfiguration configuration)
 
         var options = new RewriteOptions()
             // Rewrite "/index.html" to "/"
-            .AddRewrite(@"^index\.html$", "", skipRemainingRules: true)
+            .AddRewrite(@"^index\.html$", "/", skipRemainingRules: true)
             // Rewrite any path ending with "/" to ".html"
             .AddRewrite(@"^(.*)/$", "$1.html", skipRemainingRules: true)
             // Rewrite any path not ending with a file extension to ".html"
