@@ -62,7 +62,7 @@ public partial class KidsTownContext : DbContext
             {
                 entity.HasKey(e => e.PersonId);
 
-                entity.ToTable("Adult", "kt");
+                entity.ToTable("Adult", "dbo");
 
                 entity.HasIndex(e => e.PersonId, "XI_Adult_PersonId")
                     .IsUnique();
@@ -85,7 +85,7 @@ public partial class KidsTownContext : DbContext
         modelBuilder.Entity<Attendance>(
             entity =>
             {
-                entity.ToTable("Attendance", "kt");
+                entity.ToTable("Attendance", "dbo");
 
                 entity.Property(e => e.SecurityCode)
                     .HasMaxLength(maxLength: 10)
@@ -113,7 +113,7 @@ public partial class KidsTownContext : DbContext
         modelBuilder.Entity<AttendanceType>(
             entity =>
             {
-                entity.ToTable("AttendanceType", "kt");
+                entity.ToTable("AttendanceType", "dbo");
 
                 entity.Property(e => e.Name)
                     .HasMaxLength(maxLength: 50)
@@ -123,7 +123,7 @@ public partial class KidsTownContext : DbContext
         modelBuilder.Entity<DocElement>(
             entity =>
             {
-                entity.ToTable("DocElement", "kt");
+                entity.ToTable("DocElement", "dbo");
 
                 entity.HasIndex(e => e.PreviousId, "UQ_DocElement_PreviousId")
                     .IsUnique()
@@ -140,7 +140,7 @@ public partial class KidsTownContext : DbContext
         modelBuilder.Entity<DocImage>(
             entity =>
             {
-                entity.ToTable("DocImage", "kt");
+                entity.ToTable("DocImage", "dbo");
 
                 entity.HasIndex(e => e.PreviousId, "UQ_DocImage_PreviousId")
                     .IsUnique()
@@ -165,7 +165,7 @@ public partial class KidsTownContext : DbContext
         modelBuilder.Entity<DocParagraph>(
             entity =>
             {
-                entity.ToTable("DocParagraph", "kt");
+                entity.ToTable("DocParagraph", "dbo");
 
                 entity.HasIndex(e => e.PreviousId, "UQ_DocParagraph_PreviousId")
                     .IsUnique()
@@ -190,7 +190,7 @@ public partial class KidsTownContext : DbContext
         modelBuilder.Entity<DocTitle>(
             entity =>
             {
-                entity.ToTable("DocTitle", "kt");
+                entity.ToTable("DocTitle", "dbo");
 
                 entity.HasIndex(e => e.ElementId, "UQ_DocTitle_ElementId")
                     .IsUnique();
@@ -207,7 +207,7 @@ public partial class KidsTownContext : DbContext
         modelBuilder.Entity<Family>(
             entity =>
             {
-                entity.ToTable("Family", "kt");
+                entity.ToTable("Family", "dbo");
 
                 entity.Property(e => e.Name)
                     .HasMaxLength(maxLength: 70)
@@ -221,7 +221,7 @@ public partial class KidsTownContext : DbContext
             {
                 entity.HasKey(e => e.PersonId);
 
-                entity.ToTable("Kid", "kt");
+                entity.ToTable("Kid", "dbo");
 
                 entity.HasIndex(e => e.PersonId, "XI_Kid_PersonId")
                     .IsUnique();
@@ -240,7 +240,7 @@ public partial class KidsTownContext : DbContext
         modelBuilder.Entity<Location>(
             entity =>
             {
-                entity.ToTable("Location", "kt");
+                entity.ToTable("Location", "dbo");
 
                 entity.Property(e => e.LocationGroupId).HasDefaultValueSql("((5))");
 
@@ -258,7 +258,7 @@ public partial class KidsTownContext : DbContext
         modelBuilder.Entity<LocationGroup>(
             entity =>
             {
-                entity.ToTable("LocationGroup", "kt");
+                entity.ToTable("LocationGroup", "dbo");
 
                 entity.Property(e => e.Name)
                     .HasMaxLength(maxLength: 50)
@@ -268,7 +268,7 @@ public partial class KidsTownContext : DbContext
         modelBuilder.Entity<Person>(
             entity =>
             {
-                entity.ToTable("Person", "kt");
+                entity.ToTable("Person", "dbo");
 
                 entity.Property(e => e.FirstName)
                     .HasMaxLength(maxLength: 50)
@@ -287,7 +287,7 @@ public partial class KidsTownContext : DbContext
         modelBuilder.Entity<SearchLog>(
             entity =>
             {
-                entity.ToTable("SearchLog", "kt");
+                entity.ToTable("SearchLog", "dbo");
 
                 entity.Property(e => e.DeviceGuid)
                     .HasMaxLength(maxLength: 40)
@@ -301,7 +301,7 @@ public partial class KidsTownContext : DbContext
         modelBuilder.Entity<SearchLog2Attendance>(
             entity =>
             {
-                entity.ToTable("SearchLog2Attendance", "kt");
+                entity.ToTable("SearchLog2Attendance", "dbo");
 
                 entity.HasOne(d => d.Attendance)
                     .WithMany(p => p.SearchLog2Attendances)
@@ -319,7 +319,7 @@ public partial class KidsTownContext : DbContext
         modelBuilder.Entity<SearchLog2LocationGroup>(
             entity =>
             {
-                entity.ToTable("SearchLog2LocationGroup", "kt");
+                entity.ToTable("SearchLog2LocationGroup", "dbo");
 
                 entity.HasOne(d => d.LocationGroup)
                     .WithMany(p => p.SearchLog2LocationGroups)
@@ -337,7 +337,7 @@ public partial class KidsTownContext : DbContext
         modelBuilder.Entity<TaskExecution>(
             entity =>
             {
-                entity.ToTable("TaskExecution", "kt");
+                entity.ToTable("TaskExecution", "dbo");
 
                 entity.Property(e => e.Environment)
                     .HasMaxLength(maxLength: 20)
@@ -349,7 +349,7 @@ public partial class KidsTownContext : DbContext
                     .HasDefaultValueSql("('UpdateTask')");
             });
 
-        modelBuilder.Entity<User>(entity => entity.ToTable("User", "kt"));
+        modelBuilder.Entity<User>(entity => entity.ToTable("User", "dbo"));
 
         OnModelCreatingPartial(modelBuilder);
     }
