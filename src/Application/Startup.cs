@@ -123,12 +123,12 @@ public class Startup(IConfiguration configuration)
         }
 
         var options = new RewriteOptions()
-            // Redirect "/" to "/index.html"
+            // Redirect "/" to "/index.html" only if it's not a request for static files
             .AddRewrite(@"^$", "index.html", skipRemainingRules: true)
-            // Rewrite any path ending with "/" to ".html"
-            .AddRewrite(@"^(.*)/$", "$1.html", skipRemainingRules: true)
-            // Rewrite any path not ending with a file extension to ".html"
-            .AddRewrite(@"^(.*)$", "$1.html", skipRemainingRules: true);
+            // Exclude paths that start with "_next/static/" from rewrites
+            .AddRewrite(@"^(?!_next/static/)(.*)/$", "$1.html", skipRemainingRules: true)
+            .AddRewrite(@"^(?!_next/static/)(.*)$", "$1.html", skipRemainingRules: true);
+
 
         app.UseRewriter(options);
 
