@@ -1,5 +1,4 @@
 using System;
-using System.IO;
 using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
 using Google.Apis.Auth.OAuth2;
@@ -18,10 +17,10 @@ using KidsTown.PlanningCenterApiClient;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Rewrite;
+using Microsoft.AspNetCore.SpaServices.ReactDevelopmentServer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Hosting;
 
 namespace KidsTown.Application;
@@ -123,35 +122,40 @@ public class Startup(IConfiguration configuration)
             app.UseHsts();
         }
 
-        var options = new RewriteOptions()
-            // Rewrite only exact matches to .html
-            .Add(context =>
-            {
-                var request = context.HttpContext.Request;
-                var path = request.Path.Value;
-
-                if (!string.IsNullOrEmpty(path) && Regex.IsMatch(path, "[A-Z]"))
-                {
-                    context.HttpContext.Request.Path = path.ToLowerInvariant();
-                }
-
-                context.Result = RuleResult.ContinueRules;
-            })
-            .AddRewrite(@"^$", "index.html", skipRemainingRules: true)
-            .AddRewrite(@"^checkin/?$", "checkin.html", skipRemainingRules: true)
-            .AddRewrite(@"^documentation/?$", "documentation.html", skipRemainingRules: true)
-            .AddRewrite(@"^login/?$", "login.html", skipRemainingRules: true)
-            .AddRewrite(@"^overview/?$", "overview.html", skipRemainingRules: true)
-            .AddRewrite(@"^settings/?$", "settings.html", skipRemainingRules: true)
-            .AddRewrite(@"^settings/documentation/?$", "settings/documentation.html", skipRemainingRules: true)
-            .AddRewrite(@"^statistic/?$", "statistic.html", skipRemainingRules: true);
-
-        app.UseRewriter(options);
-
-        app.UseStaticFiles();
-        app.UseRouting();
-
         app.UseCors("AllowReactApp");
+
+        if (!env.IsDevelopment())
+        {
+            var options = new RewriteOptions()
+                // Rewrite only exact matches to .html
+                .Add(
+                    context =>
+                    {
+                        var request = context.HttpContext.Request;
+                        var path = request.Path.Value;
+
+                        if (!string.IsNullOrEmpty(path) && Regex.IsMatch(path, "[A-Z]"))
+                        {
+                            context.HttpContext.Request.Path = path.ToLowerInvariant();
+                        }
+
+                        context.Result = RuleResult.ContinueRules;
+                    })
+                .AddRewrite(@"^$", "index.html", skipRemainingRules: true)
+                .AddRewrite(@"^checkin/?$", "checkin.html", skipRemainingRules: true)
+                .AddRewrite(@"^documentation/?$", "documentation.html", skipRemainingRules: true)
+                .AddRewrite(@"^login/?$", "login.html", skipRemainingRules: true)
+                .AddRewrite(@"^overview/?$", "overview.html", skipRemainingRules: true)
+                .AddRewrite(@"^settings/?$", "settings.html", skipRemainingRules: true)
+                .AddRewrite(@"^settings/documentation/?$", "settings/documentation.html", skipRemainingRules: true)
+                .AddRewrite(@"^statistic/?$", "statistic.html", skipRemainingRules: true);
+
+            app.UseRewriter(options);
+
+            app.UseStaticFiles();
+        }
+
+        app.UseRouting();
 
         app.UseEndpoints(
             endpoints =>
@@ -159,13 +163,6 @@ public class Startup(IConfiguration configuration)
                 endpoints.MapControllerRoute(
                     "default",
                     "{controller}/{action=Index}/{id?}");
-            });
-
-        app.UseStaticFiles(
-            new StaticFileOptions
-            {
-                FileProvider = new PhysicalFileProvider(Path.Combine(env.ContentRootPath, "wwwroot")),
-                RequestPath = ""
             });
     }
 }

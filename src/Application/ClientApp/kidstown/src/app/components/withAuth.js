@@ -21,7 +21,7 @@ function withAuth(WrappedComponent) {
         }
 
         if (!authenticated) {
-            return null; // Render nothing while redirecting
+            return <></>; // Render nothing while redirecting
         }
 
         return <WrappedComponent {...props} />;

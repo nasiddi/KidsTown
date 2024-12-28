@@ -68,19 +68,10 @@ export const AuthProvider = ({children}) => {
 };
 
 export async function validateUserLogin(username, passwordHash) {
-    if (!username || !passwordHash) {
-        return false
-    }
-
     const response = await post('user/verify', {
         username,
         passwordHash,
     })
-
-    if (response.status === 200) {
-        const key = await response.text()
-        localStorage.setItem('apiKey', key)
-    }
 
     return response.status === 200
 }

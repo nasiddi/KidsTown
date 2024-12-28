@@ -1,7 +1,8 @@
 'use client'
 import {getGuid, getSelectedEventFromStorage} from '../components/Common'
 
-const backendHost = '';
+const isDev = process.env.NODE_ENV !== 'production';
+const backendHost = isDev ? 'http://localhost:5000' : '';
 
 export async function fetchLocationGroups() {
     return await getJson('configuration/location-groups')
