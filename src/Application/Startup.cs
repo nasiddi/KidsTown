@@ -149,7 +149,7 @@ public class Startup(IConfiguration configuration)
         {
             app.UseStaticFiles(new StaticFileOptions
             {
-                FileProvider = new PhysicalFileProvider(Path.Combine(env.ContentRootPath, "out")),
+                FileProvider = new PhysicalFileProvider(Path.Combine(env.ContentRootPath, "ClientApp/kidstown/out")),
                 RequestPath = ""
             });
         }
