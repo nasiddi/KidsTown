@@ -38,7 +38,7 @@ export default function OverviewHeadCount() {
     useEffect(() => {
         const interval = setInterval(() => {
             loadData().then()
-        }, 2000)
+        }, 1000)
 
         return () => clearInterval(interval)
     })

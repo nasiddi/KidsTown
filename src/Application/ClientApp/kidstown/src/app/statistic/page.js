@@ -13,8 +13,9 @@ import {fetchLocationGroups, fetchLocations, post} from '../helpers/BackendClien
 import {NarrowLayout} from '../components/Layout'
 import MultiSelect, {getOnDeselectId} from '../components/MultiSelect'
 import dayjs from 'dayjs'
+import withAuth from "@/app/components/withAuth";
 
-export default function Statistic() {
+function Statistic() {
     const [state, setState] = useState({
         locationGroups: [],
         allLocations: [],
@@ -313,3 +314,6 @@ export default function Statistic() {
         </NarrowLayout>
     )
 }
+
+export default withAuth(Statistic);
+

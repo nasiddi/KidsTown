@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using System.Text.Json.Serialization;
+using System.Text.RegularExpressions;
 using Google.Apis.Auth.OAuth2;
 using Google.Apis.Drive.v3;
 using Google.Apis.Services;
@@ -124,6 +125,18 @@ public class Startup(IConfiguration configuration)
 
         var options = new RewriteOptions()
             // Rewrite only exact matches to .html
+            .Add(context =>
+            {
+                var request = context.HttpContext.Request;
+                var path = request.Path.Value;
+
+                if (!string.IsNullOrEmpty(path) && Regex.IsMatch(path, "[A-Z]"))
+                {
+                    context.HttpContext.Request.Path = path.ToLowerInvariant();
+                }
+
+                context.Result = RuleResult.ContinueRules;
+            })
             .AddRewrite(@"^$", "index.html", skipRemainingRules: true)
             .AddRewrite(@"^checkin/?$", "checkin.html", skipRemainingRules: true)
             .AddRewrite(@"^documentation/?$", "documentation.html", skipRemainingRules: true)

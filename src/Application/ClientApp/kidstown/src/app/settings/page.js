@@ -6,6 +6,7 @@ import {getGuid, getSelectedEventFromStorage} from '../components/Common'
 import {NarrowLayout} from '../components/Layout'
 import {get} from "@/app/helpers/BackendClient";
 import {redirect} from "next/navigation";
+import withAuth from "@/app/components/withAuth";
 
 function BoolBadge(props) {
     return <Chip color={props['color']} label={props['label']}/>
@@ -113,7 +114,7 @@ function Task(props) {
     )
 }
 
-export default function Setting() {
+function Setting() {
     const [state, setState] = useState({
         events: [],
         tasks: [],
@@ -268,3 +269,6 @@ export default function Setting() {
         </NarrowLayout>
     )
 }
+
+export default withAuth(Setting);
+

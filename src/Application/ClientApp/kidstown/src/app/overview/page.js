@@ -6,8 +6,9 @@ import OverviewFilter from './OverviewFilter'
 import Grid from '@mui/material/Grid2';
 import OverviewDetail from './OverviewDetail'
 import {NarrowLayout, WideLayout} from "@/app/components/Layout";
+import withAuth from "@/app/components/withAuth";
 
-export default function Over() {
+function Over() {
     return (
         <>
             <NarrowLayout>
@@ -35,3 +36,6 @@ export default function Over() {
         </>
     )
 }
+
+export default withAuth(Over);
+

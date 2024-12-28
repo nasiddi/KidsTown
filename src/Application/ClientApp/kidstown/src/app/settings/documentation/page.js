@@ -9,8 +9,9 @@ import {onDeleteSubElement, onDownSubElement, onUpSubElement, sortDocElements,} 
 import {fetchDocumentation, post, postImages} from '../../helpers/BackendClient'
 import {KidsTownAlert} from '../../components/KidsTownAlert'
 import {Title} from '../../documentation/DynDocElement'
+import withAuth from "@/app/components/withAuth";
 
-export default function DynDocsEdit() {
+function DynDocsEdit() {
     const [state, setState] = useState({
         documentation: [],
         alert: {
@@ -497,3 +498,6 @@ export default function DynDocsEdit() {
         </NarrowLayout>
     )
 }
+
+export default withAuth(DynDocsEdit);
+

@@ -46,7 +46,7 @@ export default function OverviewDetail() {
     useEffect(() => {
         const interval = setInterval(() => {
             fetchData().then()
-        }, 2000)
+        }, 1000)
 
         return () => clearInterval(interval)
     })
