@@ -123,8 +123,8 @@ public class Startup(IConfiguration configuration)
         }
 
         var options = new RewriteOptions()
-            // Rewrite "/index.html" to "/"
-            .AddRewrite(@"^index\.html$", "/", skipRemainingRules: true)
+            // Redirect "/" to "/index.html"
+            .AddRewrite(@"^$", "index.html", skipRemainingRules: true)
             // Rewrite any path ending with "/" to ".html"
             .AddRewrite(@"^(.*)/$", "$1.html", skipRemainingRules: true)
             // Rewrite any path not ending with a file extension to ".html"
@@ -133,7 +133,6 @@ public class Startup(IConfiguration configuration)
         app.UseRewriter(options);
 
         app.UseStaticFiles();
-        app.UseHttpsRedirection();
         app.UseRouting();
 
         app.UseCors("AllowReactApp");
