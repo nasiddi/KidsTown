@@ -16,7 +16,7 @@ using KidsTown.KidsTown;
 using KidsTown.PlanningCenterApiClient;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.SpaServices.ReactDevelopmentServer;
+using Microsoft.AspNetCore.Rewrite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -122,6 +122,12 @@ public class Startup(IConfiguration configuration)
             app.UseHsts();
         }
 
+        var options = new RewriteOptions()
+            .AddRewrite(@"^(.*)/$", "$1.html", skipRemainingRules: true)
+            .AddRewrite(@"^(.*)$", "$1.html", skipRemainingRules: true);
+
+        app.UseRewriter(options);
+
         app.UseStaticFiles();
         app.UseHttpsRedirection();
         app.UseRouting();
@@ -136,22 +142,11 @@ public class Startup(IConfiguration configuration)
                     "{controller}/{action=Index}/{id?}");
             });
 
-        if (env.IsDevelopment())
-        {
-            app.UseSpa(
-                spa =>
-                {
-                    spa.Options.SourcePath = "ClientApp/kidstown";
-                    spa.UseReactDevelopmentServer("dev");
-                });
-        }
-        else
-        {
-            app.UseStaticFiles(new StaticFileOptions
+        app.UseStaticFiles(
+            new StaticFileOptions
             {
                 FileProvider = new PhysicalFileProvider(Path.Combine(env.ContentRootPath, "wwwroot")),
                 RequestPath = ""
             });
-        }
     }
 }
