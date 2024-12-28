@@ -1,7 +1,7 @@
 'use client'
 import {getGuid, getSelectedEventFromStorage} from '../components/Common'
 
-const backendHost = '';
+const backendHost = 'https://kidstown.gvc-win.ch/';
 
 export async function fetchLocationGroups() {
     return await getJson('configuration/location-groups')
