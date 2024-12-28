@@ -123,22 +123,10 @@ public class Startup(IConfiguration configuration)
         }
 
         app.UseStaticFiles();
-
+        app.UseHttpsRedirection();
         app.UseRouting();
 
         app.UseCors("AllowReactApp");
-
-        app.Use(
-            async (context, next) =>
-            {
-                await next();
-
-                if (context.Response.StatusCode == 404 && !Path.HasExtension(context.Request.Path.Value))
-                {
-                    context.Request.Path = "/index.html";
-                    await next();
-                }
-            });
 
         app.UseEndpoints(
             endpoints =>
@@ -159,12 +147,11 @@ public class Startup(IConfiguration configuration)
         }
         else
         {
-            app.UseStaticFiles(
-                new StaticFileOptions
-                {
-                    FileProvider = new PhysicalFileProvider(Path.Combine(Directory.GetCurrentDirectory(), "ClientApp/kidstown/out")),
-                    RequestPath = ""
-                });
+            app.UseStaticFiles(new StaticFileOptions
+            {
+                FileProvider = new PhysicalFileProvider(Path.Combine(env.ContentRootPath, "out")),
+                RequestPath = ""
+            });
         }
     }
 }
