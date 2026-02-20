@@ -1,12 +1,9 @@
-using System.Collections.Generic;
 using System.Collections.Immutable;
-using System.Linq;
-using System.Threading.Tasks;
-using KidsTown.Database.EfCore;
+using Database.EfCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace KidsTown.Database;
+namespace Database;
 
 public static class CommonRepository
 {

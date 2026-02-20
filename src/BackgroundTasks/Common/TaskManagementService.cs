@@ -1,8 +1,6 @@
-using System;
 using System.Collections.Immutable;
-using System.Linq;
 
-namespace KidsTown.BackgroundTasks.Common;
+namespace BackgroundTasks.Common;
 
 public class TaskManagementService(Func<BackgroundTaskType, IBackgroundTask> serviceResolver) : ITaskManagementService
 {

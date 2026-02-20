@@ -1,22 +1,17 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.Immutable;
-using System.Linq;
-using System.Net.Http;
+﻿using System.Collections.Immutable;
 using System.Net.Http.Headers;
 using System.Text;
-using System.Threading.Tasks;
-using KidsTown.PlanningCenterApiClient.Models;
-using KidsTown.PlanningCenterApiClient.Models.CheckInsResult;
-using KidsTown.PlanningCenterApiClient.Models.EventResult;
-using KidsTown.PlanningCenterApiClient.Models.HouseholdResult;
-using KidsTown.PlanningCenterApiClient.Models.PeopleResult;
-using KidsTown.PlanningCenterApiClient.Models.PhoneNumberPatch;
 using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
-using Attributes = KidsTown.PlanningCenterApiClient.Models.PhoneNumberPatch.Attributes;
+using PlanningCenterApiClient.Models;
+using PlanningCenterApiClient.Models.CheckInsResult;
+using PlanningCenterApiClient.Models.EventResult;
+using PlanningCenterApiClient.Models.HouseholdResult;
+using PlanningCenterApiClient.Models.PeopleResult;
+using PlanningCenterApiClient.Models.PhoneNumberPatch;
+using Attributes = PlanningCenterApiClient.Models.PhoneNumberPatch.Attributes;
 
-namespace KidsTown.PlanningCenterApiClient;
+namespace PlanningCenterApiClient;
 
 public class PlanningCenterClient(IConfiguration configuration) : IPlanningCenterClient
 {

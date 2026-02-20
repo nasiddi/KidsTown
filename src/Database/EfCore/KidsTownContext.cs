@@ -1,6 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 
-namespace KidsTown.Database.EfCore;
+namespace Database.EfCore;
 
 public partial class KidsTownContext : DbContext
 {

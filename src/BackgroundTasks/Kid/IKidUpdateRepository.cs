@@ -1,9 +1,8 @@
 using System.Collections.Immutable;
-using System.Threading.Tasks;
-using KidsTown.BackgroundTasks.Adult;
-using KidsTown.BackgroundTasks.Common;
+using BackgroundTasks.Adult;
+using BackgroundTasks.Common;
 
-namespace KidsTown.BackgroundTasks.Kid;
+namespace BackgroundTasks.Kid;
 
 public interface IKidUpdateRepository
 {

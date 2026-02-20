@@ -1,4 +1,4 @@
-namespace KidsTown.BackgroundTasks.Common;
+namespace BackgroundTasks.Common;
 
 public enum BackgroundTaskType
 {

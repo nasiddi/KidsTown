@@ -1,12 +1,10 @@
 using System.Collections.Immutable;
-using System.Linq;
-using System.Threading.Tasks;
-using KidsTown.KidsTown;
-using KidsTown.KidsTown.Models;
+using KidsTown;
+using KidsTown.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace KidsTown.Database;
+namespace Database;
 
 public class ConfigurationRepository(IServiceScopeFactory serviceScopeFactory) : IConfigurationRepository
 {

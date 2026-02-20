@@ -1,8 +1,8 @@
-using System;
+
 
 // ReSharper disable UnusedAutoPropertyAccessor.Global
 
-namespace KidsTown.BackgroundTasks.Common;
+namespace BackgroundTasks.Common;
 
 public class TaskOverview
 {

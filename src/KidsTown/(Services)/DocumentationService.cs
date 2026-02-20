@@ -1,14 +1,10 @@
-using System;
-using System.Collections.Generic;
 using System.Collections.Immutable;
-using System.IO;
-using System.Threading.Tasks;
 using Google.Apis.Drive.v3;
 using Google.Apis.Upload;
-using KidsTown.KidsTown.Models;
+using KidsTown.Models;
 using File = Google.Apis.Drive.v3.Data.File;
 
-namespace KidsTown.KidsTown;
+namespace KidsTown;
 
 public class DocumentationService(IDocumentationRepository documentationRepository, DriveService driveService)
     : IDocumentationService

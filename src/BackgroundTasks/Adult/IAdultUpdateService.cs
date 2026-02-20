@@ -1,6 +1,4 @@
-using System.Threading.Tasks;
-
-namespace KidsTown.BackgroundTasks.Adult;
+namespace BackgroundTasks.Adult;
 
 public interface IAdultUpdateService
 {

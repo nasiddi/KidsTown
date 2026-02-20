@@ -1,12 +1,10 @@
 using System.Collections.Immutable;
-using System.Linq;
-using System.Threading.Tasks;
-using KidsTown.KidsTown.Models;
-using KidsTown.PlanningCenterApiClient;
-using KidsTown.PlanningCenterApiClient.Models.EventResult;
+using KidsTown.Models;
 using Microsoft.Extensions.Configuration;
+using PlanningCenterApiClient;
+using PlanningCenterApiClient.Models.EventResult;
 
-namespace KidsTown.KidsTown;
+namespace KidsTown;
 
 public class ConfigurationService(
         IConfigurationRepository configurationRepository,

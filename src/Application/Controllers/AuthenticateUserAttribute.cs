@@ -1,11 +1,8 @@
-using System;
-using System.Threading.Tasks;
-using KidsTown.KidsTown;
+using KidsTown;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
-using Microsoft.Extensions.DependencyInjection;
 
-namespace KidsTown.Application.Controllers;
+namespace Application.Controllers;
 
 [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method)]
 public class AuthenticateUserAttribute : Attribute, IAsyncActionFilter

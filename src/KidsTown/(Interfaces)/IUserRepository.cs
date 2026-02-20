@@ -1,6 +1,4 @@
-using System.Threading.Tasks;
-
-namespace KidsTown.KidsTown;
+namespace KidsTown;
 
 public interface IUserRepository
 {

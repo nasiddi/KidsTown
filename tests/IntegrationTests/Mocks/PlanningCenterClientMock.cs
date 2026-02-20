@@ -1,20 +1,16 @@
-using System;
-using System.Collections.Generic;
 using System.Collections.Immutable;
-using System.Linq;
-using System.Threading.Tasks;
-using KidsTown.IntegrationTests.TestData;
-using KidsTown.PlanningCenterApiClient;
-using KidsTown.PlanningCenterApiClient.Models.CheckInsResult;
-using KidsTown.PlanningCenterApiClient.Models.EventResult;
-using KidsTown.PlanningCenterApiClient.Models.HouseholdResult;
-using KidsTown.PlanningCenterApiClient.Models.PeopleResult;
-using Datum = KidsTown.PlanningCenterApiClient.Models.EventResult.Datum;
-using Included = KidsTown.PlanningCenterApiClient.Models.PeopleResult.Included;
-using IncludedAttributes = KidsTown.PlanningCenterApiClient.Models.PeopleResult.IncludedAttributes;
-using Relationship = KidsTown.PlanningCenterApiClient.Models.CheckInsResult.Relationship;
+using IntegrationTests.TestData;
+using PlanningCenterApiClient;
+using PlanningCenterApiClient.Models.CheckInsResult;
+using PlanningCenterApiClient.Models.EventResult;
+using PlanningCenterApiClient.Models.HouseholdResult;
+using PlanningCenterApiClient.Models.PeopleResult;
+using Datum = PlanningCenterApiClient.Models.EventResult.Datum;
+using Included = PlanningCenterApiClient.Models.PeopleResult.Included;
+using IncludedAttributes = PlanningCenterApiClient.Models.PeopleResult.IncludedAttributes;
+using Relationship = PlanningCenterApiClient.Models.CheckInsResult.Relationship;
 
-namespace KidsTown.IntegrationTests.Mocks;
+namespace IntegrationTests.Mocks;
 
 public class PlanningCenterClientMock : IPlanningCenterClient
 {

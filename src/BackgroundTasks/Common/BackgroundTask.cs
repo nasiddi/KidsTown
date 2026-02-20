@@ -1,13 +1,10 @@
-using System;
 using System.Net;
 using System.Net.Mail;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
-namespace KidsTown.BackgroundTasks.Common;
+namespace BackgroundTasks.Common;
 
 public abstract class BackgroundTask(
         IBackgroundTaskRepository backgroundTaskRepository,

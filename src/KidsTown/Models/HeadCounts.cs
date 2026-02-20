@@ -1,8 +1,8 @@
-using System;
+
 
 // ReSharper disable UnusedAutoPropertyAccessor.Global
 
-namespace KidsTown.KidsTown.Models;
+namespace KidsTown.Models;
 
 public class HeadCounts
 {

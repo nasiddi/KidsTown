@@ -1,11 +1,10 @@
 ﻿using System.Collections.Immutable;
-using System.Threading.Tasks;
-using KidsTown.PlanningCenterApiClient.Models.CheckInsResult;
-using KidsTown.PlanningCenterApiClient.Models.EventResult;
-using KidsTown.PlanningCenterApiClient.Models.HouseholdResult;
-using KidsTown.PlanningCenterApiClient.Models.PeopleResult;
+using PlanningCenterApiClient.Models.CheckInsResult;
+using PlanningCenterApiClient.Models.EventResult;
+using PlanningCenterApiClient.Models.HouseholdResult;
+using PlanningCenterApiClient.Models.PeopleResult;
 
-namespace KidsTown.PlanningCenterApiClient;
+namespace PlanningCenterApiClient;
 
 public interface IPlanningCenterClient
 {

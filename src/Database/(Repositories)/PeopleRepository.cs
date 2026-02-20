@@ -1,15 +1,12 @@
-using System;
 using System.Collections.Immutable;
-using System.Linq;
-using System.Threading.Tasks;
-using KidsTown.Database.EfCore;
-using KidsTown.KidsTown;
+using Database.EfCore;
+using KidsTown;
 using KidsTown.Shared;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using Adult = KidsTown.KidsTown.Models.Adult;
+using Adult = KidsTown.Models.Adult;
 
-namespace KidsTown.Database;
+namespace Database;
 
 public class PeopleRepository(IServiceScopeFactory serviceScopeFactory) : IPeopleRepository
 {

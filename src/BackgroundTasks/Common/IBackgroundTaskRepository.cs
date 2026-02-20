@@ -1,6 +1,4 @@
-using System.Threading.Tasks;
-
-namespace KidsTown.BackgroundTasks.Common;
+namespace BackgroundTasks.Common;
 
 public interface IBackgroundTaskRepository
 {

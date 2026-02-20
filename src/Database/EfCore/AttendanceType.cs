@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-
-namespace KidsTown.Database.EfCore;
+﻿namespace Database.EfCore;
 
 public class AttendanceType
 {

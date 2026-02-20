@@ -1,6 +1,6 @@
 using System.Collections.Immutable;
 
-namespace KidsTown.BackgroundTasks.Common;
+namespace BackgroundTasks.Common;
 
 public interface ITaskManagementService
 {

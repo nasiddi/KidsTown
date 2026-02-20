@@ -1,10 +1,8 @@
-using System;
 using System.Collections.Immutable;
-using System.Threading.Tasks;
-using KidsTown.BackgroundTasks.Common;
-using KidsTown.PlanningCenterApiClient.Models.CheckInsResult;
+using BackgroundTasks.Common;
+using PlanningCenterApiClient.Models.CheckInsResult;
 
-namespace KidsTown.BackgroundTasks.Attendance;
+namespace BackgroundTasks.Attendance;
 
 public interface IAttendanceUpdateRepository
 {

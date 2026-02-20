@@ -1,14 +1,13 @@
 ﻿using System.Collections.Immutable;
-using System.Threading.Tasks;
-using KidsTown.KidsTown;
-using KidsTown.KidsTown.Models;
+using KidsTown;
+using KidsTown.Models;
 using Microsoft.AspNetCore.Mvc;
 
-namespace KidsTown.Application.Controllers;
+namespace Application.Controllers;
 
 [ApiController]
 [AuthenticateUser]
-[Route("[controller]/adults")]
+[Route("api/[controller]/adults")]
 public class PeopleController(IPeopleService peopleService) : ControllerBase
 {
     [HttpPost]

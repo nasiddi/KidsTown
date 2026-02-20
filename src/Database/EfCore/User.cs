@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace KidsTown.Database.EfCore;
+namespace Database.EfCore;
 
 public class User
 {

@@ -1,8 +1,6 @@
-using System;
-using System.Collections.Generic;
 using Newtonsoft.Json;
 
-namespace KidsTown.PlanningCenterApiClient.Models.HouseholdResult;
+namespace PlanningCenterApiClient.Models.HouseholdResult;
 
 //
 public class Household : IPlanningCenterResponse

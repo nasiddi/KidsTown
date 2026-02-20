@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace KidsTown.Database.EfCore;
+﻿namespace Database.EfCore;
 
 public class TaskExecution
 {

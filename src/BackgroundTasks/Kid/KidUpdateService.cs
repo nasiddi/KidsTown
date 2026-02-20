@@ -1,14 +1,11 @@
-using System.Collections.Generic;
 using System.Collections.Immutable;
-using System.Linq;
-using System.Threading.Tasks;
-using KidsTown.BackgroundTasks.Adult;
-using KidsTown.BackgroundTasks.Common;
-using KidsTown.PlanningCenterApiClient;
-using KidsTown.PlanningCenterApiClient.Models.PeopleResult;
+using BackgroundTasks.Adult;
+using BackgroundTasks.Common;
 using KidsTown.Shared;
+using PlanningCenterApiClient;
+using PlanningCenterApiClient.Models.PeopleResult;
 
-namespace KidsTown.BackgroundTasks.Kid;
+namespace BackgroundTasks.Kid;
 
 public class KidUpdateService(IPlanningCenterClient planningCenterClient, IKidUpdateRepository kidUpdateRepository)
     : IKidUpdateService

@@ -1,18 +1,9 @@
 <Project Sdk="Microsoft.NET.Sdk">
-
-    <PropertyGroup>
-        <TargetFramework>net9.0</TargetFramework>
-        <RootNamespace>KidsTown.KidsTown</RootNamespace>
-        <Nullable>enable</Nullable>
-    </PropertyGroup>
-
-    <ItemGroup>
-        <ProjectReference Include="..\KidsTown.Shared\KidsTown.Shared.csproj"/>
-        <ProjectReference Include="..\PlanningCenterApiClient\PlanningCenterApiClient.csproj"/>
-    </ItemGroup>
-
-    <ItemGroup>
-        <PackageReference Include="Google.Apis.Drive.v3" Version="1.68.0.3627"/>
-    </ItemGroup>
-
+  <ItemGroup>
+    <ProjectReference Include="..\KidsTown.Shared\KidsTown.Shared.csproj" />
+    <ProjectReference Include="..\PlanningCenterApiClient\PlanningCenterApiClient.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Google.Apis.Drive.v3" />
+  </ItemGroup>
 </Project>

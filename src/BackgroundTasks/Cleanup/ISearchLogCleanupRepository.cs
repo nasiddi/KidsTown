@@ -1,6 +1,4 @@
-using System.Threading.Tasks;
-
-namespace KidsTown.BackgroundTasks.Cleanup;
+namespace BackgroundTasks.Cleanup;
 
 public interface ISearchLogCleanupRepository
 {

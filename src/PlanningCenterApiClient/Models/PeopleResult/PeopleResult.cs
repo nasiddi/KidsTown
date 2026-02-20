@@ -1,10 +1,8 @@
-using System;
-using System.Collections.Generic;
 using System.Globalization;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 
-namespace KidsTown.PlanningCenterApiClient.Models.PeopleResult;
+namespace PlanningCenterApiClient.Models.PeopleResult;
 
 public class People : IPlanningCenterResponse
 {

@@ -1,10 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Globalization;
+﻿using System.Globalization;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 
-namespace KidsTown.PlanningCenterApiClient.Models.CheckInsResult;
+namespace PlanningCenterApiClient.Models.CheckInsResult;
 
 public class CheckIns : IPlanningCenterResponse
 {

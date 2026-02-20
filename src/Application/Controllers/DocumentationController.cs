@@ -1,16 +1,12 @@
-using System;
-using System.Collections.Generic;
 using System.Collections.Immutable;
-using System.Linq;
-using System.Threading.Tasks;
-using KidsTown.KidsTown;
-using KidsTown.KidsTown.Models;
+using KidsTown;
+using KidsTown.Models;
 using Microsoft.AspNetCore.Mvc;
 
-namespace KidsTown.Application.Controllers;
+namespace Application.Controllers;
 
 [ApiController]
-[Route("[controller]")]
+[Route("api/[controller]")]
 public class DocumentationController(IDocumentationService documentationService) : ControllerBase
 {
     [HttpGet]

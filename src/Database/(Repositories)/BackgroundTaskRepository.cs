@@ -1,12 +1,9 @@
-﻿using System;
-using System.Linq;
-using System.Threading.Tasks;
-using KidsTown.BackgroundTasks.Common;
-using KidsTown.Database.EfCore;
+﻿using BackgroundTasks.Common;
+using Database.EfCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace KidsTown.Database;
+namespace Database;
 
 public class BackgroundTaskRepository(IServiceScopeFactory serviceScopeFactory) : IBackgroundTaskRepository
 {

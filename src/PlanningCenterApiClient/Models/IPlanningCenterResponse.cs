@@ -1,6 +1,4 @@
-using System;
-
-namespace KidsTown.PlanningCenterApiClient.Models;
+namespace PlanningCenterApiClient.Models;
 
 public interface IPlanningCenterResponse
 {

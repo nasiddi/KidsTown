@@ -2,7 +2,7 @@
 
 using KidsTown.Shared;
 
-namespace KidsTown.KidsTown.Models;
+namespace KidsTown.Models;
 
 public class Kid
 {

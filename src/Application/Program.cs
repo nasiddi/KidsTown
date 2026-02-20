@@ -1,14 +1,10 @@
-using KidsTown.BackgroundTasks.Adult;
-using KidsTown.BackgroundTasks.Attendance;
-using KidsTown.BackgroundTasks.CheckOut;
-using KidsTown.BackgroundTasks.Cleanup;
-using KidsTown.BackgroundTasks.Kid;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
+using BackgroundTasks.Adult;
+using BackgroundTasks.Attendance;
+using BackgroundTasks.CheckOut;
+using BackgroundTasks.Cleanup;
+using BackgroundTasks.Kid;
 
-namespace KidsTown.Application;
+namespace Application;
 
 public static class Program
 {

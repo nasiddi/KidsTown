@@ -1,24 +1,21 @@
-using System;
 using System.Collections.Immutable;
-using System.Linq;
-using System.Threading.Tasks;
-using KidsTown.BackgroundTasks.Adult;
-using KidsTown.BackgroundTasks.Attendance;
-using KidsTown.BackgroundTasks.Common;
-using KidsTown.BackgroundTasks.Kid;
-using KidsTown.Database;
-using KidsTown.Database.EfCore;
-using KidsTown.IntegrationTests.Mocks;
-using KidsTown.IntegrationTests.TestData;
-using KidsTown.KidsTown;
-using KidsTown.PlanningCenterApiClient;
+using BackgroundTasks.Adult;
+using BackgroundTasks.Attendance;
+using BackgroundTasks.Common;
+using BackgroundTasks.Kid;
+using Database;
+using Database.EfCore;
+using IntegrationTests.Mocks;
+using IntegrationTests.TestData;
+using KidsTown;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Person = KidsTown.Database.EfCore.Person;
+using PlanningCenterApiClient;
+using Person = Database.EfCore.Person;
 
-namespace KidsTown.IntegrationTests;
+namespace IntegrationTests;
 
 public static class TestHelper
 {

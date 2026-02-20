@@ -1,4 +1,4 @@
-namespace KidsTown.IntegrationTests.TestData;
+namespace IntegrationTests.TestData;
 
 public enum TestLocationIds
 {

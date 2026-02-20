@@ -4,7 +4,7 @@ using KidsTown.Shared;
 // ReSharper disable UnusedAutoPropertyAccessor.Global
 // ReSharper disable AutoPropertyCanBeMadeGetOnly.Global
 
-namespace KidsTown.Application.Models;
+namespace Application.Models;
 
 public class CheckInOutRequest
 {

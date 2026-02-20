@@ -1,4 +1,4 @@
-namespace KidsTown.Application.Models;
+namespace Application.Models;
 
 public record CheckInOutCandidate(
     int AttendanceId,

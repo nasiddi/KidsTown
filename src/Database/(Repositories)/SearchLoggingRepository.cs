@@ -1,17 +1,14 @@
-using System;
 using System.Collections.Immutable;
-using System.Linq;
-using System.Threading.Tasks;
-using KidsTown.BackgroundTasks.Cleanup;
-using KidsTown.Database.EfCore;
-using KidsTown.KidsTown;
-using KidsTown.KidsTown.Models;
+using BackgroundTasks.Cleanup;
+using Database.EfCore;
+using KidsTown;
+using KidsTown.Models;
 using KidsTown.Shared;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using Kid = KidsTown.KidsTown.Models.Kid;
+using Kid = KidsTown.Models.Kid;
 
-namespace KidsTown.Database;
+namespace Database;
 
 public class SearchLoggingRepository(IServiceScopeFactory serviceScopeFactory) : ISearchLoggingRepository,
     ISearchLogCleanupRepository

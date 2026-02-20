@@ -1,4 +1,4 @@
-﻿namespace KidsTown.BackgroundTasks.Common;
+﻿namespace BackgroundTasks.Common;
 
 public record PeopleUpdate(
     long? PeopleId,

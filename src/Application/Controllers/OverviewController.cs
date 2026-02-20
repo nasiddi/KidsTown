@@ -1,16 +1,13 @@
-﻿using System;
-using System.Collections.Immutable;
-using System.Linq;
-using System.Threading.Tasks;
-using KidsTown.KidsTown;
-using KidsTown.KidsTown.Models;
+﻿using System.Collections.Immutable;
+using KidsTown;
+using KidsTown.Models;
 using Microsoft.AspNetCore.Mvc;
 
-namespace KidsTown.Application.Controllers;
+namespace Application.Controllers;
 
 [ApiController]
 [AuthenticateUser]
-[Route("[controller]/event/{eventId:long}/attendees")]
+[Route("api/[controller]/event/{eventId:long}/attendees")]
 public class OverviewController(IOverviewService overviewService) : ControllerBase
 {
     [HttpPost]

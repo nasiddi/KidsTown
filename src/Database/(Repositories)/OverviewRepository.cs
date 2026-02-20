@@ -1,16 +1,13 @@
-using System;
 using System.Collections.Immutable;
-using System.Linq;
-using System.Threading.Tasks;
-using KidsTown.Database.EfCore;
-using KidsTown.KidsTown;
-using KidsTown.KidsTown.Models;
+using Database.EfCore;
+using KidsTown;
+using KidsTown.Models;
 using KidsTown.Shared;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using Location = KidsTown.Database.EfCore.Location;
+using Location = Database.EfCore.Location;
 
-namespace KidsTown.Database;
+namespace Database;
 
 public class OverviewRepository(IServiceScopeFactory serviceScopeFactory) : IOverviewRepository
 {

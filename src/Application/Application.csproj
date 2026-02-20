@@ -1,26 +1,12 @@
 <Project Sdk="Microsoft.NET.Sdk.Web">
-
-    <PropertyGroup>
-        <TargetFramework>net9.0</TargetFramework>
-        <RootNamespace>KidsTown.Application</RootNamespace>
-        <IsPackable>false</IsPackable>
-        <Nullable>enable</Nullable>
-    </PropertyGroup>
-
-    <ItemGroup>
-        <PackageReference Include="MailKit" Version="4.9.0"/>
-        <PackageReference Include="Microsoft.AspNetCore.SpaServices.Extensions" Version="9.0.0"/>
-        <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.3">
-            <PrivateAssets>all</PrivateAssets>
-            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-        </PackageReference>
-    </ItemGroup>
-
-    <ItemGroup>
-        <ProjectReference Include="..\BackgroundTasks\BackgroundTasks.csproj"/>
-        <ProjectReference Include="..\Database\Database.csproj"/>
-        <ProjectReference Include="..\KidsTown.Shared\KidsTown.Shared.csproj"/>
-        <ProjectReference Include="..\KidsTown\KidsTown.csproj"/>
-    </ItemGroup>
-    
+  <ItemGroup>
+    <PackageReference Include="MailKit" />
+    <PackageReference Include="Microsoft.AspNetCore.SpaServices.Extensions" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\BackgroundTasks\BackgroundTasks.csproj" />
+    <ProjectReference Include="..\Database\Database.csproj" />
+    <ProjectReference Include="..\KidsTown.Shared\KidsTown.Shared.csproj" />
+    <ProjectReference Include="..\KidsTown\KidsTown.csproj" />
+  </ItemGroup>
 </Project>

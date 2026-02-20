@@ -1,23 +1,19 @@
-using System;
 using System.Collections.Immutable;
 using System.Diagnostics;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
+using BackgroundTasks.Adult;
+using BackgroundTasks.Attendance;
+using BackgroundTasks.Common;
+using BackgroundTasks.Kid;
+using Database.EfCore;
 using FluentAssertions;
-using KidsTown.BackgroundTasks.Adult;
-using KidsTown.BackgroundTasks.Attendance;
-using KidsTown.BackgroundTasks.Common;
-using KidsTown.BackgroundTasks.Kid;
-using KidsTown.Database.EfCore;
-using KidsTown.IntegrationTests.Mocks;
-using KidsTown.PlanningCenterApiClient.Models.CheckInsResult;
+using IntegrationTests.Mocks;
 using KidsTown.Shared;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using NUnit.Framework;
+using PlanningCenterApiClient.Models.CheckInsResult;
 
-namespace KidsTown.IntegrationTests;
+namespace IntegrationTests;
 
 public class UpdateTaskTest
 {

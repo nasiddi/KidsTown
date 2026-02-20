@@ -1,10 +1,9 @@
-using System.Threading.Tasks;
-using KidsTown.BackgroundTasks.Attendance;
-using KidsTown.BackgroundTasks.Common;
+using BackgroundTasks.Attendance;
+using BackgroundTasks.Common;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 
-namespace KidsTown.BackgroundTasks.CheckOut;
+namespace BackgroundTasks.CheckOut;
 
 public class AutoCheckOutTask(
         IAttendanceUpdateRepository attendanceUpdateRepository,

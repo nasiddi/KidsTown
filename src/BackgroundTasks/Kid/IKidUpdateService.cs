@@ -1,6 +1,4 @@
-using System.Threading.Tasks;
-
-namespace KidsTown.BackgroundTasks.Kid;
+namespace BackgroundTasks.Kid;
 
 public interface IKidUpdateService
 {

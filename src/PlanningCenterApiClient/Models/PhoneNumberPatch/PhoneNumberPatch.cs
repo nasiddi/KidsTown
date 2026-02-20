@@ -1,9 +1,8 @@
-using System;
 using System.Globalization;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 
-namespace KidsTown.PlanningCenterApiClient.Models.PhoneNumberPatch;
+namespace PlanningCenterApiClient.Models.PhoneNumberPatch;
 
 public class PhoneNumber
 {

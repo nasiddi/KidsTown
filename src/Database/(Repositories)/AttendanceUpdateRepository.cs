@@ -1,19 +1,15 @@
-using System;
-using System.Collections.Generic;
 using System.Collections.Immutable;
-using System.Linq;
-using System.Threading.Tasks;
-using KidsTown.BackgroundTasks.Attendance;
-using KidsTown.BackgroundTasks.Common;
-using KidsTown.Database.EfCore;
-using KidsTown.PlanningCenterApiClient.Models.CheckInsResult;
+using BackgroundTasks.Attendance;
+using BackgroundTasks.Common;
+using Database.EfCore;
 using KidsTown.Shared;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using Location = KidsTown.Database.EfCore.Location;
+using PlanningCenterApiClient.Models.CheckInsResult;
+using Location = Database.EfCore.Location;
 using LocationGroup = KidsTown.Shared.LocationGroup;
 
-namespace KidsTown.Database;
+namespace Database;
 
 public class AttendanceUpdateRepository(IServiceScopeFactory serviceScopeFactory) : IAttendanceUpdateRepository
 {

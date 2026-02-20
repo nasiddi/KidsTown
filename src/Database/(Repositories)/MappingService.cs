@@ -1,7 +1,7 @@
-using KidsTown.Database.EfCore;
+using Database.EfCore;
 using KidsTown.Shared;
 
-namespace KidsTown.Database;
+namespace Database;
 
 public static class MappingService
 {

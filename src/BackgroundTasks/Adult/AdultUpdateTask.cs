@@ -1,9 +1,8 @@
-using System.Threading.Tasks;
-using KidsTown.BackgroundTasks.Common;
+using BackgroundTasks.Common;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 
-namespace KidsTown.BackgroundTasks.Adult;
+namespace BackgroundTasks.Adult;
 
 public class AdultUpdateTask(
         IAdultUpdateService adultUpdateService,

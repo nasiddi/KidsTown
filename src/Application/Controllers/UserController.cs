@@ -1,11 +1,10 @@
-using System.Threading.Tasks;
-using KidsTown.KidsTown;
+using KidsTown;
 using Microsoft.AspNetCore.Mvc;
 
-namespace KidsTown.Application.Controllers;
+namespace Application.Controllers;
 
 [ApiController]
-[Route("[controller]")]
+[Route("api/[controller]")]
 public class UserController(IUserRepository userRepository) : ControllerBase
 {
     [HttpPost]

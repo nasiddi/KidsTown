@@ -1,6 +1,6 @@
 using System.Collections.Immutable;
 
-namespace KidsTown.KidsTown.Models;
+namespace KidsTown.Models;
 
 public record PeopleSearchParameters(
     string SecurityCode,

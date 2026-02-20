@@ -1,13 +1,10 @@
-using System.Collections.Generic;
 using System.Collections.Immutable;
-using System.Linq;
-using System.Threading.Tasks;
-using KidsTown.PlanningCenterApiClient;
-using KidsTown.PlanningCenterApiClient.Models.HouseholdResult;
-using KidsTown.PlanningCenterApiClient.Models.PeopleResult;
-using Included = KidsTown.PlanningCenterApiClient.Models.PeopleResult.Included;
+using PlanningCenterApiClient;
+using PlanningCenterApiClient.Models.HouseholdResult;
+using PlanningCenterApiClient.Models.PeopleResult;
+using Included = PlanningCenterApiClient.Models.PeopleResult.Included;
 
-namespace KidsTown.BackgroundTasks.Adult;
+namespace BackgroundTasks.Adult;
 
 public class AdultUpdateService(
         IAdultUpdateRepository adultUpdateRepository,

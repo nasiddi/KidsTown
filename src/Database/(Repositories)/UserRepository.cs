@@ -1,9 +1,8 @@
-using System.Threading.Tasks;
-using KidsTown.KidsTown;
+using KidsTown;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace KidsTown.Database;
+namespace Database;
 
 public class UserRepository(IServiceScopeFactory serviceScopeFactory) : IUserRepository
 {

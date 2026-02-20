@@ -1,9 +1,8 @@
 using System.Collections.Immutable;
-using System.Threading.Tasks;
-using KidsTown.KidsTown.Models;
-using KidsTown.PlanningCenterApiClient;
+using KidsTown.Models;
+using PlanningCenterApiClient;
 
-namespace KidsTown.KidsTown;
+namespace KidsTown;
 
 public class PeopleService(IPeopleRepository peopleRepository, IPlanningCenterClient planningCenterClient)
     : IPeopleService

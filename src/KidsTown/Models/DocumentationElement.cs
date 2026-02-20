@@ -1,7 +1,6 @@
-using System;
 using System.Collections.Immutable;
 
-namespace KidsTown.KidsTown.Models;
+namespace KidsTown.Models;
 
 public record DocumentationElement(
     int Id,

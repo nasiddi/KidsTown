@@ -1,29 +1,22 @@
-using System;
 using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
+using BackgroundTasks.Adult;
+using BackgroundTasks.Attendance;
+using BackgroundTasks.CheckOut;
+using BackgroundTasks.Cleanup;
+using BackgroundTasks.Common;
+using BackgroundTasks.Kid;
+using Database;
+using Database.EfCore;
 using Google.Apis.Auth.OAuth2;
 using Google.Apis.Drive.v3;
 using Google.Apis.Services;
-using KidsTown.BackgroundTasks.Adult;
-using KidsTown.BackgroundTasks.Attendance;
-using KidsTown.BackgroundTasks.CheckOut;
-using KidsTown.BackgroundTasks.Cleanup;
-using KidsTown.BackgroundTasks.Common;
-using KidsTown.BackgroundTasks.Kid;
-using KidsTown.Database;
-using KidsTown.Database.EfCore;
-using KidsTown.KidsTown;
-using KidsTown.PlanningCenterApiClient;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
+using KidsTown;
 using Microsoft.AspNetCore.Rewrite;
-using Microsoft.AspNetCore.SpaServices.ReactDevelopmentServer;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
+using PlanningCenterApiClient;
 
-namespace KidsTown.Application;
+namespace Application;
 
 public class Startup(IConfiguration configuration)
 {

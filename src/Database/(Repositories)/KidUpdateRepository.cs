@@ -1,18 +1,14 @@
-using System;
-using System.Collections.Generic;
 using System.Collections.Immutable;
-using System.Linq;
-using System.Threading.Tasks;
-using KidsTown.BackgroundTasks.Common;
-using KidsTown.BackgroundTasks.Kid;
-using KidsTown.Database.EfCore;
+using BackgroundTasks.Common;
+using BackgroundTasks.Kid;
+using Database.EfCore;
 using KidsTown.Shared;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using Family = KidsTown.BackgroundTasks.Adult.Family;
-using Person = KidsTown.Database.EfCore.Person;
+using Family = BackgroundTasks.Adult.Family;
+using Person = Database.EfCore.Person;
 
-namespace KidsTown.Database;
+namespace Database;
 
 public class KidUpdateRepository(IServiceScopeFactory serviceScopeFactory) : IKidUpdateRepository
 {

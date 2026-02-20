@@ -1,6 +1,4 @@
-using System.Threading.Tasks;
-
-namespace KidsTown.BackgroundTasks.Attendance;
+namespace BackgroundTasks.Attendance;
 
 public interface IAttendanceUpdateService
 {

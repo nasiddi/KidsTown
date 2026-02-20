@@ -1,20 +1,16 @@
-﻿using System;
-using System.Collections.Immutable;
-using System.Linq;
-using System.Threading.Tasks;
-using KidsTown.Application.Models;
-using KidsTown.BackgroundTasks.Common;
-using KidsTown.KidsTown;
-using KidsTown.KidsTown.Models;
+﻿using System.Collections.Immutable;
+using Application.Models;
+using BackgroundTasks.Common;
+using KidsTown;
+using KidsTown.Models;
 using KidsTown.Shared;
 using Microsoft.AspNetCore.Mvc;
-using Org.BouncyCastle.Crypto.Digests;
 
-namespace KidsTown.Application.Controllers;
+namespace Application.Controllers;
 
 [ApiController]
 [AuthenticateUser]
-[Route("[controller]")]
+[Route("api/[controller]")]
 public class CheckInOutController(
         ICheckInOutService checkInOutService,
         ITaskManagementService taskManagementService,

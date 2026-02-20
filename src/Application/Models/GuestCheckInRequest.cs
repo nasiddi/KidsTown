@@ -1,7 +1,7 @@
 // ReSharper disable AutoPropertyCanBeMadeGetOnly.Global
 // ReSharper disable UnusedAutoPropertyAccessor.Global
 
-namespace KidsTown.Application.Models;
+namespace Application.Models;
 
 public class GuestCheckInRequest
 {

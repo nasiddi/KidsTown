@@ -1,13 +1,10 @@
-using System;
 using System.Collections.Immutable;
-using System.Linq;
-using System.Threading.Tasks;
-using KidsTown.Application.Controllers;
-using KidsTown.Application.Models;
-using KidsTown.BackgroundTasks.Common;
-using KidsTown.Database.EfCore;
-using KidsTown.IntegrationTests.TestData;
-using KidsTown.KidsTown;
+using Application.Controllers;
+using Application.Models;
+using BackgroundTasks.Common;
+using Database.EfCore;
+using IntegrationTests.TestData;
+using KidsTown;
 using KidsTown.Shared;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -15,7 +12,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Moq;
 using NUnit.Framework;
 
-namespace KidsTown.IntegrationTests;
+namespace IntegrationTests;
 
 public class CheckInOutControllerTest
 {

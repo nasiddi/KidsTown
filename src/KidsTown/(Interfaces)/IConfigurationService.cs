@@ -1,8 +1,7 @@
 using System.Collections.Immutable;
-using System.Threading.Tasks;
-using KidsTown.KidsTown.Models;
+using KidsTown.Models;
 
-namespace KidsTown.KidsTown;
+namespace KidsTown;
 
 public interface IConfigurationService
 {

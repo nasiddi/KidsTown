@@ -1,4 +1,4 @@
-namespace KidsTown.KidsTown.Models;
+namespace KidsTown.Models;
 
 public class Location(int id, string name, int locationGroupId)
 {

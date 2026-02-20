@@ -2,7 +2,7 @@
 
 using System.Collections.Immutable;
 
-namespace KidsTown.Application.Models;
+namespace Application.Models;
 
 public class GroupedSelectOptions
 {
