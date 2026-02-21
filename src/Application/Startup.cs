@@ -120,28 +120,37 @@ public class Startup(IConfiguration configuration)
         if (!env.IsDevelopment())
         {
             var options = new RewriteOptions()
-                // Rewrite only exact matches to .html
                 .Add(
                     context =>
                     {
                         var request = context.HttpContext.Request;
-                        var path = request.Path.Value;
+                        var path = request.Path.Value ?? "";
 
-                        if (!string.IsNullOrEmpty(path) && Regex.IsMatch(path, "[A-Z]"))
+                        // Don't touch paths with file extensions (static assets like .js, .css)
+                        if (Path.HasExtension(path))
                         {
-                            context.HttpContext.Request.Path = path.ToLowerInvariant();
+                            context.Result = RuleResult.ContinueRules;
+                            return;
                         }
 
-                        context.Result = RuleResult.ContinueRules;
-                    })
-                .AddRewrite(@"^$", "index.html", skipRemainingRules: true)
-                .AddRewrite(@"^checkin/?$", "checkin.html", skipRemainingRules: true)
-                .AddRewrite(@"^documentation/?$", "documentation.html", skipRemainingRules: true)
-                .AddRewrite(@"^login/?$", "login.html", skipRemainingRules: true)
-                .AddRewrite(@"^overview/?$", "overview.html", skipRemainingRules: true)
-                .AddRewrite(@"^settings/?$", "settings.html", skipRemainingRules: true)
-                .AddRewrite(@"^settings/documentation/?$", "settings/documentation.html", skipRemainingRules: true)
-                .AddRewrite(@"^statistic/?$", "statistic.html", skipRemainingRules: true);
+                        // Lowercase route paths
+                        if (Regex.IsMatch(path, "[A-Z]"))
+                        {
+                            path = path.ToLowerInvariant();
+                            context.HttpContext.Request.Path = path;
+                        }
+
+                        // Skip API routes (handled by controllers)
+                        if (path.StartsWith("/api", StringComparison.OrdinalIgnoreCase))
+                        {
+                            context.Result = RuleResult.ContinueRules;
+                            return;
+                        }
+
+                        // SPA fallback: all non-file, non-API routes serve index.html
+                        context.HttpContext.Request.Path = "/index.html";
+                        context.Result = RuleResult.SkipRemainingRules;
+                    });
 
             app.UseRewriter(options);
 

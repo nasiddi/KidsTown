@@ -1,0 +1,9 @@
+**/node_modules
+**/bin
+**/obj
+**/.git
+**/.next
+**/out
+**/dist
+appsettings.Secrets.json
+google-credentials.json
