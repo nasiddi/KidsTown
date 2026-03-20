@@ -92,7 +92,7 @@ export default function OverviewDetail() {
     run().then()
     const interval = setInterval(() => {
       fetchData().then()
-    }, 30000)
+    }, 5000)
 
     return () => clearInterval(interval)
   }, [])

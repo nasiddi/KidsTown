@@ -83,7 +83,7 @@ export default function OverviewHeadCount() {
     loadData().then()
     const interval = setInterval(() => {
       loadData().then()
-    }, 30000)
+    }, 5000)
 
     return () => clearInterval(interval)
     // eslint-disable-next-line react-hooks/exhaustive-deps
