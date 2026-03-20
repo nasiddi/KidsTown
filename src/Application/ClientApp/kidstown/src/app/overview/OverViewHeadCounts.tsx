@@ -85,7 +85,13 @@ export default function OverviewHeadCount() {
       loadData().then()
     }, 5000)
 
-    return () => clearInterval(interval)
+    const handleFiltersChanged = () => loadData().then()
+    window.addEventListener('overviewFiltersChanged', handleFiltersChanged)
+
+    return () => {
+      clearInterval(interval)
+      window.removeEventListener('overviewFiltersChanged', handleFiltersChanged)
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 

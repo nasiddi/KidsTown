@@ -66,14 +66,17 @@ export default function OverviewOptions() {
     const overviewDate = `${value.year()}-${value.month() + 1}-${value.date()}`
     sessionStorage.setItem('overviewDate', overviewDate)
     setState({ ...state, date: value })
+    window.dispatchEvent(new CustomEvent('overviewFiltersChanged'))
   }
 
   function onLocationDeselect(event: React.SyntheticEvent) {
     onDeselect(event, optionKey, state, setState as (s: unknown) => void)
+    window.dispatchEvent(new CustomEvent('overviewFiltersChanged'))
   }
 
   function onLocationSelect(event: React.MouseEvent) {
     onSelect(event, optionKey, state.locationGroups, state, setState as (s: unknown) => void)
+    window.dispatchEvent(new CustomEvent('overviewFiltersChanged'))
   }
 
   function renderOptions() {

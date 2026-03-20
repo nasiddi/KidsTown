@@ -94,7 +94,13 @@ export default function OverviewDetail() {
       fetchData().then()
     }, 5000)
 
-    return () => clearInterval(interval)
+    const handleFiltersChanged = () => fetchData().then()
+    window.addEventListener('overviewFiltersChanged', handleFiltersChanged)
+
+    return () => {
+      clearInterval(interval)
+      window.removeEventListener('overviewFiltersChanged', handleFiltersChanged)
+    }
   }, [])
 
   function renderDetails() {
